@@ -1,0 +1,24 @@
+{
+  "name": "awesome-wasm-tools-1000",
+  "version": "0.1.0",
+  "description": "1000+ WebAssembly-powered frontend tools - No backend, fully offline",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "webassembly",
+    "wasm",
+    "tools",
+    "image-processing",
+    "offline",
+    "pwa"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}
