@@ -35,6 +35,15 @@ const translations = {
     no_file: '請先選擇 PNG 圖片',
     invalid_format: '請選擇 PNG 格式的圖片',
     reduction: '減少',
+
+    // IMG-002 specific
+    img002_name: 'JPG 轉 PNG',
+    img002_desc: '將 JPG 圖片轉換為 PNG 格式，無損轉換',
+    upload_title_jpg: '拖放 JPG/JPEG 圖片到此處',
+    upload_formats_jpg: '支援格式：JPG, JPEG',
+    output_format: '輸出格式',
+    png_info: 'PNG 為無損格式，轉換後檔案可能變大，但畫質不會損失',
+    download_png: '下載 PNG',
   },
   'en': {
     subtitle: 'Pure Frontend WebAssembly Tools Platform | No Backend, Fully Offline',
@@ -70,6 +79,15 @@ const translations = {
     no_file: 'Please select a PNG image first',
     invalid_format: 'Please select a PNG format image',
     reduction: 'reduced',
+
+    // IMG-002 specific
+    img002_name: 'JPG to PNG',
+    img002_desc: 'Convert JPG images to PNG format, lossless conversion',
+    upload_title_jpg: 'Drop JPG/JPEG image here',
+    upload_formats_jpg: 'Supported formats: JPG, JPEG',
+    output_format: 'Output Format',
+    png_info: 'PNG is lossless format, file size may increase but image quality is preserved',
+    download_png: 'Download PNG',
   }
 };
 
