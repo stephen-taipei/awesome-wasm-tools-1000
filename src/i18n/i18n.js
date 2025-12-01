@@ -73,6 +73,22 @@ const translations = {
     files: '個檔案',
     heic_convert_info: 'HEIC 轉換需要載入 WASM 模組，首次使用可能需要幾秒鐘',
     invalid_format_heic: '請選擇 HEIC/HEIF 格式的圖片',
+
+    // IMG-005 specific
+    img005_name: 'AVIF 轉換器',
+    img005_desc: 'AVIF 次世代圖片格式轉換，壓縮率比 WebP 更高',
+    avif_explanation: 'AVIF (AV1 Image File Format) 是基於 AV1 視訊編碼的次世代圖片格式。相同品質下，檔案大小比 JPEG 小 50%、比 WebP 小 20%，支援 HDR 和透明度。',
+    to_avif_desc: '轉換為 AVIF，檔案最小',
+    from_avif_desc: '轉換為通用格式',
+    upload_title_avif_in: '拖放 PNG/JPG/WebP 圖片到此處',
+    upload_formats_avif_in: '支援格式：PNG, JPG, WebP',
+    upload_title_avif_out: '拖放 AVIF 圖片到此處',
+    upload_formats_avif_out: '支援格式：AVIF',
+    avif_quality_info: 'AVIF 在較低品質設定下仍能保持良好畫質，建議使用 60-80%',
+    avif_out_info: '轉換為通用格式以獲得更好的相容性',
+    avif_not_supported: '您的瀏覽器不支援 AVIF 編碼，請使用 Chrome 85+ 或 Firefox 93+',
+    avif_encode_not_supported: '您的瀏覽器不支援 AVIF 編碼，請使用 Chrome 85+ 或 Firefox 93+',
+    download_avif: '下載 AVIF',
   },
   'en': {
     subtitle: 'Pure Frontend WebAssembly Tools Platform | No Backend, Fully Offline',
@@ -146,6 +162,22 @@ const translations = {
     files: 'files',
     heic_convert_info: 'HEIC conversion requires loading WASM module, first use may take a few seconds',
     invalid_format_heic: 'Please select HEIC/HEIF format images',
+
+    // IMG-005 specific
+    img005_name: 'AVIF Converter',
+    img005_desc: 'AVIF next-gen image format conversion, better compression than WebP',
+    avif_explanation: 'AVIF (AV1 Image File Format) is a next-gen image format based on AV1 video codec. At same quality, file size is 50% smaller than JPEG, 20% smaller than WebP, with HDR and transparency support.',
+    to_avif_desc: 'Convert to AVIF for smallest file size',
+    from_avif_desc: 'Convert to universal format',
+    upload_title_avif_in: 'Drop PNG/JPG/WebP image here',
+    upload_formats_avif_in: 'Supported formats: PNG, JPG, WebP',
+    upload_title_avif_out: 'Drop AVIF image here',
+    upload_formats_avif_out: 'Supported format: AVIF',
+    avif_quality_info: 'AVIF maintains good quality at lower settings, recommended 60-80%',
+    avif_out_info: 'Convert to universal format for better compatibility',
+    avif_not_supported: 'Your browser does not support AVIF encoding, please use Chrome 85+ or Firefox 93+',
+    avif_encode_not_supported: 'Your browser does not support AVIF encoding, please use Chrome 85+ or Firefox 93+',
+    download_avif: 'Download AVIF',
   }
 };
 
