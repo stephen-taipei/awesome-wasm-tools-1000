@@ -62,6 +62,17 @@ const translations = {
     webp_lossless_info: '無損壓縮保持原始畫質，檔案較大',
     webp_out_info: '轉換為通用格式以獲得更好的相容性',
     download_webp: '下載 WebP',
+
+    // IMG-004 specific
+    img004_name: 'HEIC/HEIF 轉換器',
+    img004_desc: '將 iPhone HEIC/HEIF 照片轉換為 JPG/PNG 格式',
+    heic_explanation: 'HEIC (High Efficiency Image Container) 是 Apple 從 iOS 11 開始使用的預設照片格式，比 JPEG 壓縮率更高但相容性較差。本工具可將其轉換為通用格式。',
+    upload_title_heic: '拖放 HEIC/HEIF 圖片到此處',
+    upload_formats_heic: '支援格式：HEIC, HEIF（支援批量轉換）',
+    selected_files: '已選擇',
+    files: '個檔案',
+    heic_convert_info: 'HEIC 轉換需要載入 WASM 模組，首次使用可能需要幾秒鐘',
+    invalid_format_heic: '請選擇 HEIC/HEIF 格式的圖片',
   },
   'en': {
     subtitle: 'Pure Frontend WebAssembly Tools Platform | No Backend, Fully Offline',
@@ -124,6 +135,17 @@ const translations = {
     webp_lossless_info: 'Lossless compression preserves original quality, larger file size',
     webp_out_info: 'Convert to universal format for better compatibility',
     download_webp: 'Download WebP',
+
+    // IMG-004 specific
+    img004_name: 'HEIC/HEIF Converter',
+    img004_desc: 'Convert iPhone HEIC/HEIF photos to JPG/PNG format',
+    heic_explanation: 'HEIC (High Efficiency Image Container) is the default photo format used by Apple since iOS 11. It offers better compression than JPEG but has limited compatibility. This tool converts it to universal formats.',
+    upload_title_heic: 'Drop HEIC/HEIF images here',
+    upload_formats_heic: 'Supported formats: HEIC, HEIF (batch conversion supported)',
+    selected_files: 'Selected',
+    files: 'files',
+    heic_convert_info: 'HEIC conversion requires loading WASM module, first use may take a few seconds',
+    invalid_format_heic: 'Please select HEIC/HEIF format images',
   }
 };
 
