@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Awesome WASM Tools 1000</title>
+  <meta name="description" content="1000+ WebAssembly-powered frontend tools - No backend, fully offline">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Awesome WASM Tools 1000</h1>
+      <p class="subtitle" data-i18n="subtitle">純前端 WebAssembly 工具平台 | 無後端、完全離線</p>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tools-grid">
+      <section class="category">
+        <h2 data-i18n="cat_image">圖片處理</h2>
+        <div class="tool-list">
+          <a href="/src/tools/image/IMG-001/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-001</h3>
+              <p data-i18n="img001_name">PNG 轉 JPG</p>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section class="category">
+        <h2 data-i18n="cat_audio">音訊處理</h2>
+        <div class="tool-list">
+          <p class="coming-soon" data-i18n="coming_soon">即將推出...</p>
+        </div>
+      </section>
+
+      <section class="category">
+        <h2 data-i18n="cat_compress">壓縮轉檔</h2>
+        <div class="tool-list">
+          <p class="coming-soon" data-i18n="coming_soon">即將推出...</p>
+        </div>
+      </section>
+
+      <section class="category">
+        <h2 data-i18n="cat_crypto">加密解密</h2>
+        <div class="tool-list">
+          <p class="coming-soon" data-i18n="coming_soon">即將推出...</p>
+        </div>
+      </section>
+
+      <section class="category">
+        <h2 data-i18n="cat_text">文本分析</h2>
+        <div class="tool-list">
+          <p class="coming-soon" data-i18n="coming_soon">即將推出...</p>
+        </div>
+      </section>
+
+      <section class="category">
+        <h2 data-i18n="cat_pdf">PDF 工具</h2>
+        <div class="tool-list">
+          <p class="coming-soon" data-i18n="coming_soon">即將推出...</p>
+        </div>
+      </section>
+
+      <section class="category">
+        <h2 data-i18n="cat_encode">編碼工具</h2>
+        <div class="tool-list">
+          <p class="coming-soon" data-i18n="coming_soon">即將推出...</p>
+        </div>
+      </section>
+
+      <section class="category">
+        <h2 data-i18n="cat_calc">數據計算</h2>
+        <div class="tool-list">
+          <p class="coming-soon" data-i18n="coming_soon">即將推出...</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+      <p>Progress: <span id="progress">1</span>/1000 tools</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+</body>
+</html>
