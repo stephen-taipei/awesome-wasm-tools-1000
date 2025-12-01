@@ -44,6 +44,24 @@ const translations = {
     output_format: '輸出格式',
     png_info: 'PNG 為無損格式，轉換後檔案可能變大，但畫質不會損失',
     download_png: '下載 PNG',
+
+    // IMG-003 specific
+    img003_name: 'WebP 轉換器',
+    img003_desc: 'WebP 與 PNG/JPG 格式互轉，支援品質調整',
+    conversion_direction: '轉換方向',
+    to_webp_desc: '轉換為 WebP 格式，檔案更小',
+    from_webp_desc: '轉換為通用格式',
+    upload_title_webp_in: '拖放 PNG/JPG 圖片到此處',
+    upload_formats_webp_in: '支援格式：PNG, JPG, JPEG',
+    upload_title_webp_out: '拖放 WebP 圖片到此處',
+    upload_formats_webp_out: '支援格式：WebP',
+    compression_type: '壓縮模式',
+    lossy: '有損壓縮',
+    lossless: '無損壓縮',
+    webp_lossy_info: '有損壓縮可大幅減少檔案大小，適合網頁使用',
+    webp_lossless_info: '無損壓縮保持原始畫質，檔案較大',
+    webp_out_info: '轉換為通用格式以獲得更好的相容性',
+    download_webp: '下載 WebP',
   },
   'en': {
     subtitle: 'Pure Frontend WebAssembly Tools Platform | No Backend, Fully Offline',
@@ -88,6 +106,24 @@ const translations = {
     output_format: 'Output Format',
     png_info: 'PNG is lossless format, file size may increase but image quality is preserved',
     download_png: 'Download PNG',
+
+    // IMG-003 specific
+    img003_name: 'WebP Converter',
+    img003_desc: 'Convert between WebP and PNG/JPG formats with quality control',
+    conversion_direction: 'Conversion Direction',
+    to_webp_desc: 'Convert to WebP for smaller file size',
+    from_webp_desc: 'Convert to universal format',
+    upload_title_webp_in: 'Drop PNG/JPG image here',
+    upload_formats_webp_in: 'Supported formats: PNG, JPG, JPEG',
+    upload_title_webp_out: 'Drop WebP image here',
+    upload_formats_webp_out: 'Supported format: WebP',
+    compression_type: 'Compression Mode',
+    lossy: 'Lossy',
+    lossless: 'Lossless',
+    webp_lossy_info: 'Lossy compression significantly reduces file size, ideal for web use',
+    webp_lossless_info: 'Lossless compression preserves original quality, larger file size',
+    webp_out_info: 'Convert to universal format for better compatibility',
+    download_webp: 'Download WebP',
   }
 };
 
