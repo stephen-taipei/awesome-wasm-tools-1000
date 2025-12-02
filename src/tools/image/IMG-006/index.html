@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-006 GIF 轉換器 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="GIF 動畫轉換工具，支援幀提取與 GIF 製作">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <style>
+    .format-selector {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .format-option {
+      flex: 1;
+      padding: 1rem;
+      background: var(--bg-input);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .format-option:hover {
+      border-color: var(--primary);
+    }
+    .format-option.active {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.2);
+    }
+    .format-option h4 {
+      margin-bottom: 0.25rem;
+    }
+    .format-option p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .gif-info {
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid var(--warning);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .gif-info h4 {
+      color: var(--warning);
+      margin-bottom: 0.5rem;
+    }
+    .gif-info p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+    .frames-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 0.5rem;
+      margin-top: 1rem;
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 0.5rem;
+      background: var(--bg-input);
+      border-radius: var(--radius);
+    }
+    .frame-item {
+      position: relative;
+      aspect-ratio: 1;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .frame-item:hover {
+      border-color: var(--primary);
+    }
+    .frame-item.selected {
+      border-color: var(--success);
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+    }
+    .frame-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: var(--bg-dark);
+    }
+    .frame-item .frame-number {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 2px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      font-size: 0.7rem;
+      text-align: center;
+    }
+    .frame-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    .frame-controls button {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+    .delay-setting {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .delay-setting input {
+      width: 80px;
+      padding: 0.5rem;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+    }
+    .multi-upload-info {
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-006 <span data-i18n="img006_name">GIF 轉換器</span></h1>
+        <p data-i18n="img006_desc">GIF 動畫轉換，支援幀提取與製作</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <!-- Info Box -->
+      <div class="gif-info">
+        <h4>🎬 GIF 動畫轉換</h4>
+        <p data-i18n="gif_explanation">支援從 GIF 動畫提取所有幀為靜態圖片，或將多張靜態圖片合成為 GIF 動畫。</p>
+      </div>
+
+      <!-- Status Messages -->
+      <div id="statusMessage" class="status-message"></div>
+
+      <!-- Conversion Direction -->
+      <div class="settings-panel">
+        <h3 data-i18n="conversion_direction">轉換方向</h3>
+        <div class="format-selector">
+          <div class="format-option active" data-direction="extract" onclick="setDirection('extract')">
+            <h4>GIF → PNG/JPG</h4>
+            <p data-i18n="extract_desc">從 GIF 提取所有幀</p>
+          </div>
+          <div class="format-option" data-direction="create" onclick="setDirection('create')">
+            <h4>PNG/JPG → GIF</h4>
+            <p data-i18n="create_desc">合成多圖為 GIF 動畫</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Area -->
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">🎞️</div>
+        <h3 id="uploadTitle" data-i18n="upload_title_gif_extract">拖放 GIF 動畫到此處</h3>
+        <p data-i18n="upload_subtitle">或點擊選擇檔案</p>
+        <p id="uploadFormats" class="upload-formats" data-i18n="upload_formats_gif_extract">支援格式：GIF</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/gif">
+      </div>
+
+      <!-- Multi-file upload info (for create mode) -->
+      <div id="multiUploadInfo" class="multi-upload-info" style="display: none;">
+        <span data-i18n="multi_upload_tip">💡 提示：可以一次選擇多張圖片，圖片將按照檔名順序排列製作成動畫</span>
+      </div>
+
+      <!-- Settings Panel -->
+      <div id="outputSettings" class="settings-panel">
+        <h3 data-i18n="settings">輸出設定</h3>
+
+        <!-- Output format (for extract mode) -->
+        <div id="outputFormatRow" class="setting-row">
+          <label data-i18n="output_format">輸出格式</label>
+          <select id="outputFormat" style="padding: 0.5rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+            <option value="png">PNG (無損)</option>
+            <option value="jpg">JPG (有損)</option>
+          </select>
+        </div>
+
+        <!-- Quality slider (for JPG output) -->
+        <div id="qualityRow" class="setting-row" style="display: none;">
+          <label data-i18n="quality">品質</label>
+          <input type="range" id="qualitySlider" min="1" max="100" value="92">
+          <span id="qualityValue" class="quality-value">92%</span>
+        </div>
+
+        <!-- Frame delay (for create mode) -->
+        <div id="delayRow" class="setting-row" style="display: none;">
+          <label data-i18n="frame_delay">幀間隔</label>
+          <div class="delay-setting">
+            <input type="number" id="frameDelay" value="100" min="10" max="5000">
+            <span>ms</span>
+          </div>
+        </div>
+
+        <!-- Loop setting (for create mode) -->
+        <div id="loopRow" class="setting-row" style="display: none;">
+          <label data-i18n="loop_count">循環次數</label>
+          <select id="loopCount" style="padding: 0.5rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+            <option value="0" data-i18n="loop_infinite">無限循環</option>
+            <option value="1">1 次</option>
+            <option value="3">3 次</option>
+            <option value="5">5 次</option>
+          </select>
+        </div>
+
+        <div class="setting-row info-row">
+          <span class="info-icon">ℹ️</span>
+          <span id="gifTip" data-i18n="gif_extract_tip">提取後可選擇要下載的幀，或下載全部</span>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text" data-i18n="converting">轉換中...</p>
+      </div>
+
+      <!-- Preview Area (for extract mode - shows frames) -->
+      <div id="framesArea" class="settings-panel" style="display: none;">
+        <h3><span data-i18n="extracted_frames">提取的幀</span> (<span id="frameCount">0</span>)</h3>
+        <div id="framesGrid" class="frames-grid"></div>
+        <div class="frame-controls">
+          <button id="selectAllBtn" class="btn btn-secondary" onclick="selectAllFrames()">
+            <span data-i18n="select_all">全選</span>
+          </button>
+          <button id="deselectAllBtn" class="btn btn-secondary" onclick="deselectAllFrames()">
+            <span data-i18n="deselect_all">取消全選</span>
+          </button>
+          <button id="downloadSelectedBtn" class="btn btn-success" style="display: none;">
+            <span>⬇️</span>
+            <span data-i18n="download_selected">下載選取的幀</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview Area (for create mode - shows result) -->
+      <div id="previewArea" class="preview-area" style="display: none;">
+        <div class="preview-box">
+          <div class="preview-header">
+            <h4 data-i18n="source_images">來源圖片</h4>
+            <span id="originalSize" class="file-size">-</span>
+          </div>
+          <div class="preview-image-container">
+            <img id="originalImage" alt="Original">
+          </div>
+        </div>
+        <div class="preview-box">
+          <div class="preview-header">
+            <h4 data-i18n="created_gif">製作的 GIF</h4>
+            <span id="convertedSize" class="file-size">-</span>
+          </div>
+          <div class="preview-image-container">
+            <img id="convertedImage" alt="Converted GIF">
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>🔄</span>
+          <span id="convertText" data-i18n="extract_frames">提取幀</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span id="downloadText" data-i18n="download_all_frames">下載全部幀</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+
+      <!-- Performance Info -->
+      <div id="performanceInfo" class="settings-panel" style="display: none;">
+        <h3>📊 效能資訊</h3>
+        <div class="setting-row">
+          <label data-i18n="process_time">處理時間</label>
+          <span id="processTime">-</span>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="frame_count_label">幀數</label>
+          <span id="frameCountInfo">-</span>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="resolution">解析度</label>
+          <span id="imageResolution">-</span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
