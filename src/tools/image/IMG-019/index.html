@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-019 圖片翻轉 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="水平或垂直翻轉圖片，製作鏡像效果，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <style>
+    .flip-preview {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 300px;
+      background: #1a1a2e;
+      border-radius: 8px;
+      margin: 1rem 0;
+      overflow: hidden;
+    }
+    .flip-preview img {
+      max-width: 100%;
+      max-height: 400px;
+      transition: transform 0.3s ease;
+    }
+    .flip-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .flip-btn {
+      padding: 1rem 2rem;
+      background: #2d2d44;
+      border: 2px solid #3d3d5c;
+      border-radius: 12px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 120px;
+    }
+    .flip-btn:hover {
+      background: #3d3d5c;
+      border-color: #00d9ff;
+    }
+    .flip-btn.active {
+      background: rgba(0, 217, 255, 0.2);
+      border-color: #00d9ff;
+    }
+    .flip-btn .icon {
+      font-size: 2rem;
+    }
+    .flip-btn .label {
+      font-size: 0.9rem;
+    }
+    .flip-status {
+      text-align: center;
+      padding: 1rem;
+      background: #2d2d44;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+    .flip-status .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background: #00d9ff;
+      color: #000;
+      border-radius: 4px;
+      margin: 0.25rem;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-019 <span data-i18n="img019_name">圖片翻轉</span></h1>
+        <p data-i18n="img019_desc">水平或垂直翻轉圖片，製作鏡像效果</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📁</div>
+        <h3>拖放圖片到此處</h3>
+        <p>或點擊選擇檔案</p>
+        <p class="upload-formats">支援格式：PNG, JPG, WebP</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/png,image/jpeg,image/webp">
+      </div>
+
+      <div id="flipPanel" class="settings-panel" style="display: none;">
+        <h3>翻轉設定</h3>
+        <div class="setting-row">
+          <label>選擇翻轉方向 (可同時選取)</label>
+        </div>
+        <div class="flip-buttons">
+          <button class="flip-btn" id="flipHorizontal" data-flip="horizontal">
+            <span class="icon">↔️</span>
+            <span class="label">水平翻轉</span>
+          </button>
+          <button class="flip-btn" id="flipVertical" data-flip="vertical">
+            <span class="icon">↕️</span>
+            <span class="label">垂直翻轉</span>
+          </button>
+          <button class="flip-btn" id="flipBoth" data-flip="both">
+            <span class="icon">🔄</span>
+            <span class="label">雙向翻轉</span>
+          </button>
+        </div>
+        <div id="flipStatus" class="flip-status" style="display: none;">
+          <p>目前選擇：<span id="flipBadges"></span></p>
+        </div>
+        <div class="setting-row" style="margin-top: 1rem;">
+          <label>輸出格式</label>
+          <select id="outputFormat" class="format-select">
+            <option value="original" selected>保持原格式</option>
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Flip Preview -->
+      <div id="flipPreviewArea" class="settings-panel" style="display: none;">
+        <h3>即時預覽</h3>
+        <div class="flip-preview">
+          <img id="previewImage" alt="Preview">
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">處理中...</p>
+      </div>
+
+      <div id="previewArea" class="preview-area" style="display: none;">
+        <div class="preview-box">
+          <div class="preview-header">
+            <h4>原始圖片</h4>
+            <span id="originalSize" class="file-size">-</span>
+          </div>
+          <div class="preview-image-container">
+            <img id="originalImage" alt="Original">
+          </div>
+        </div>
+        <div class="preview-box">
+          <div class="preview-header">
+            <h4>翻轉後</h4>
+            <span id="convertedSize" class="file-size">-</span>
+          </div>
+          <div class="preview-image-container">
+            <img id="convertedImage" alt="Flipped">
+          </div>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>🔄</span>
+          <span>套用翻轉</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span>下載圖片</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <div id="performanceInfo" class="settings-panel" style="display: none;">
+        <h3>📊 翻轉結果</h3>
+        <div class="setting-row">
+          <label>翻轉方向</label>
+          <span id="flipDirectionInfo">-</span>
+        </div>
+        <div class="setting-row">
+          <label>圖片尺寸</label>
+          <span id="dimensionsInfo">-</span>
+        </div>
+        <div class="setting-row">
+          <label>處理時間</label>
+          <span id="processTime">-</span>
+        </div>
+      </div>
+
+      <div class="settings-panel info-panel">
+        <h3>📋 圖片翻轉說明</h3>
+        <div class="info-content">
+          <p><strong>圖片翻轉</strong>功能特點：</p>
+          <ul>
+            <li>🔷 <strong>水平翻轉</strong>：左右鏡像，適合修正自拍照</li>
+            <li>🔷 <strong>垂直翻轉</strong>：上下鏡像，創造特殊效果</li>
+            <li>🔷 <strong>雙向翻轉</strong>：同時水平與垂直翻轉</li>
+            <li>🔷 <strong>即時預覽</strong>：選擇後立即顯示效果</li>
+          </ul>
+          <p class="info-tip">💡 水平翻轉常用於修正前置相機拍攝的鏡像照片</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
