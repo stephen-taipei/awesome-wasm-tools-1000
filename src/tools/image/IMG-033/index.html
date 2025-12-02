@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-033 文字浮水印 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="在圖片上添加文字浮水印">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <style>
+    .watermark-container {
+      background: #1a1a2e;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .input-group {
+      margin-bottom: 1rem;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+    .input-group input[type="text"],
+    .input-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #3d3d5c;
+      border-radius: 6px;
+      background: #2d2d44;
+      color: #fff;
+      font-size: 1rem;
+    }
+    .input-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .slider-row label {
+      width: 80px;
+      font-size: 0.9rem;
+    }
+    .slider-row input[type="range"] {
+      flex: 1;
+    }
+    .slider-row .value {
+      width: 60px;
+      text-align: right;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    .style-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .style-option {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .style-option label {
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+    .style-option select,
+    .style-option input[type="color"] {
+      padding: 0.5rem;
+      border: 1px solid #3d3d5c;
+      border-radius: 6px;
+      background: #2d2d44;
+      color: #fff;
+    }
+    .style-option input[type="color"] {
+      width: 100%;
+      height: 40px;
+      cursor: pointer;
+    }
+    .position-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      max-width: 200px;
+      margin: 0.5rem 0;
+    }
+    .position-btn {
+      padding: 0.75rem;
+      border: 1px solid #3d3d5c;
+      border-radius: 6px;
+      background: #2d2d44;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+    .position-btn:hover {
+      background: #3d3d5c;
+    }
+    .position-btn.active {
+      background: #00d9ff;
+      color: #000;
+      border-color: #00d9ff;
+    }
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .checkbox-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+    .checkbox-row label {
+      font-size: 0.9rem;
+    }
+    .preview-container {
+      position: relative;
+      background: #1a1a2e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .preview-container img {
+      width: 100%;
+      display: block;
+    }
+    .compare-view {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    @media (max-width: 640px) {
+      .compare-view {
+        grid-template-columns: 1fr;
+      }
+    }
+    .compare-box {
+      background: #1a1a2e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .compare-box .label {
+      padding: 0.5rem;
+      text-align: center;
+      background: #2d2d44;
+      font-size: 0.85rem;
+    }
+    .compare-box img {
+      width: 100%;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-033 <span data-i18n="img033_name">文字浮水印</span></h1>
+        <p data-i18n="img033_desc">在圖片上添加文字浮水印</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">💧</div>
+        <h3>拖放圖片到此處</h3>
+        <p>或點擊選擇檔案</p>
+        <p class="upload-formats">支援格式：PNG, JPG, WebP</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/png,image/jpeg,image/webp">
+      </div>
+
+      <div id="watermarkPanel" class="settings-panel" style="display: none;">
+        <h3>浮水印設定</h3>
+
+        <div class="watermark-container">
+          <div class="input-group">
+            <label>浮水印文字</label>
+            <textarea id="watermarkText" placeholder="輸入浮水印文字...">© 2024 Your Name</textarea>
+          </div>
+
+          <div class="style-options">
+            <div class="style-option">
+              <label>字型</label>
+              <select id="fontFamily">
+                <option value="Arial">Arial</option>
+                <option value="Helvetica">Helvetica</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Impact">Impact</option>
+                <option value="Comic Sans MS">Comic Sans MS</option>
+              </select>
+            </div>
+            <div class="style-option">
+              <label>字型樣式</label>
+              <select id="fontStyle">
+                <option value="normal">一般</option>
+                <option value="bold">粗體</option>
+                <option value="italic">斜體</option>
+                <option value="bold italic">粗斜體</option>
+              </select>
+            </div>
+            <div class="style-option">
+              <label>文字顏色</label>
+              <input type="color" id="textColor" value="#ffffff">
+            </div>
+            <div class="style-option">
+              <label>描邊顏色</label>
+              <input type="color" id="strokeColor" value="#000000">
+            </div>
+          </div>
+
+          <div class="slider-row">
+            <label>字體大小</label>
+            <input type="range" id="fontSizeSlider" min="10" max="200" value="48">
+            <span id="fontSizeValue" class="value">48px</span>
+          </div>
+
+          <div class="slider-row">
+            <label>透明度</label>
+            <input type="range" id="opacitySlider" min="0" max="100" value="50">
+            <span id="opacityValue" class="value">50%</span>
+          </div>
+
+          <div class="slider-row">
+            <label>旋轉角度</label>
+            <input type="range" id="rotationSlider" min="-180" max="180" value="0">
+            <span id="rotationValue" class="value">0°</span>
+          </div>
+
+          <div class="slider-row">
+            <label>描邊寬度</label>
+            <input type="range" id="strokeWidthSlider" min="0" max="10" value="2">
+            <span id="strokeWidthValue" class="value">2px</span>
+          </div>
+
+          <div class="input-group">
+            <label>位置</label>
+            <div class="position-grid">
+              <button class="position-btn" data-pos="top-left">↖</button>
+              <button class="position-btn" data-pos="top-center">↑</button>
+              <button class="position-btn" data-pos="top-right">↗</button>
+              <button class="position-btn" data-pos="center-left">←</button>
+              <button class="position-btn active" data-pos="center">●</button>
+              <button class="position-btn" data-pos="center-right">→</button>
+              <button class="position-btn" data-pos="bottom-left">↙</button>
+              <button class="position-btn" data-pos="bottom-center">↓</button>
+              <button class="position-btn" data-pos="bottom-right">↘</button>
+            </div>
+          </div>
+
+          <div class="slider-row">
+            <label>X 偏移</label>
+            <input type="range" id="offsetXSlider" min="-200" max="200" value="0">
+            <span id="offsetXValue" class="value">0px</span>
+          </div>
+
+          <div class="slider-row">
+            <label>Y 偏移</label>
+            <input type="range" id="offsetYSlider" min="-200" max="200" value="0">
+            <span id="offsetYValue" class="value">0px</span>
+          </div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" id="enableShadow">
+            <label for="enableShadow">啟用文字陰影</label>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <label>輸出格式</label>
+          <select id="outputFormat" class="format-select">
+            <option value="original" selected>保持原格式</option>
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="comparePanel" class="settings-panel" style="display: none;">
+        <h3>效果預覽</h3>
+        <div class="compare-view">
+          <div class="compare-box">
+            <div class="label">原始圖片</div>
+            <img id="originalImage" alt="Original">
+          </div>
+          <div class="compare-box">
+            <div class="label">添加浮水印後</div>
+            <img id="previewImage" alt="Preview">
+          </div>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">處理中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>💧</span>
+          <span>套用浮水印</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span>下載圖片</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <div class="settings-panel info-panel">
+        <h3>📋 文字浮水印說明</h3>
+        <div class="info-content">
+          <p><strong>文字浮水印</strong>可保護您的圖片版權：</p>
+          <ul>
+            <li>✏️ <strong>自訂文字</strong>：輸入任意文字作為浮水印</li>
+            <li>🎨 <strong>樣式設定</strong>：字型、顏色、大小、透明度等</li>
+            <li>📐 <strong>位置控制</strong>：9 宮格位置選擇，可微調偏移</li>
+            <li>🔄 <strong>旋轉角度</strong>：任意角度旋轉浮水印</li>
+            <li>✨ <strong>描邊效果</strong>：添加文字描邊增加可見度</li>
+            <li>🌫️ <strong>陰影效果</strong>：選擇性添加文字陰影</li>
+          </ul>
+          <p class="info-tip">💡 建議使用半透明浮水印，既能標示版權又不影響觀看</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
