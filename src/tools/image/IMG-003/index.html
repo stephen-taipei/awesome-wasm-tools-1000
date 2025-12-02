@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-003 WebP 轉換器 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="WebP 與 PNG/JPG 格式互轉，支援品質調整與無損壓縮">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <style>
+    .format-selector {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .format-option {
+      flex: 1;
+      padding: 1rem;
+      background: var(--bg-input);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .format-option:hover {
+      border-color: var(--primary);
+    }
+    .format-option.active {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.2);
+    }
+    .format-option h4 {
+      margin-bottom: 0.25rem;
+    }
+    .format-option p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .compression-toggle {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .toggle-btn {
+      padding: 0.5rem 1rem;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .toggle-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-003 <span data-i18n="img003_name">WebP 轉換器</span></h1>
+        <p data-i18n="img003_desc">WebP 與 PNG/JPG 格式互轉，支援品質調整</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <!-- Status Messages -->
+      <div id="statusMessage" class="status-message"></div>
+
+      <!-- Conversion Direction -->
+      <div class="settings-panel">
+        <h3 data-i18n="conversion_direction">轉換方向</h3>
+        <div class="format-selector">
+          <div class="format-option active" data-direction="to-webp" onclick="setDirection('to-webp')">
+            <h4>PNG/JPG → WebP</h4>
+            <p data-i18n="to_webp_desc">轉換為 WebP 格式，檔案更小</p>
+          </div>
+          <div class="format-option" data-direction="from-webp" onclick="setDirection('from-webp')">
+            <h4>WebP → PNG/JPG</h4>
+            <p data-i18n="from_webp_desc">轉換為通用格式</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Area -->
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📁</div>
+        <h3 id="uploadTitle" data-i18n="upload_title_webp_in">拖放 PNG/JPG 圖片到此處</h3>
+        <p data-i18n="upload_subtitle">或點擊選擇檔案</p>
+        <p id="uploadFormats" class="upload-formats" data-i18n="upload_formats_webp_in">支援格式：PNG, JPG, JPEG</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/png,image/jpeg,image/jpg">
+      </div>
+
+      <!-- Settings Panel -->
+      <div id="outputSettings" class="settings-panel">
+        <h3 data-i18n="settings">輸出設定</h3>
+
+        <!-- Output format (for from-webp mode) -->
+        <div id="outputFormatRow" class="setting-row" style="display: none;">
+          <label data-i18n="output_format">輸出格式</label>
+          <select id="outputFormat" class="format-select" style="padding: 0.5rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary);">
+            <option value="png">PNG (無損)</option>
+            <option value="jpg">JPG (有損)</option>
+          </select>
+        </div>
+
+        <!-- Compression type (for to-webp mode) -->
+        <div id="compressionRow" class="setting-row">
+          <label data-i18n="compression_type">壓縮模式</label>
+          <div class="compression-toggle">
+            <button id="lossyBtn" class="toggle-btn active" onclick="setCompression('lossy')" data-i18n="lossy">有損壓縮</button>
+            <button id="losslessBtn" class="toggle-btn" onclick="setCompression('lossless')" data-i18n="lossless">無損壓縮</button>
+          </div>
+        </div>
+
+        <!-- Quality slider -->
+        <div id="qualityRow" class="setting-row">
+          <label data-i18n="quality">品質</label>
+          <input type="range" id="qualitySlider" min="1" max="100" value="85">
+          <span id="qualityValue" class="quality-value">85%</span>
+        </div>
+
+        <div class="setting-row info-row">
+          <span class="info-icon">ℹ️</span>
+          <span id="compressionInfo" data-i18n="webp_lossy_info">有損壓縮可大幅減少檔案大小，適合網頁使用</span>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text" data-i18n="converting">轉換中...</p>
+      </div>
+
+      <!-- Preview Area -->
+      <div id="previewArea" class="preview-area" style="display: none;">
+        <div class="preview-box">
+          <div class="preview-header">
+            <h4 data-i18n="original">原始圖片</h4>
+            <span id="originalSize" class="file-size">-</span>
+          </div>
+          <div class="preview-image-container">
+            <img id="originalImage" alt="Original">
+          </div>
+        </div>
+        <div class="preview-box">
+          <div class="preview-header">
+            <h4 data-i18n="converted">轉換結果</h4>
+            <span id="convertedSize" class="file-size">-</span>
+          </div>
+          <div class="preview-image-container">
+            <img id="convertedImage" alt="Converted">
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>🔄</span>
+          <span data-i18n="convert">開始轉換</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span id="downloadText" data-i18n="download_webp">下載 WebP</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+
+      <!-- Performance Info -->
+      <div id="performanceInfo" class="settings-panel" style="display: none;">
+        <h3>📊 效能資訊</h3>
+        <div class="setting-row">
+          <label>處理時間</label>
+          <span id="processTime">-</span>
+        </div>
+        <div class="setting-row">
+          <label>檔案變化</label>
+          <span id="compressionRatio">-</span>
+        </div>
+        <div class="setting-row">
+          <label>解析度</label>
+          <span id="imageResolution">-</span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
