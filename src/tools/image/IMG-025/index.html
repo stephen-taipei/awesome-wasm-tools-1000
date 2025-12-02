@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-025 模糊濾鏡 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="高斯模糊、動態模糊、徑向模糊效果">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <style>
+    .blur-types {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .blur-card {
+      background: #2d2d44;
+      border: 2px solid #3d3d5c;
+      border-radius: 12px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .blur-card:hover {
+      border-color: #00d9ff;
+      transform: translateY(-2px);
+    }
+    .blur-card.selected {
+      border-color: #00d9ff;
+      background: rgba(0, 217, 255, 0.2);
+    }
+    .blur-card .icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .blur-card .name {
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    .blur-card .desc {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 0.25rem;
+    }
+    .compare-view {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    @media (max-width: 640px) {
+      .compare-view {
+        grid-template-columns: 1fr;
+      }
+    }
+    .compare-box {
+      background: #1a1a2e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .compare-box .label {
+      padding: 0.5rem;
+      text-align: center;
+      background: #2d2d44;
+      font-size: 0.85rem;
+    }
+    .compare-box img {
+      width: 100%;
+      display: block;
+    }
+    .adjustment-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 640px) {
+      .adjustment-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-025 <span data-i18n="img025_name">模糊濾鏡</span></h1>
+        <p data-i18n="img025_desc">高斯模糊、動態模糊、徑向模糊效果</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">🌫️</div>
+        <h3>拖放圖片到此處</h3>
+        <p>或點擊選擇檔案</p>
+        <p class="upload-formats">支援格式：PNG, JPG, WebP</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/png,image/jpeg,image/webp">
+      </div>
+
+      <div id="blurPanel" class="settings-panel" style="display: none;">
+        <h3>選擇模糊類型</h3>
+        <div class="blur-types">
+          <div class="blur-card selected" data-type="gaussian">
+            <div class="icon">🔵</div>
+            <div class="name">高斯模糊</div>
+            <div class="desc">均勻柔和模糊</div>
+          </div>
+          <div class="blur-card" data-type="box">
+            <div class="icon">⬜</div>
+            <div class="name">方框模糊</div>
+            <div class="desc">快速均勻模糊</div>
+          </div>
+          <div class="blur-card" data-type="motion">
+            <div class="icon">💨</div>
+            <div class="name">動態模糊</div>
+            <div class="desc">模擬運動效果</div>
+          </div>
+          <div class="blur-card" data-type="radial">
+            <div class="icon">🎯</div>
+            <div class="name">徑向模糊</div>
+            <div class="desc">從中心發散</div>
+          </div>
+          <div class="blur-card" data-type="zoom">
+            <div class="icon">🔍</div>
+            <div class="name">縮放模糊</div>
+            <div class="desc">動態縮放效果</div>
+          </div>
+          <div class="blur-card" data-type="lens">
+            <div class="icon">📷</div>
+            <div class="name">鏡頭模糊</div>
+            <div class="desc">景深散景效果</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="adjustPanel" class="settings-panel" style="display: none;">
+        <h3>模糊設定</h3>
+        <div class="adjustment-grid">
+          <div class="setting-row">
+            <label>模糊強度</label>
+            <input type="range" id="radiusSlider" min="1" max="50" value="10">
+            <span id="radiusValue" class="quality-value">10px</span>
+          </div>
+          <div class="setting-row" id="angleRow" style="display: none;">
+            <label>模糊角度</label>
+            <input type="range" id="angleSlider" min="0" max="360" value="0">
+            <span id="angleValue" class="quality-value">0°</span>
+          </div>
+        </div>
+        <div class="setting-row" style="margin-top: 1rem;">
+          <label>輸出格式</label>
+          <select id="outputFormat" class="format-select">
+            <option value="original" selected>保持原格式</option>
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="comparePanel" class="settings-panel" style="display: none;">
+        <h3>效果預覽</h3>
+        <div class="compare-view">
+          <div class="compare-box">
+            <div class="label">原始圖片</div>
+            <img id="originalImage" alt="Original">
+          </div>
+          <div class="compare-box">
+            <div class="label">模糊效果</div>
+            <img id="previewImage" alt="Preview">
+          </div>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">處理中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>🌫️</span>
+          <span>套用模糊</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span>下載圖片</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <div class="settings-panel info-panel">
+        <h3>📋 模糊濾鏡說明</h3>
+        <div class="info-content">
+          <p><strong>模糊濾鏡</strong>功能特點：</p>
+          <ul>
+            <li>🔵 <strong>高斯模糊</strong>：最常用的模糊效果，柔和自然</li>
+            <li>💨 <strong>動態模糊</strong>：模擬物體快速移動的效果</li>
+            <li>🎯 <strong>徑向模糊</strong>：從中心向外發散的模糊</li>
+            <li>🔍 <strong>縮放模糊</strong>：模擬相機快速拉近/拉遠</li>
+            <li>📷 <strong>鏡頭模糊</strong>：模擬淺景深散景效果</li>
+          </ul>
+          <p class="info-tip">💡 模糊效果可用於隱私保護、背景虛化或藝術創作</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
