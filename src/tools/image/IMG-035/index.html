@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-035 批量浮水印 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="批量為多張圖片添加相同浮水印">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <style>
+    .batch-container {
+      background: #1a1a2e;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .watermark-upload {
+      background: #2d2d44;
+      border: 2px dashed #3d3d5c;
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 1rem;
+    }
+    .watermark-upload:hover {
+      border-color: #00d9ff;
+    }
+    .watermark-upload.has-image {
+      border-style: solid;
+      border-color: #00d9ff;
+    }
+    .watermark-upload .icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    .watermark-upload img {
+      max-height: 80px;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .slider-row label {
+      width: 80px;
+      font-size: 0.9rem;
+    }
+    .slider-row input[type="range"] {
+      flex: 1;
+    }
+    .slider-row .value {
+      width: 60px;
+      text-align: right;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    .position-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      max-width: 200px;
+      margin: 0.5rem 0;
+    }
+    .position-btn {
+      padding: 0.75rem;
+      border: 1px solid #3d3d5c;
+      border-radius: 6px;
+      background: #2d2d44;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+    .position-btn:hover {
+      background: #3d3d5c;
+    }
+    .position-btn.active {
+      background: #00d9ff;
+      color: #000;
+      border-color: #00d9ff;
+    }
+    .file-list {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem;
+      background: #2d2d44;
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+    }
+    .file-item img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    .file-item .info {
+      flex: 1;
+    }
+    .file-item .name {
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
+    .file-item .size {
+      font-size: 0.75rem;
+      color: #888;
+    }
+    .file-item .status {
+      font-size: 0.8rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+    }
+    .file-item .status.pending {
+      background: #3d3d5c;
+    }
+    .file-item .status.processing {
+      background: #ffd93d;
+      color: #000;
+    }
+    .file-item .status.done {
+      background: #6bcb77;
+      color: #000;
+    }
+    .file-item .remove-btn {
+      background: none;
+      border: none;
+      color: #ff6b6b;
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 0.25rem;
+    }
+    .batch-stats {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #2d2d44;
+      border-radius: 8px;
+    }
+    .stat-item {
+      text-align: center;
+      flex: 1;
+    }
+    .stat-item .number {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #00d9ff;
+    }
+    .stat-item .label {
+      font-size: 0.8rem;
+      color: #888;
+    }
+    .input-group {
+      margin-bottom: 1rem;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-035 <span data-i18n="img035_name">批量浮水印</span></h1>
+        <p data-i18n="img035_desc">批量為多張圖片添加相同浮水印</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3>1. 上傳浮水印圖片</h3>
+        <div id="watermarkUploadArea" class="watermark-upload">
+          <div class="icon">💧</div>
+          <p>拖放或點擊上傳浮水印圖片</p>
+          <img id="watermarkPreview" style="display: none;">
+          <input type="file" id="watermarkFileInput" class="file-input" accept="image/png,image/jpeg,image/webp" style="display: none;">
+        </div>
+      </div>
+
+      <div id="settingsPanel" class="settings-panel" style="display: none;">
+        <h3>2. 浮水印設定</h3>
+
+        <div class="batch-container">
+          <div class="slider-row">
+            <label>縮放比例</label>
+            <input type="range" id="scaleSlider" min="5" max="100" value="20">
+            <span id="scaleValue" class="value">20%</span>
+          </div>
+
+          <div class="slider-row">
+            <label>透明度</label>
+            <input type="range" id="opacitySlider" min="0" max="100" value="60">
+            <span id="opacityValue" class="value">60%</span>
+          </div>
+
+          <div class="input-group">
+            <label>位置</label>
+            <div class="position-grid">
+              <button class="position-btn" data-pos="top-left">↖</button>
+              <button class="position-btn" data-pos="top-center">↑</button>
+              <button class="position-btn" data-pos="top-right">↗</button>
+              <button class="position-btn" data-pos="center-left">←</button>
+              <button class="position-btn" data-pos="center">●</button>
+              <button class="position-btn" data-pos="center-right">→</button>
+              <button class="position-btn" data-pos="bottom-left">↙</button>
+              <button class="position-btn" data-pos="bottom-center">↓</button>
+              <button class="position-btn active" data-pos="bottom-right">↘</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="batchPanel" class="settings-panel" style="display: none;">
+        <h3>3. 上傳要處理的圖片</h3>
+        <div id="batchUploadArea" class="upload-area">
+          <div class="icon">📁</div>
+          <h3>拖放多張圖片到此處</h3>
+          <p>或點擊選擇檔案（可多選）</p>
+          <p class="upload-formats">支援格式：PNG, JPG, WebP</p>
+          <input type="file" id="batchFileInput" class="file-input" accept="image/png,image/jpeg,image/webp" multiple>
+        </div>
+
+        <div id="fileList" class="file-list"></div>
+
+        <div id="batchStats" class="batch-stats" style="display: none;">
+          <div class="stat-item">
+            <div id="totalCount" class="number">0</div>
+            <div class="label">總數</div>
+          </div>
+          <div class="stat-item">
+            <div id="processedCount" class="number">0</div>
+            <div class="label">已處理</div>
+          </div>
+          <div class="stat-item">
+            <div id="pendingCount" class="number">0</div>
+            <div class="label">等待中</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">處理中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>💧</span>
+          <span>批量添加浮水印</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span>下載 ZIP</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <div class="settings-panel info-panel">
+        <h3>📋 批量浮水印說明</h3>
+        <div class="info-content">
+          <p><strong>批量浮水印</strong>可一次處理多張圖片：</p>
+          <ul>
+            <li>1️⃣ 先上傳浮水印圖片（Logo 或標誌）</li>
+            <li>2️⃣ 設定浮水印的大小、透明度和位置</li>
+            <li>3️⃣ 上傳要添加浮水印的多張圖片</li>
+            <li>4️⃣ 批量處理後打包下載 ZIP</li>
+          </ul>
+          <p class="info-tip">💡 建議使用透明背景的 PNG 格式 Logo</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
