@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-009 ICO 轉換器 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="Windows 圖示 ICO 格式製作與轉換，支援多尺寸圖示打包，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-009 <span data-i18n="img009_name">ICO 轉換器</span></h1>
+        <p data-i18n="img009_desc">Windows 圖示 ICO 格式製作與轉換</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <!-- Status Messages -->
+      <div id="statusMessage" class="status-message"></div>
+
+      <!-- Upload Area -->
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📁</div>
+        <h3 data-i18n="upload_title">拖放圖片到此處</h3>
+        <p data-i18n="upload_subtitle">或點擊選擇檔案</p>
+        <p class="upload-formats">支援格式：PNG, JPG, WebP</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/png,image/jpeg,image/webp">
+      </div>
+
+      <!-- Settings Panel -->
+      <div class="settings-panel">
+        <h3 data-i18n="settings">ICO 設定</h3>
+        <div class="setting-row">
+          <label>圖示尺寸</label>
+          <div class="checkbox-group" id="sizeOptions">
+            <label class="checkbox-label">
+              <input type="checkbox" value="16" checked> 16×16
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" value="32" checked> 32×32
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" value="48" checked> 48×48
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" value="64"> 64×64
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" value="128"> 128×128
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" value="256" checked> 256×256
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">轉換中...</p>
+      </div>
+
+      <!-- Preview Area -->
+      <div id="previewArea" class="preview-area" style="display: none;">
+        <div class="preview-box">
+          <div class="preview-header">
+            <h4>原始圖片</h4>
+            <span id="originalSize" class="file-size">-</span>
+          </div>
+          <div class="preview-image-container">
+            <img id="originalImage" alt="Original">
+          </div>
+        </div>
+        <div class="preview-box">
+          <div class="preview-header">
+            <h4>ICO 預覽</h4>
+            <span id="convertedSize" class="file-size">-</span>
+          </div>
+          <div id="icoPreview" class="ico-preview"></div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>🔄</span>
+          <span>生成 ICO</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span>下載 ICO</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <!-- Performance Info -->
+      <div id="performanceInfo" class="settings-panel" style="display: none;">
+        <h3>📊 效能資訊</h3>
+        <div class="setting-row">
+          <label>處理時間</label>
+          <span id="processTime">-</span>
+        </div>
+        <div class="setting-row">
+          <label>原始解析度</label>
+          <span id="imageResolution">-</span>
+        </div>
+        <div class="setting-row">
+          <label>包含尺寸</label>
+          <span id="includedSizes">-</span>
+        </div>
+      </div>
+
+      <!-- ICO Format Info -->
+      <div class="settings-panel info-panel">
+        <h3>📋 ICO 格式說明</h3>
+        <div class="info-content">
+          <p><strong>ICO</strong> 是 Windows 系統使用的圖示格式，特點如下：</p>
+          <ul>
+            <li>🔷 <strong>多尺寸</strong>：單一檔案包含多種解析度圖示</li>
+            <li>🔷 <strong>常見尺寸</strong>：16, 32, 48, 64, 128, 256 像素</li>
+            <li>🔷 <strong>透明支援</strong>：支援 Alpha 通道透明度</li>
+            <li>🔷 <strong>用途</strong>：桌面圖示、網站 favicon、應用程式圖示</li>
+          </ul>
+          <p class="info-tip">💡 建議使用正方形 PNG 圖片（含透明背景）以獲得最佳效果</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
