@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-031 白平衡校正 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="校正圖片白平衡，修復偏色問題">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <style>
+    .wb-container {
+      background: #1a1a2e;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .wb-mode-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .wb-mode-tab {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      background: #2d2d44;
+      color: #fff;
+    }
+    .wb-mode-tab:hover {
+      background: #3d3d5c;
+    }
+    .wb-mode-tab.active {
+      background: #00d9ff;
+      color: #000;
+    }
+    .temp-tint-sliders {
+      margin-top: 1rem;
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .slider-row label {
+      width: 80px;
+      font-size: 0.9rem;
+    }
+    .slider-row input[type="range"] {
+      flex: 1;
+    }
+    .slider-row .value {
+      width: 60px;
+      text-align: right;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    .temp-slider {
+      background: linear-gradient(to right, #4a9eff, #fff, #ff9a4a);
+      border-radius: 4px;
+    }
+    .tint-slider {
+      background: linear-gradient(to right, #4aff4a, #fff, #ff4aff);
+      border-radius: 4px;
+    }
+    .preset-wb {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    .preset-wb-btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid #3d3d5c;
+      border-radius: 6px;
+      background: #2d2d44;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .preset-wb-btn:hover {
+      border-color: #00d9ff;
+      background: rgba(0, 217, 255, 0.1);
+    }
+    .eyedropper-mode {
+      padding: 1rem;
+      background: #2d2d44;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+    .eyedropper-mode p {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.9rem;
+    }
+    .eyedropper-mode .hint {
+      font-size: 0.8rem;
+      color: #888;
+    }
+    .compare-view {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    @media (max-width: 640px) {
+      .compare-view {
+        grid-template-columns: 1fr;
+      }
+    }
+    .compare-box {
+      background: #1a1a2e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .compare-box .label {
+      padding: 0.5rem;
+      text-align: center;
+      background: #2d2d44;
+      font-size: 0.85rem;
+    }
+    .compare-box img {
+      width: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+    .reset-btn {
+      background: #3d3d5c;
+      border: none;
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .reset-btn:hover {
+      background: #4d4d6c;
+    }
+    .sampled-color {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .color-swatch {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      border: 2px solid #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-031 <span data-i18n="img031_name">白平衡校正</span></h1>
+        <p data-i18n="img031_desc">校正圖片白平衡，修復偏色問題</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">🌡️</div>
+        <h3>拖放圖片到此處</h3>
+        <p>或點擊選擇檔案</p>
+        <p class="upload-formats">支援格式：PNG, JPG, WebP</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/png,image/jpeg,image/webp">
+      </div>
+
+      <div id="wbPanel" class="settings-panel" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="margin: 0;">白平衡調整</h3>
+          <button id="resetWbBtn" class="reset-btn">🔄 重置</button>
+        </div>
+
+        <div class="wb-container">
+          <div class="wb-mode-tabs">
+            <button class="wb-mode-tab active" data-mode="manual">手動調整</button>
+            <button class="wb-mode-tab" data-mode="eyedropper">灰點取樣</button>
+            <button class="wb-mode-tab" data-mode="auto">自動校正</button>
+          </div>
+
+          <div id="manualMode" class="mode-content">
+            <div class="temp-tint-sliders">
+              <div class="slider-row">
+                <label>色溫</label>
+                <input type="range" id="tempSlider" class="temp-slider" min="-100" max="100" value="0">
+                <span id="tempValue" class="value">0</span>
+              </div>
+              <div class="slider-row">
+                <label>色調</label>
+                <input type="range" id="tintSlider" class="tint-slider" min="-100" max="100" value="0">
+                <span id="tintValue" class="value">0</span>
+              </div>
+            </div>
+
+            <div class="preset-wb">
+              <button class="preset-wb-btn" data-preset="daylight">☀️ 日光</button>
+              <button class="preset-wb-btn" data-preset="cloudy">☁️ 陰天</button>
+              <button class="preset-wb-btn" data-preset="shade">🌳 陰影</button>
+              <button class="preset-wb-btn" data-preset="tungsten">💡 鎢絲燈</button>
+              <button class="preset-wb-btn" data-preset="fluorescent">🔦 日光燈</button>
+              <button class="preset-wb-btn" data-preset="flash">⚡ 閃光燈</button>
+            </div>
+          </div>
+
+          <div id="eyedropperMode" class="mode-content" style="display: none;">
+            <div class="eyedropper-mode">
+              <p>🎯 點擊圖片中應該是白色或灰色的區域</p>
+              <p class="hint">系統將以該點為基準校正白平衡</p>
+              <div id="sampledColorInfo" class="sampled-color" style="display: none;">
+                <span>取樣顏色：</span>
+                <div id="colorSwatch" class="color-swatch"></div>
+                <span id="colorRgb"></span>
+              </div>
+            </div>
+          </div>
+
+          <div id="autoMode" class="mode-content" style="display: none;">
+            <div class="eyedropper-mode">
+              <p>🔮 自動分析圖片並校正白平衡</p>
+              <p class="hint">使用灰色世界假設進行自動校正</p>
+              <button id="autoCorrectBtn" class="preset-wb-btn" style="margin-top: 0.5rem;">執行自動校正</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <label>輸出格式</label>
+          <select id="outputFormat" class="format-select">
+            <option value="original" selected>保持原格式</option>
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="comparePanel" class="settings-panel" style="display: none;">
+        <h3>效果預覽</h3>
+        <div class="compare-view">
+          <div class="compare-box">
+            <div class="label">原始圖片</div>
+            <img id="originalImage" alt="Original">
+          </div>
+          <div class="compare-box">
+            <div class="label">白平衡校正後</div>
+            <img id="previewImage" alt="Preview">
+          </div>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">處理中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>🌡️</span>
+          <span>套用白平衡</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span>下載圖片</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <div class="settings-panel info-panel">
+        <h3>📋 白平衡校正說明</h3>
+        <div class="info-content">
+          <p><strong>白平衡校正</strong>可修復照片的色偏問題：</p>
+          <ul>
+            <li>🌡️ <strong>色溫</strong>：調整冷暖色調，往左偏藍（冷），往右偏橙（暖）</li>
+            <li>🎨 <strong>色調</strong>：調整綠/洋紅偏移，修正特殊光源造成的偏色</li>
+            <li>🎯 <strong>灰點取樣</strong>：點擊圖片中應為白/灰色的區域自動校正</li>
+            <li>🔮 <strong>自動校正</strong>：使用灰色世界假設自動分析校正</li>
+          </ul>
+          <p class="info-tip">💡 預設模式適用於常見光源環境，可快速校正</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
