@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-022 頭像裁切器 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="圓形/方形頭像裁切，支援邊框與陰影效果">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <style>
+    .avatar-preview {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 300px;
+      background: #1a1a2e;
+      border-radius: 8px;
+      margin: 1rem 0;
+      position: relative;
+    }
+    .avatar-preview img {
+      max-width: 100%;
+      max-height: 350px;
+    }
+    .crop-circle {
+      position: absolute;
+      border: 2px dashed #00d9ff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+      cursor: move;
+    }
+    .crop-square {
+      position: absolute;
+      border: 2px dashed #00d9ff;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+      cursor: move;
+    }
+    .shape-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin: 1rem 0;
+    }
+    .shape-btn {
+      padding: 1rem 2rem;
+      background: #2d2d44;
+      border: 2px solid #3d3d5c;
+      border-radius: 12px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .shape-btn:hover {
+      border-color: #00d9ff;
+    }
+    .shape-btn.active {
+      background: rgba(0, 217, 255, 0.2);
+      border-color: #00d9ff;
+    }
+    .shape-btn .icon {
+      font-size: 2rem;
+    }
+    .style-options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .result-preview {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 20px 20px;
+      border-radius: 8px;
+      margin: 1rem 0;
+    }
+    .result-preview img {
+      max-width: 200px;
+      max-height: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-022 <span data-i18n="img022_name">頭像裁切器</span></h1>
+        <p data-i18n="img022_desc">圓形/方形頭像裁切，支援邊框與陰影效果</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📁</div>
+        <h3>拖放圖片到此處</h3>
+        <p>或點擊選擇檔案</p>
+        <p class="upload-formats">支援格式：PNG, JPG, WebP</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/png,image/jpeg,image/webp">
+      </div>
+
+      <div id="shapePanel" class="settings-panel" style="display: none;">
+        <h3>選擇頭像形狀</h3>
+        <div class="shape-buttons">
+          <button class="shape-btn active" data-shape="circle">
+            <span class="icon">⭕</span>
+            <span>圓形</span>
+          </button>
+          <button class="shape-btn" data-shape="square">
+            <span class="icon">⬜</span>
+            <span>方形</span>
+          </button>
+          <button class="shape-btn" data-shape="rounded">
+            <span class="icon">🔲</span>
+            <span>圓角方形</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="cropPanel" class="settings-panel" style="display: none;">
+        <h3>調整裁切範圍</h3>
+        <div class="avatar-preview" id="avatarPreview">
+          <img id="previewImage" alt="Preview">
+          <div id="cropArea" class="crop-circle"></div>
+        </div>
+        <p style="text-align: center; color: #888; font-size: 0.9rem;">拖曳調整位置，滾輪或拖曳角落調整大小</p>
+      </div>
+
+      <div id="stylePanel" class="settings-panel" style="display: none;">
+        <h3>樣式設定</h3>
+        <div class="style-options">
+          <div class="setting-row">
+            <label>輸出尺寸</label>
+            <select id="outputSize" class="format-select">
+              <option value="128">128 × 128 px</option>
+              <option value="256" selected>256 × 256 px</option>
+              <option value="512">512 × 512 px</option>
+              <option value="1024">1024 × 1024 px</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <label>邊框寬度</label>
+            <input type="range" id="borderWidth" min="0" max="20" value="0">
+            <span id="borderWidthValue" class="quality-value">0 px</span>
+          </div>
+          <div class="setting-row">
+            <label>邊框顏色</label>
+            <input type="color" id="borderColor" value="#ffffff" style="width: 50px; height: 35px; border: none; cursor: pointer;">
+          </div>
+          <div class="setting-row">
+            <label>陰影效果</label>
+            <label class="toggle">
+              <input type="checkbox" id="enableShadow">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">處理中...</p>
+      </div>
+
+      <div id="resultPanel" class="settings-panel" style="display: none;">
+        <h3>頭像預覽</h3>
+        <div class="result-preview">
+          <img id="resultImage" alt="Avatar Result">
+        </div>
+        <p id="resultInfo" style="text-align: center; color: #888;"></p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>✂️</span>
+          <span>製作頭像</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span>下載頭像</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <div class="settings-panel info-panel">
+        <h3>📋 頭像裁切說明</h3>
+        <div class="info-content">
+          <p><strong>頭像裁切器</strong>功能特點：</p>
+          <ul>
+            <li>🔷 <strong>多種形狀</strong>：圓形、方形、圓角方形</li>
+            <li>🔷 <strong>自訂樣式</strong>：邊框寬度、顏色、陰影效果</li>
+            <li>🔷 <strong>多種尺寸</strong>：128/256/512/1024 px</li>
+            <li>🔷 <strong>透明背景</strong>：PNG 格式保留透明度</li>
+          </ul>
+          <p class="info-tip">💡 圓形頭像適用於大多數社群平台的個人資料照片</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
