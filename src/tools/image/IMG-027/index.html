@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-027 亮度/對比度調整 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="調整圖片亮度與對比度，即時預覽效果">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <style>
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+    .preset-btn {
+      background: #2d2d44;
+      border: 2px solid #3d3d5c;
+      border-radius: 8px;
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      color: #fff;
+      font-size: 0.85rem;
+    }
+    .preset-btn:hover {
+      border-color: #00d9ff;
+      background: #3d3d5c;
+    }
+    .preset-btn.active {
+      border-color: #00d9ff;
+      background: rgba(0, 217, 255, 0.2);
+    }
+    .adjustment-panel {
+      display: grid;
+      gap: 1.5rem;
+    }
+    .slider-group {
+      background: #1a1a2e;
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+    .slider-group h4 {
+      margin: 0 0 1rem 0;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .slider-row:last-child {
+      margin-bottom: 0;
+    }
+    .slider-row label {
+      width: 80px;
+      font-size: 0.9rem;
+    }
+    .slider-row input[type="range"] {
+      flex: 1;
+    }
+    .slider-row .value {
+      width: 50px;
+      text-align: right;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    .histogram-container {
+      background: #1a1a2e;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    .histogram-container h4 {
+      margin: 0 0 0.75rem 0;
+      font-size: 0.9rem;
+    }
+    #histogramCanvas {
+      width: 100%;
+      height: 100px;
+      background: #0a0a1a;
+      border-radius: 4px;
+    }
+    .compare-view {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    @media (max-width: 640px) {
+      .compare-view {
+        grid-template-columns: 1fr;
+      }
+    }
+    .compare-box {
+      background: #1a1a2e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .compare-box .label {
+      padding: 0.5rem;
+      text-align: center;
+      background: #2d2d44;
+      font-size: 0.85rem;
+    }
+    .compare-box img {
+      width: 100%;
+      display: block;
+    }
+    .reset-values-btn {
+      background: #3d3d5c;
+      border: none;
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .reset-values-btn:hover {
+      background: #4d4d6c;
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-027 <span data-i18n="img027_name">亮度/對比度調整</span></h1>
+        <p data-i18n="img027_desc">調整圖片亮度與對比度</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">☀️</div>
+        <h3>拖放圖片到此處</h3>
+        <p>或點擊選擇檔案</p>
+        <p class="upload-formats">支援格式：PNG, JPG, WebP</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/png,image/jpeg,image/webp">
+      </div>
+
+      <div id="presetPanel" class="settings-panel" style="display: none;">
+        <h3>快速預設</h3>
+        <div class="preset-grid">
+          <button class="preset-btn" data-preset="auto">🔮 自動調整</button>
+          <button class="preset-btn" data-preset="brighten">☀️ 提亮</button>
+          <button class="preset-btn" data-preset="darken">🌙 變暗</button>
+          <button class="preset-btn" data-preset="high-contrast">◐ 高對比</button>
+          <button class="preset-btn" data-preset="low-contrast">◑ 低對比</button>
+          <button class="preset-btn" data-preset="vivid">🌈 鮮豔</button>
+        </div>
+      </div>
+
+      <div id="adjustPanel" class="settings-panel" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="margin: 0;">手動調整</h3>
+          <button id="resetValuesBtn" class="reset-values-btn">🔄 重置數值</button>
+        </div>
+        <div class="adjustment-panel">
+          <div class="slider-group">
+            <h4>☀️ 亮度調整</h4>
+            <div class="slider-row">
+              <label>亮度</label>
+              <input type="range" id="brightnessSlider" min="-100" max="100" value="0">
+              <span id="brightnessValue" class="value">0</span>
+            </div>
+            <div class="slider-row">
+              <label>曝光</label>
+              <input type="range" id="exposureSlider" min="-100" max="100" value="0">
+              <span id="exposureValue" class="value">0</span>
+            </div>
+            <div class="slider-row">
+              <label>高光</label>
+              <input type="range" id="highlightsSlider" min="-100" max="100" value="0">
+              <span id="highlightsValue" class="value">0</span>
+            </div>
+            <div class="slider-row">
+              <label>陰影</label>
+              <input type="range" id="shadowsSlider" min="-100" max="100" value="0">
+              <span id="shadowsValue" class="value">0</span>
+            </div>
+          </div>
+          <div class="slider-group">
+            <h4>◐ 對比度調整</h4>
+            <div class="slider-row">
+              <label>對比度</label>
+              <input type="range" id="contrastSlider" min="-100" max="100" value="0">
+              <span id="contrastValue" class="value">0</span>
+            </div>
+            <div class="slider-row">
+              <label>白點</label>
+              <input type="range" id="whitesSlider" min="-100" max="100" value="0">
+              <span id="whitesValue" class="value">0</span>
+            </div>
+            <div class="slider-row">
+              <label>黑點</label>
+              <input type="range" id="blacksSlider" min="-100" max="100" value="0">
+              <span id="blacksValue" class="value">0</span>
+            </div>
+          </div>
+        </div>
+        <div class="histogram-container">
+          <h4>📊 直方圖</h4>
+          <canvas id="histogramCanvas"></canvas>
+        </div>
+        <div class="setting-row" style="margin-top: 1rem;">
+          <label>輸出格式</label>
+          <select id="outputFormat" class="format-select">
+            <option value="original" selected>保持原格式</option>
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="comparePanel" class="settings-panel" style="display: none;">
+        <h3>效果預覽</h3>
+        <div class="compare-view">
+          <div class="compare-box">
+            <div class="label">原始圖片</div>
+            <img id="originalImage" alt="Original">
+          </div>
+          <div class="compare-box">
+            <div class="label">調整後</div>
+            <img id="previewImage" alt="Preview">
+          </div>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">處理中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>✨</span>
+          <span>套用調整</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span>下載圖片</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <div class="settings-panel info-panel">
+        <h3>📋 亮度/對比度說明</h3>
+        <div class="info-content">
+          <p><strong>亮度/對比度調整</strong>功能特點：</p>
+          <ul>
+            <li>☀️ <strong>亮度</strong>：整體調亮或調暗圖片</li>
+            <li>◐ <strong>對比度</strong>：調整明暗差異，增加層次感</li>
+            <li>🔆 <strong>曝光</strong>：模擬相機曝光補償效果</li>
+            <li>✨ <strong>高光/陰影</strong>：分別調整亮部和暗部細節</li>
+            <li>📊 <strong>直方圖</strong>：視覺化呈現圖片明暗分布</li>
+          </ul>
+          <p class="info-tip">💡 可使用快速預設一鍵調整，或手動精細控制各項參數</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
