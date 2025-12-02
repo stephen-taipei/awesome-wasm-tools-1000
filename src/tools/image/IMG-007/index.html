@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-007 BMP 轉換器 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="BMP 點陣圖格式與其他格式互轉，支援 PNG、JPG、WebP 輸出，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-007 <span data-i18n="img007_name">BMP 轉換器</span></h1>
+        <p data-i18n="img007_desc">BMP 點陣圖格式與其他格式互轉</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <!-- Status Messages -->
+      <div id="statusMessage" class="status-message"></div>
+
+      <!-- Upload Area -->
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📁</div>
+        <h3 data-i18n="upload_title">拖放 BMP 圖片到此處</h3>
+        <p data-i18n="upload_subtitle">或點擊選擇檔案</p>
+        <p class="upload-formats" data-i18n="upload_formats_bmp">支援格式：BMP</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/bmp,.bmp">
+      </div>
+
+      <!-- Settings Panel -->
+      <div class="settings-panel">
+        <h3 data-i18n="settings">輸出設定</h3>
+        <div class="setting-row">
+          <label data-i18n="output_format">輸出格式</label>
+          <select id="outputFormat" class="format-select">
+            <option value="png">PNG (無損)</option>
+            <option value="jpg" selected>JPG (壓縮)</option>
+            <option value="webp">WebP (現代)</option>
+          </select>
+        </div>
+        <div class="setting-row" id="qualityRow">
+          <label data-i18n="quality">品質</label>
+          <input type="range" id="qualitySlider" min="1" max="100" value="92">
+          <span id="qualityValue" class="quality-value">92%</span>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text" data-i18n="converting">轉換中...</p>
+      </div>
+
+      <!-- Preview Area -->
+      <div id="previewArea" class="preview-area" style="display: none;">
+        <div class="preview-box">
+          <div class="preview-header">
+            <h4 data-i18n="original">原始圖片</h4>
+            <span id="originalSize" class="file-size">-</span>
+          </div>
+          <div class="preview-image-container">
+            <img id="originalImage" alt="Original">
+          </div>
+        </div>
+        <div class="preview-box">
+          <div class="preview-header">
+            <h4 data-i18n="converted">轉換結果</h4>
+            <span id="convertedSize" class="file-size">-</span>
+          </div>
+          <div class="preview-image-container">
+            <img id="convertedImage" alt="Converted">
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>🔄</span>
+          <span data-i18n="convert">開始轉換</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span id="downloadBtnText" data-i18n="download">下載圖片</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+
+      <!-- Performance Info -->
+      <div id="performanceInfo" class="settings-panel" style="display: none;">
+        <h3>📊 效能資訊</h3>
+        <div class="setting-row">
+          <label>處理時間</label>
+          <span id="processTime">-</span>
+        </div>
+        <div class="setting-row">
+          <label>檔案變化</label>
+          <span id="compressionRatio">-</span>
+        </div>
+        <div class="setting-row">
+          <label>解析度</label>
+          <span id="imageResolution">-</span>
+        </div>
+        <div class="setting-row">
+          <label>位元深度</label>
+          <span id="bitDepth">-</span>
+        </div>
+      </div>
+
+      <!-- BMP Format Info -->
+      <div class="settings-panel info-panel">
+        <h3>📋 BMP 格式說明</h3>
+        <div class="info-content">
+          <p><strong>BMP (Bitmap)</strong> 是 Windows 系統的標準圖片格式，特點如下：</p>
+          <ul>
+            <li>🔷 <strong>無壓縮</strong>：檔案較大但保留完整畫質</li>
+            <li>🔷 <strong>廣泛相容</strong>：所有 Windows 應用程式都支援</li>
+            <li>🔷 <strong>位元深度</strong>：支援 1/4/8/16/24/32 位元</li>
+            <li>🔷 <strong>透明度</strong>：32 位元 BMP 支援 Alpha 通道</li>
+          </ul>
+          <p class="info-tip">💡 建議轉換為 PNG 或 WebP 以獲得更小的檔案大小</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
