@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-034 圖片浮水印 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="在圖片上疊加 Logo 或其他圖片作為浮水印">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <style>
+    .watermark-container {
+      background: #1a1a2e;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .upload-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 640px) {
+      .upload-section {
+        grid-template-columns: 1fr;
+      }
+    }
+    .upload-box {
+      background: #2d2d44;
+      border: 2px dashed #3d3d5c;
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .upload-box:hover {
+      border-color: #00d9ff;
+      background: rgba(0, 217, 255, 0.05);
+    }
+    .upload-box.has-image {
+      border-style: solid;
+      border-color: #00d9ff;
+    }
+    .upload-box .icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    .upload-box h4 {
+      margin: 0 0 0.25rem 0;
+      font-size: 0.95rem;
+    }
+    .upload-box p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: #888;
+    }
+    .upload-box img {
+      max-width: 100%;
+      max-height: 120px;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .slider-row label {
+      width: 80px;
+      font-size: 0.9rem;
+    }
+    .slider-row input[type="range"] {
+      flex: 1;
+    }
+    .slider-row .value {
+      width: 60px;
+      text-align: right;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    .position-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      max-width: 200px;
+      margin: 0.5rem 0;
+    }
+    .position-btn {
+      padding: 0.75rem;
+      border: 1px solid #3d3d5c;
+      border-radius: 6px;
+      background: #2d2d44;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+    .position-btn:hover {
+      background: #3d3d5c;
+    }
+    .position-btn.active {
+      background: #00d9ff;
+      color: #000;
+      border-color: #00d9ff;
+    }
+    .blend-modes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .blend-btn {
+      padding: 0.4rem 0.8rem;
+      border: 1px solid #3d3d5c;
+      border-radius: 6px;
+      background: #2d2d44;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+    .blend-btn:hover {
+      background: #3d3d5c;
+    }
+    .blend-btn.active {
+      background: #00d9ff;
+      color: #000;
+      border-color: #00d9ff;
+    }
+    .compare-view {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    @media (max-width: 640px) {
+      .compare-view {
+        grid-template-columns: 1fr;
+      }
+    }
+    .compare-box {
+      background: #1a1a2e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .compare-box .label {
+      padding: 0.5rem;
+      text-align: center;
+      background: #2d2d44;
+      font-size: 0.85rem;
+    }
+    .compare-box img {
+      width: 100%;
+      display: block;
+    }
+    .input-group {
+      margin-bottom: 1rem;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-034 <span data-i18n="img034_name">圖片浮水印</span></h1>
+        <p data-i18n="img034_desc">在圖片上疊加 Logo 或其他圖片作為浮水印</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3>上傳圖片</h3>
+        <div class="upload-section">
+          <div id="mainUploadArea" class="upload-box">
+            <div class="icon">🖼️</div>
+            <h4>主要圖片</h4>
+            <p>拖放或點擊上傳</p>
+            <img id="mainPreview" style="display: none;">
+            <input type="file" id="mainFileInput" class="file-input" accept="image/png,image/jpeg,image/webp" style="display: none;">
+          </div>
+          <div id="watermarkUploadArea" class="upload-box">
+            <div class="icon">💧</div>
+            <h4>浮水印圖片</h4>
+            <p>Logo 或圖章</p>
+            <img id="watermarkPreview" style="display: none;">
+            <input type="file" id="watermarkFileInput" class="file-input" accept="image/png,image/jpeg,image/webp" style="display: none;">
+          </div>
+        </div>
+      </div>
+
+      <div id="settingsPanel" class="settings-panel" style="display: none;">
+        <h3>浮水印設定</h3>
+
+        <div class="watermark-container">
+          <div class="slider-row">
+            <label>縮放比例</label>
+            <input type="range" id="scaleSlider" min="5" max="100" value="30">
+            <span id="scaleValue" class="value">30%</span>
+          </div>
+
+          <div class="slider-row">
+            <label>透明度</label>
+            <input type="range" id="opacitySlider" min="0" max="100" value="70">
+            <span id="opacityValue" class="value">70%</span>
+          </div>
+
+          <div class="slider-row">
+            <label>旋轉角度</label>
+            <input type="range" id="rotationSlider" min="-180" max="180" value="0">
+            <span id="rotationValue" class="value">0°</span>
+          </div>
+
+          <div class="input-group">
+            <label>位置</label>
+            <div class="position-grid">
+              <button class="position-btn" data-pos="top-left">↖</button>
+              <button class="position-btn" data-pos="top-center">↑</button>
+              <button class="position-btn" data-pos="top-right">↗</button>
+              <button class="position-btn" data-pos="center-left">←</button>
+              <button class="position-btn active" data-pos="center">●</button>
+              <button class="position-btn" data-pos="center-right">→</button>
+              <button class="position-btn" data-pos="bottom-left">↙</button>
+              <button class="position-btn" data-pos="bottom-center">↓</button>
+              <button class="position-btn" data-pos="bottom-right">↘</button>
+            </div>
+          </div>
+
+          <div class="slider-row">
+            <label>X 偏移</label>
+            <input type="range" id="offsetXSlider" min="-200" max="200" value="0">
+            <span id="offsetXValue" class="value">0px</span>
+          </div>
+
+          <div class="slider-row">
+            <label>Y 偏移</label>
+            <input type="range" id="offsetYSlider" min="-200" max="200" value="0">
+            <span id="offsetYValue" class="value">0px</span>
+          </div>
+
+          <div class="input-group">
+            <label>混合模式</label>
+            <div class="blend-modes">
+              <button class="blend-btn active" data-blend="source-over">正常</button>
+              <button class="blend-btn" data-blend="multiply">正片疊底</button>
+              <button class="blend-btn" data-blend="screen">濾色</button>
+              <button class="blend-btn" data-blend="overlay">覆蓋</button>
+              <button class="blend-btn" data-blend="darken">變暗</button>
+              <button class="blend-btn" data-blend="lighten">變亮</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <label>輸出格式</label>
+          <select id="outputFormat" class="format-select">
+            <option value="original" selected>保持原格式</option>
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="comparePanel" class="settings-panel" style="display: none;">
+        <h3>效果預覽</h3>
+        <div class="compare-view">
+          <div class="compare-box">
+            <div class="label">原始圖片</div>
+            <img id="originalImage" alt="Original">
+          </div>
+          <div class="compare-box">
+            <div class="label">添加浮水印後</div>
+            <img id="previewImage" alt="Preview">
+          </div>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">處理中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>💧</span>
+          <span>套用浮水印</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span>下載圖片</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <div class="settings-panel info-panel">
+        <h3>📋 圖片浮水印說明</h3>
+        <div class="info-content">
+          <p><strong>圖片浮水印</strong>可在照片上疊加 Logo：</p>
+          <ul>
+            <li>🖼️ <strong>主要圖片</strong>：要添加浮水印的目標圖片</li>
+            <li>💧 <strong>浮水印圖片</strong>：Logo、圖章或其他標誌圖片</li>
+            <li>📐 <strong>縮放比例</strong>：調整浮水印相對於主圖的大小</li>
+            <li>🎨 <strong>混合模式</strong>：選擇浮水印與底圖的混合方式</li>
+            <li>📍 <strong>位置控制</strong>：9 宮格位置與微調偏移</li>
+          </ul>
+          <p class="info-tip">💡 建議使用 PNG 格式的透明背景 Logo</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
