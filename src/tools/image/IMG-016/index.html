@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-016 圖片縮放 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="調整圖片尺寸，支援等比例與自訂尺寸，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-016 <span data-i18n="img016_name">圖片縮放</span></h1>
+        <p data-i18n="img016_desc">調整圖片尺寸，支援等比例與自訂尺寸</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📁</div>
+        <h3>拖放圖片到此處</h3>
+        <p>或點擊選擇檔案</p>
+        <p class="upload-formats">支援格式：PNG, JPG, WebP</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/png,image/jpeg,image/webp">
+      </div>
+
+      <div class="settings-panel">
+        <h3>縮放設定</h3>
+        <div class="setting-row">
+          <label>縮放模式</label>
+          <select id="resizeMode" class="format-select">
+            <option value="percentage">百分比</option>
+            <option value="dimensions" selected>指定尺寸</option>
+            <option value="width">指定寬度</option>
+            <option value="height">指定高度</option>
+          </select>
+        </div>
+
+        <div id="percentageSettings" class="setting-row" style="display: none;">
+          <label>縮放百分比</label>
+          <input type="range" id="percentageSlider" min="10" max="200" value="100">
+          <span id="percentageValue" class="quality-value">100%</span>
+        </div>
+
+        <div id="dimensionSettings">
+          <div class="setting-row">
+            <label>寬度 (px)</label>
+            <input type="number" id="widthInput" class="number-input" min="1" max="8192" value="800">
+          </div>
+          <div class="setting-row">
+            <label>高度 (px)</label>
+            <input type="number" id="heightInput" class="number-input" min="1" max="8192" value="600">
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <label>鎖定比例</label>
+          <label class="toggle">
+            <input type="checkbox" id="lockAspect" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-row">
+          <label>預設尺寸</label>
+          <div class="preset-buttons">
+            <button class="preset-btn" data-width="640" data-height="480">640×480</button>
+            <button class="preset-btn" data-width="800" data-height="600">800×600</button>
+            <button class="preset-btn" data-width="1280" data-height="720">1280×720</button>
+            <button class="preset-btn" data-width="1920" data-height="1080">1920×1080</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <label>輸出格式</label>
+          <select id="outputFormat" class="format-select">
+            <option value="original" selected>保持原格式</option>
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">處理中...</p>
+      </div>
+
+      <div id="previewArea" class="preview-area" style="display: none;">
+        <div class="preview-box">
+          <div class="preview-header">
+            <h4>原始圖片</h4>
+            <span id="originalSize" class="file-size">-</span>
+          </div>
+          <div class="preview-image-container">
+            <img id="originalImage" alt="Original">
+          </div>
+          <div class="preview-dimensions" id="originalDimensions">-</div>
+        </div>
+        <div class="preview-box">
+          <div class="preview-header">
+            <h4>縮放後</h4>
+            <span id="convertedSize" class="file-size">-</span>
+          </div>
+          <div class="preview-image-container">
+            <img id="convertedImage" alt="Resized">
+          </div>
+          <div class="preview-dimensions" id="convertedDimensions">-</div>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>📐</span>
+          <span>縮放圖片</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span>下載圖片</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <div id="performanceInfo" class="settings-panel" style="display: none;">
+        <h3>📊 縮放結果</h3>
+        <div class="setting-row">
+          <label>處理時間</label>
+          <span id="processTime">-</span>
+        </div>
+        <div class="setting-row">
+          <label>原始尺寸</label>
+          <span id="originalDimensionsInfo">-</span>
+        </div>
+        <div class="setting-row">
+          <label>縮放後尺寸</label>
+          <span id="newDimensionsInfo">-</span>
+        </div>
+        <div class="setting-row">
+          <label>縮放比例</label>
+          <span id="scaleRatio">-</span>
+        </div>
+      </div>
+
+      <div class="settings-panel info-panel">
+        <h3>📋 圖片縮放說明</h3>
+        <div class="info-content">
+          <p><strong>圖片縮放</strong>功能特點：</p>
+          <ul>
+            <li>🔷 <strong>等比縮放</strong>：自動保持長寬比例</li>
+            <li>🔷 <strong>高品質</strong>：使用雙三次插值演算法</li>
+            <li>🔷 <strong>多種模式</strong>：百分比、指定尺寸、僅寬/高</li>
+            <li>🔷 <strong>預設尺寸</strong>：常用解析度一鍵選擇</li>
+          </ul>
+          <p class="info-tip">💡 放大圖片可能導致模糊，建議縮小或保持原尺寸</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
