@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-010 SVG 轉 PNG - Awesome WASM Tools 1000</title>
+  <meta name="description" content="將向量圖 SVG 轉為點陣圖 PNG，可自訂輸出尺寸，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-010 <span data-i18n="img010_name">SVG 轉 PNG</span></h1>
+        <p data-i18n="img010_desc">將向量圖 SVG 轉為點陣圖 PNG</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <!-- Status Messages -->
+      <div id="statusMessage" class="status-message"></div>
+
+      <!-- Upload Area -->
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📁</div>
+        <h3>拖放 SVG 檔案到此處</h3>
+        <p>或點擊選擇檔案</p>
+        <p class="upload-formats">支援格式：SVG</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/svg+xml,.svg">
+      </div>
+
+      <!-- Settings Panel -->
+      <div class="settings-panel">
+        <h3>輸出設定</h3>
+        <div class="setting-row">
+          <label>縮放倍數</label>
+          <select id="scaleSelect" class="format-select">
+            <option value="1">1x (原始大小)</option>
+            <option value="2" selected>2x</option>
+            <option value="3">3x</option>
+            <option value="4">4x</option>
+            <option value="custom">自訂尺寸</option>
+          </select>
+        </div>
+        <div class="setting-row" id="customSizeRow" style="display: none;">
+          <label>自訂寬度 (px)</label>
+          <input type="number" id="customWidth" class="number-input" min="1" max="8192" value="1024">
+        </div>
+        <div class="setting-row">
+          <label>背景色</label>
+          <select id="bgSelect" class="format-select">
+            <option value="transparent" selected>透明</option>
+            <option value="white">白色</option>
+            <option value="black">黑色</option>
+            <option value="custom">自訂顏色</option>
+          </select>
+        </div>
+        <div class="setting-row" id="customBgRow" style="display: none;">
+          <label>自訂背景色</label>
+          <input type="color" id="customBgColor" value="#ffffff">
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">轉換中...</p>
+      </div>
+
+      <!-- Preview Area -->
+      <div id="previewArea" class="preview-area" style="display: none;">
+        <div class="preview-box">
+          <div class="preview-header">
+            <h4>原始 SVG</h4>
+            <span id="originalSize" class="file-size">-</span>
+          </div>
+          <div class="preview-image-container svg-preview">
+            <img id="originalImage" alt="Original SVG">
+          </div>
+        </div>
+        <div class="preview-box">
+          <div class="preview-header">
+            <h4>轉換結果</h4>
+            <span id="convertedSize" class="file-size">-</span>
+          </div>
+          <div class="preview-image-container">
+            <img id="convertedImage" alt="Converted PNG">
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>🔄</span>
+          <span>開始轉換</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span>下載 PNG</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <!-- Performance Info -->
+      <div id="performanceInfo" class="settings-panel" style="display: none;">
+        <h3>📊 效能資訊</h3>
+        <div class="setting-row">
+          <label>處理時間</label>
+          <span id="processTime">-</span>
+        </div>
+        <div class="setting-row">
+          <label>SVG 尺寸</label>
+          <span id="svgDimensions">-</span>
+        </div>
+        <div class="setting-row">
+          <label>輸出尺寸</label>
+          <span id="outputDimensions">-</span>
+        </div>
+      </div>
+
+      <!-- SVG Format Info -->
+      <div class="settings-panel info-panel">
+        <h3>📋 SVG 格式說明</h3>
+        <div class="info-content">
+          <p><strong>SVG (Scalable Vector Graphics)</strong> 是向量圖格式，特點如下：</p>
+          <ul>
+            <li>🔷 <strong>無限縮放</strong>：放大不失真，適合各種解析度</li>
+            <li>🔷 <strong>檔案小</strong>：適合簡單圖形和圖示</li>
+            <li>🔷 <strong>可編輯</strong>：XML 格式，可用文字編輯器修改</li>
+            <li>🔷 <strong>網頁優先</strong>：現代瀏覽器原生支援</li>
+          </ul>
+          <p class="info-tip">💡 轉換為 PNG 後將成為點陣圖，建議設定適當的輸出尺寸</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
