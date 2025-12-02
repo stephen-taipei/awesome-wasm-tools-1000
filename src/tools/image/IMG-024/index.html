@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-024 復古/懷舊濾鏡 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="套用復古色調，模擬老照片效果">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <style>
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .filter-card {
+      background: #2d2d44;
+      border: 2px solid #3d3d5c;
+      border-radius: 12px;
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .filter-card:hover {
+      border-color: #00d9ff;
+      transform: translateY(-2px);
+    }
+    .filter-card.selected {
+      border-color: #00d9ff;
+      background: rgba(0, 217, 255, 0.2);
+    }
+    .filter-card .preview {
+      width: 100%;
+      aspect-ratio: 4/3;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+    .filter-card .name {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .filter-card .desc {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 0.25rem;
+    }
+    /* Vintage filter preview colors */
+    .preview-sepia { background: linear-gradient(135deg, #d4a574 0%, #8b6914 100%); }
+    .preview-vintage { background: linear-gradient(135deg, #c9b896 0%, #7a6f5c 100%); }
+    .preview-retro70s { background: linear-gradient(135deg, #e8a87c 0%, #c38d26 100%); }
+    .preview-faded { background: linear-gradient(135deg, #b8c4d4 0%, #8899aa 100%); }
+    .preview-polaroid { background: linear-gradient(135deg, #f5e6d3 0%, #d4c4a8 100%); }
+    .preview-lomo { background: linear-gradient(135deg, #5c4033 0%, #2d1f12 100%); }
+    .preview-nashville { background: linear-gradient(135deg, #f2d9bb 0%, #d4a76a 100%); }
+    .preview-toaster { background: linear-gradient(135deg, #ffcc99 0%, #cc6633 100%); }
+
+    .adjustment-panel {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 640px) {
+      .adjustment-panel {
+        grid-template-columns: 1fr;
+      }
+    }
+    .compare-view {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    @media (max-width: 640px) {
+      .compare-view {
+        grid-template-columns: 1fr;
+      }
+    }
+    .compare-box {
+      background: #1a1a2e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .compare-box .label {
+      padding: 0.5rem;
+      text-align: center;
+      background: #2d2d44;
+      font-size: 0.85rem;
+    }
+    .compare-box img {
+      width: 100%;
+      display: block;
+    }
+    .effect-options {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      background: #2d2d44;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .checkbox-label:hover {
+      background: #3d3d5c;
+    }
+    .checkbox-label input {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-024 <span data-i18n="img024_name">復古/懷舊濾鏡</span></h1>
+        <p data-i18n="img024_desc">套用復古色調，模擬老照片效果</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📷</div>
+        <h3>拖放圖片到此處</h3>
+        <p>或點擊選擇檔案</p>
+        <p class="upload-formats">支援格式：PNG, JPG, WebP</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/png,image/jpeg,image/webp">
+      </div>
+
+      <div id="filterPanel" class="settings-panel" style="display: none;">
+        <h3>選擇復古風格</h3>
+        <div class="filter-grid">
+          <div class="filter-card selected" data-filter="sepia">
+            <div class="preview preview-sepia">🎞️</div>
+            <div class="name">懷舊褐色</div>
+            <div class="desc">經典棕褐調</div>
+          </div>
+          <div class="filter-card" data-filter="vintage">
+            <div class="preview preview-vintage">📜</div>
+            <div class="name">復古褪色</div>
+            <div class="desc">柔和舊照片</div>
+          </div>
+          <div class="filter-card" data-filter="retro70s">
+            <div class="preview preview-retro70s">🌅</div>
+            <div class="name">70年代</div>
+            <div class="desc">暖黃懷舊感</div>
+          </div>
+          <div class="filter-card" data-filter="faded">
+            <div class="preview preview-faded">🌫️</div>
+            <div class="name">褪色膠片</div>
+            <div class="desc">低飽和冷調</div>
+          </div>
+          <div class="filter-card" data-filter="polaroid">
+            <div class="preview preview-polaroid">📸</div>
+            <div class="name">寶麗來</div>
+            <div class="desc">即可拍風格</div>
+          </div>
+          <div class="filter-card" data-filter="lomo">
+            <div class="preview preview-lomo">🔲</div>
+            <div class="name">LOMO</div>
+            <div class="desc">暗角高對比</div>
+          </div>
+          <div class="filter-card" data-filter="nashville">
+            <div class="preview preview-nashville">🎸</div>
+            <div class="name">Nashville</div>
+            <div class="desc">溫暖粉色調</div>
+          </div>
+          <div class="filter-card" data-filter="toaster">
+            <div class="preview preview-toaster">🔥</div>
+            <div class="name">Toaster</div>
+            <div class="desc">復古暖橘色</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="adjustPanel" class="settings-panel" style="display: none;">
+        <h3>效果調整</h3>
+        <div class="adjustment-panel">
+          <div class="setting-row">
+            <label>濾鏡強度</label>
+            <input type="range" id="intensitySlider" min="0" max="100" value="100">
+            <span id="intensityValue" class="quality-value">100%</span>
+          </div>
+          <div class="setting-row">
+            <label>顆粒噪點</label>
+            <input type="range" id="grainSlider" min="0" max="50" value="10">
+            <span id="grainValue" class="quality-value">10</span>
+          </div>
+          <div class="setting-row">
+            <label>暈影強度</label>
+            <input type="range" id="vignetteSlider" min="0" max="100" value="30">
+            <span id="vignetteValue" class="quality-value">30%</span>
+          </div>
+          <div class="setting-row">
+            <label>褪色程度</label>
+            <input type="range" id="fadeSlider" min="0" max="50" value="10">
+            <span id="fadeValue" class="quality-value">10%</span>
+          </div>
+        </div>
+        <div class="effect-options">
+          <label class="checkbox-label">
+            <input type="checkbox" id="enableGrain" checked>
+            <span>啟用顆粒</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="enableVignette" checked>
+            <span>啟用暈影</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="enableScratch">
+            <span>刮痕效果</span>
+          </label>
+        </div>
+        <div class="setting-row" style="margin-top: 1rem;">
+          <label>輸出格式</label>
+          <select id="outputFormat" class="format-select">
+            <option value="original" selected>保持原格式</option>
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="comparePanel" class="settings-panel" style="display: none;">
+        <h3>效果對比</h3>
+        <div class="compare-view">
+          <div class="compare-box">
+            <div class="label">原始圖片</div>
+            <img id="originalImage" alt="Original">
+          </div>
+          <div class="compare-box">
+            <div class="label">復古效果</div>
+            <img id="previewImage" alt="Preview">
+          </div>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">處理中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>🎨</span>
+          <span>套用復古濾鏡</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span>下載圖片</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <div class="settings-panel info-panel">
+        <h3>📋 復古濾鏡說明</h3>
+        <div class="info-content">
+          <p><strong>復古/懷舊濾鏡</strong>功能特點：</p>
+          <ul>
+            <li>🎞️ <strong>懷舊褐色</strong>：經典 Sepia 棕褐調，模擬老照片</li>
+            <li>📜 <strong>復古褪色</strong>：柔和色調，彷彿歲月洗禮</li>
+            <li>🌅 <strong>70年代</strong>：暖黃色調，復古膠片感</li>
+            <li>📸 <strong>寶麗來</strong>：即可拍相機的經典效果</li>
+            <li>🔲 <strong>LOMO</strong>：高對比暗角，藝術感十足</li>
+          </ul>
+          <p class="info-tip">💡 可調整顆粒噪點和暈影強度，打造獨特的復古風格</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
