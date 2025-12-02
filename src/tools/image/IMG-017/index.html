@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-017 圖片裁切 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="裁切圖片指定區域，支援自由裁切與比例裁切，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <style>
+    .crop-container {
+      position: relative;
+      max-width: 100%;
+      margin: 1rem 0;
+      overflow: hidden;
+      background: #1a1a2e;
+      border-radius: 8px;
+    }
+    .crop-image {
+      max-width: 100%;
+      display: block;
+    }
+    .crop-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      pointer-events: none;
+    }
+    .crop-box {
+      position: absolute;
+      border: 2px dashed #00d9ff;
+      background: transparent;
+      cursor: move;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+    }
+    .crop-handle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #00d9ff;
+      border-radius: 50%;
+    }
+    .crop-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
+    .crop-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
+    .crop-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+    .crop-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
+    .crop-info {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-017 <span data-i18n="img017_name">圖片裁切</span></h1>
+        <p data-i18n="img017_desc">裁切圖片指定區域，支援自由裁切與比例裁切</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📁</div>
+        <h3>拖放圖片到此處</h3>
+        <p>或點擊選擇檔案</p>
+        <p class="upload-formats">支援格式：PNG, JPG, WebP</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/png,image/jpeg,image/webp">
+      </div>
+
+      <div class="settings-panel">
+        <h3>裁切設定</h3>
+        <div class="setting-row">
+          <label>裁切比例</label>
+          <select id="aspectRatio" class="format-select">
+            <option value="free" selected>自由裁切</option>
+            <option value="1:1">1:1 (正方形)</option>
+            <option value="4:3">4:3 (傳統)</option>
+            <option value="16:9">16:9 (寬螢幕)</option>
+            <option value="3:2">3:2 (相片)</option>
+            <option value="2:3">2:3 (直式相片)</option>
+            <option value="9:16">9:16 (手機直式)</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>輸出格式</label>
+          <select id="outputFormat" class="format-select">
+            <option value="original" selected>保持原格式</option>
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Crop Area -->
+      <div id="cropArea" class="settings-panel" style="display: none;">
+        <h3>✂️ 選取裁切區域</h3>
+        <p class="crop-instruction">拖曳選取框調整裁切區域，拖曳角落調整大小</p>
+        <div class="crop-container" id="cropContainer">
+          <img id="cropImage" class="crop-image" alt="Crop">
+          <div id="cropBox" class="crop-box">
+            <div class="crop-handle nw" data-handle="nw"></div>
+            <div class="crop-handle ne" data-handle="ne"></div>
+            <div class="crop-handle sw" data-handle="sw"></div>
+            <div class="crop-handle se" data-handle="se"></div>
+            <div id="cropInfo" class="crop-info">0 × 0</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">處理中...</p>
+      </div>
+
+      <div id="previewArea" class="preview-area" style="display: none;">
+        <div class="preview-box full-width">
+          <div class="preview-header">
+            <h4>裁切結果</h4>
+            <span id="convertedSize" class="file-size">-</span>
+          </div>
+          <div class="preview-image-container">
+            <img id="convertedImage" alt="Cropped">
+          </div>
+          <div class="preview-dimensions" id="convertedDimensions">-</div>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>✂️</span>
+          <span>裁切圖片</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span>下載裁切圖片</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <div id="performanceInfo" class="settings-panel" style="display: none;">
+        <h3>📊 裁切結果</h3>
+        <div class="setting-row">
+          <label>原始尺寸</label>
+          <span id="originalDimensionsInfo">-</span>
+        </div>
+        <div class="setting-row">
+          <label>裁切尺寸</label>
+          <span id="cropDimensionsInfo">-</span>
+        </div>
+        <div class="setting-row">
+          <label>裁切區域</label>
+          <span id="cropRegionInfo">-</span>
+        </div>
+      </div>
+
+      <div class="settings-panel info-panel">
+        <h3>📋 圖片裁切說明</h3>
+        <div class="info-content">
+          <p><strong>圖片裁切</strong>功能特點：</p>
+          <ul>
+            <li>🔷 <strong>互動式選取</strong>：直接在圖片上拖曳選取</li>
+            <li>🔷 <strong>比例鎖定</strong>：支援常用比例 (1:1, 4:3, 16:9)</li>
+            <li>🔷 <strong>精確裁切</strong>：即時顯示裁切尺寸</li>
+            <li>🔷 <strong>無損輸出</strong>：保持原始畫質</li>
+          </ul>
+          <p class="info-tip">💡 選取正方形裁切 (1:1) 適合製作大頭照或社群頭像</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
