@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-030 色階調整 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="調整圖片輸入輸出色階範圍">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <style>
+    .levels-container {
+      background: #1a1a2e;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .channel-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .channel-tab {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      background: #2d2d44;
+      color: #fff;
+    }
+    .channel-tab:hover {
+      background: #3d3d5c;
+    }
+    .channel-tab.active {
+      background: #00d9ff;
+      color: #000;
+    }
+    .channel-tab.red.active { background: #ff4444; color: #fff; }
+    .channel-tab.green.active { background: #44ff44; color: #000; }
+    .channel-tab.blue.active { background: #4444ff; color: #fff; }
+
+    .histogram-container {
+      background: #0a0a1a;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    #histogramCanvas {
+      width: 100%;
+      height: 100px;
+    }
+    .levels-sliders {
+      margin-top: 1rem;
+    }
+    .level-group {
+      margin-bottom: 1.5rem;
+    }
+    .level-group h4 {
+      margin: 0 0 0.75rem 0;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+    .level-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .level-row label {
+      width: 70px;
+      font-size: 0.85rem;
+    }
+    .level-row input[type="range"] {
+      flex: 1;
+    }
+    .level-row .value {
+      width: 40px;
+      text-align: right;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .auto-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .auto-btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid #3d3d5c;
+      border-radius: 6px;
+      background: #2d2d44;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .auto-btn:hover {
+      border-color: #00d9ff;
+      background: rgba(0, 217, 255, 0.1);
+    }
+    .compare-view {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    @media (max-width: 640px) {
+      .compare-view {
+        grid-template-columns: 1fr;
+      }
+    }
+    .compare-box {
+      background: #1a1a2e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .compare-box .label {
+      padding: 0.5rem;
+      text-align: center;
+      background: #2d2d44;
+      font-size: 0.85rem;
+    }
+    .compare-box img {
+      width: 100%;
+      display: block;
+    }
+    .reset-btn {
+      background: #3d3d5c;
+      border: none;
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .reset-btn:hover {
+      background: #4d4d6c;
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-030 <span data-i18n="img030_name">色階調整</span></h1>
+        <p data-i18n="img030_desc">調整圖片輸入輸出色階範圍</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📊</div>
+        <h3>拖放圖片到此處</h3>
+        <p>或點擊選擇檔案</p>
+        <p class="upload-formats">支援格式：PNG, JPG, WebP</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/png,image/jpeg,image/webp">
+      </div>
+
+      <div id="levelsPanel" class="settings-panel" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="margin: 0;">色階調整</h3>
+          <button id="resetLevelsBtn" class="reset-btn">🔄 重置色階</button>
+        </div>
+
+        <div class="levels-container">
+          <div class="channel-tabs">
+            <button class="channel-tab active" data-channel="rgb">RGB</button>
+            <button class="channel-tab red" data-channel="red">紅</button>
+            <button class="channel-tab green" data-channel="green">綠</button>
+            <button class="channel-tab blue" data-channel="blue">藍</button>
+          </div>
+
+          <div class="histogram-container">
+            <canvas id="histogramCanvas"></canvas>
+          </div>
+
+          <div class="levels-sliders">
+            <div class="level-group">
+              <h4>輸入色階</h4>
+              <div class="level-row">
+                <label>黑點</label>
+                <input type="range" id="inputBlackSlider" min="0" max="255" value="0">
+                <span id="inputBlackValue" class="value">0</span>
+              </div>
+              <div class="level-row">
+                <label>中間調</label>
+                <input type="range" id="gammaSlider" min="0.1" max="3" value="1" step="0.01">
+                <span id="gammaValue" class="value">1.00</span>
+              </div>
+              <div class="level-row">
+                <label>白點</label>
+                <input type="range" id="inputWhiteSlider" min="0" max="255" value="255">
+                <span id="inputWhiteValue" class="value">255</span>
+              </div>
+            </div>
+
+            <div class="level-group">
+              <h4>輸出色階</h4>
+              <div class="level-row">
+                <label>黑點</label>
+                <input type="range" id="outputBlackSlider" min="0" max="255" value="0">
+                <span id="outputBlackValue" class="value">0</span>
+              </div>
+              <div class="level-row">
+                <label>白點</label>
+                <input type="range" id="outputWhiteSlider" min="0" max="255" value="255">
+                <span id="outputWhiteValue" class="value">255</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="auto-buttons">
+            <button class="auto-btn" id="autoLevelsBtn">🔮 自動色階</button>
+            <button class="auto-btn" id="autoContrastBtn">◐ 自動對比</button>
+            <button class="auto-btn" id="autoColorBtn">🎨 自動色彩</button>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <label>輸出格式</label>
+          <select id="outputFormat" class="format-select">
+            <option value="original" selected>保持原格式</option>
+            <option value="png">PNG</option>
+            <option value="jpg">JPG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="comparePanel" class="settings-panel" style="display: none;">
+        <h3>效果預覽</h3>
+        <div class="compare-view">
+          <div class="compare-box">
+            <div class="label">原始圖片</div>
+            <img id="originalImage" alt="Original">
+          </div>
+          <div class="compare-box">
+            <div class="label">色階調整後</div>
+            <img id="previewImage" alt="Preview">
+          </div>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">處理中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>📊</span>
+          <span>套用色階</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span>下載圖片</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <div class="settings-panel info-panel">
+        <h3>📋 色階調整說明</h3>
+        <div class="info-content">
+          <p><strong>色階調整</strong>可精確控制圖片明暗範圍：</p>
+          <ul>
+            <li>⬛ <strong>輸入黑點</strong>：設定最暗的像素值，低於此值變為純黑</li>
+            <li>⬜ <strong>輸入白點</strong>：設定最亮的像素值，高於此值變為純白</li>
+            <li>🔘 <strong>中間調 (Gamma)</strong>：調整中間調亮度，不影響黑白兩端</li>
+            <li>📤 <strong>輸出色階</strong>：限制輸出的明暗範圍，用於褪色效果</li>
+          </ul>
+          <p class="info-tip">💡 「自動色階」可自動找出最佳黑白點位置</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
