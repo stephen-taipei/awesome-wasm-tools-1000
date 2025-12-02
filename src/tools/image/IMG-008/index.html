@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-008 TIFF 轉換器 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="TIFF 專業圖片格式轉換，支援多頁 TIFF，可輸出 PNG、JPG、PDF，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-008 <span data-i18n="img008_name">TIFF 轉換器</span></h1>
+        <p data-i18n="img008_desc">TIFF 專業圖片格式轉換，支援多頁 TIFF</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <!-- Status Messages -->
+      <div id="statusMessage" class="status-message"></div>
+
+      <!-- Upload Area -->
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📁</div>
+        <h3 data-i18n="upload_title">拖放 TIFF 圖片到此處</h3>
+        <p data-i18n="upload_subtitle">或點擊選擇檔案</p>
+        <p class="upload-formats" data-i18n="upload_formats_tiff">支援格式：TIFF, TIF</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/tiff,.tiff,.tif">
+      </div>
+
+      <!-- Settings Panel -->
+      <div class="settings-panel">
+        <h3 data-i18n="settings">輸出設定</h3>
+        <div class="setting-row">
+          <label data-i18n="output_format">輸出格式</label>
+          <select id="outputFormat" class="format-select">
+            <option value="png" selected>PNG (無損)</option>
+            <option value="jpg">JPG (壓縮)</option>
+            <option value="webp">WebP (現代)</option>
+          </select>
+        </div>
+        <div class="setting-row" id="qualityRow" style="display: none;">
+          <label data-i18n="quality">品質</label>
+          <input type="range" id="qualitySlider" min="1" max="100" value="92">
+          <span id="qualityValue" class="quality-value">92%</span>
+        </div>
+        <div class="setting-row" id="pageSelectRow" style="display: none;">
+          <label>頁面選擇</label>
+          <select id="pageSelect" class="format-select">
+            <option value="all">全部頁面</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text" data-i18n="converting">轉換中...</p>
+      </div>
+
+      <!-- Multi-page Preview Area -->
+      <div id="multiPagePreview" class="multi-page-preview" style="display: none;">
+        <h3>📄 TIFF 頁面預覽</h3>
+        <div id="pageList" class="page-list"></div>
+      </div>
+
+      <!-- Preview Area -->
+      <div id="previewArea" class="preview-area" style="display: none;">
+        <div class="preview-box">
+          <div class="preview-header">
+            <h4 data-i18n="original">原始圖片</h4>
+            <span id="originalSize" class="file-size">-</span>
+          </div>
+          <div class="preview-image-container">
+            <img id="originalImage" alt="Original">
+          </div>
+        </div>
+        <div class="preview-box">
+          <div class="preview-header">
+            <h4 data-i18n="converted">轉換結果</h4>
+            <span id="convertedSize" class="file-size">-</span>
+          </div>
+          <div class="preview-image-container">
+            <img id="convertedImage" alt="Converted">
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>🔄</span>
+          <span data-i18n="convert">開始轉換</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span id="downloadBtnText" data-i18n="download">下載圖片</span>
+        </button>
+        <button id="downloadAllBtn" class="btn btn-success" style="display: none;">
+          <span>📦</span>
+          <span>下載全部 (ZIP)</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+
+      <!-- Performance Info -->
+      <div id="performanceInfo" class="settings-panel" style="display: none;">
+        <h3>📊 效能資訊</h3>
+        <div class="setting-row">
+          <label>處理時間</label>
+          <span id="processTime">-</span>
+        </div>
+        <div class="setting-row">
+          <label>檔案變化</label>
+          <span id="compressionRatio">-</span>
+        </div>
+        <div class="setting-row">
+          <label>解析度</label>
+          <span id="imageResolution">-</span>
+        </div>
+        <div class="setting-row">
+          <label>頁數</label>
+          <span id="pageCount">-</span>
+        </div>
+      </div>
+
+      <!-- TIFF Format Info -->
+      <div class="settings-panel info-panel">
+        <h3>📋 TIFF 格式說明</h3>
+        <div class="info-content">
+          <p><strong>TIFF (Tagged Image File Format)</strong> 是專業圖片格式，特點如下：</p>
+          <ul>
+            <li>🔷 <strong>無損壓縮</strong>：保留完整畫質，適合專業編輯</li>
+            <li>🔷 <strong>多頁支援</strong>：單一檔案可包含多個頁面/圖層</li>
+            <li>🔷 <strong>色彩深度</strong>：支援 8/16/32 位元色彩</li>
+            <li>🔷 <strong>色彩空間</strong>：支援 RGB、CMYK、Lab 等</li>
+            <li>🔷 <strong>常見用途</strong>：印刷、掃描、攝影後製</li>
+          </ul>
+          <p class="info-tip">💡 瀏覽器對 TIFF 的原生支援有限，建議轉換為 PNG 以便網頁使用</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <!-- UTIF.js for TIFF decoding -->
+  <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.min.js"></script>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
