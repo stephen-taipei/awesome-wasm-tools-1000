@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-048 更換背景 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .upload-box {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .upload-box:hover,
+    .upload-box.drag-over {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-box.loaded {
+      border-color: #22c55e;
+      border-style: solid;
+    }
+
+    .upload-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .upload-text {
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .upload-preview {
+      margin-top: 15px;
+      display: none;
+    }
+
+    .upload-preview img {
+      max-width: 100%;
+      max-height: 150px;
+      border-radius: 8px;
+    }
+
+    .upload-info {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: #aaa;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .options-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .option-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .option-label {
+      width: 100px;
+      color: #aaa;
+    }
+
+    .option-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .option-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: #667eea;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .option-value {
+      width: 60px;
+      text-align: right;
+      color: #667eea;
+    }
+
+    .fit-options {
+      display: flex;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .fit-option {
+      flex: 1;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      color: #aaa;
+    }
+
+    .fit-option:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .fit-option.selected {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.2);
+      color: #e0e0e0;
+    }
+
+    .preview-section {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .preview-container {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .preview-container h3 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 15px;
+    }
+
+    .canvas-wrapper {
+      display: inline-block;
+      position: relative;
+      background-image:
+        linear-gradient(45deg, #333 25%, transparent 25%),
+        linear-gradient(-45deg, #333 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #333 75%),
+        linear-gradient(-45deg, transparent 75%, #333 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    #compositeCanvas {
+      max-width: 100%;
+      max-height: 400px;
+      display: block;
+    }
+
+    .preview-info {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .progress-container {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .status-message.info {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+    }
+
+    .format-select {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .format-select label {
+      flex: 1;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .format-select label:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .format-select input:checked + label,
+    .format-select label:has(input:checked) {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.2);
+    }
+
+    .format-select input {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .upload-section {
+        grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .fit-options {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-048 更換背景</h1>
+      <p class="subtitle">將去背後的圖片放置到新背景上</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-section">
+        <div class="upload-box" id="foregroundUpload">
+          <div class="upload-icon">👤</div>
+          <div class="upload-title">前景圖片</div>
+          <div class="upload-text">PNG 透明背景圖片</div>
+          <div class="upload-preview" id="foregroundPreview">
+            <img id="foregroundImage" src="" alt="Foreground">
+            <div class="upload-info" id="foregroundInfo"></div>
+          </div>
+        </div>
+        <input type="file" id="foregroundInput" accept="image/png,image/webp">
+
+        <div class="upload-box" id="backgroundUpload">
+          <div class="upload-icon">🖼️</div>
+          <div class="upload-title">背景圖片</div>
+          <div class="upload-text">任何圖片格式</div>
+          <div class="upload-preview" id="backgroundPreview">
+            <img id="backgroundImage" src="" alt="Background">
+            <div class="upload-info" id="backgroundInfo"></div>
+          </div>
+        </div>
+        <input type="file" id="backgroundInput" accept="image/png,image/jpeg,image/webp">
+      </div>
+
+      <div class="options-panel" id="optionsPanel">
+        <div class="option-row">
+          <span class="option-label">前景大小</span>
+          <input type="range" class="option-slider" id="scaleSlider" min="10" max="200" value="100">
+          <span class="option-value" id="scaleValue">100%</span>
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">水平位置</span>
+          <input type="range" class="option-slider" id="posXSlider" min="0" max="100" value="50">
+          <span class="option-value" id="posXValue">50%</span>
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">垂直位置</span>
+          <input type="range" class="option-slider" id="posYSlider" min="0" max="100" value="50">
+          <span class="option-value" id="posYValue">50%</span>
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">適應方式</span>
+          <div class="fit-options">
+            <div class="fit-option selected" data-fit="contain">等比縮放</div>
+            <div class="fit-option" data-fit="cover">填滿裁切</div>
+            <div class="fit-option" data-fit="stretch">拉伸填滿</div>
+          </div>
+        </div>
+
+        <div class="format-select">
+          <input type="radio" name="format" value="png" id="formatPng" checked>
+          <label for="formatPng">PNG</label>
+          <input type="radio" name="format" value="jpeg" id="formatJpg">
+          <label for="formatJpg">JPG</label>
+          <input type="radio" name="format" value="webp" id="formatWebp">
+          <label for="formatWebp">WebP</label>
+        </div>
+      </div>
+
+      <div class="preview-section" id="previewSection">
+        <div class="preview-container">
+          <h3>合成預覽</h3>
+          <div class="canvas-wrapper">
+            <canvas id="compositeCanvas"></canvas>
+          </div>
+          <div class="preview-info" id="compositeInfo"></div>
+        </div>
+      </div>
+
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">處理中...</div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="compositeBtn" disabled>
+          <span>🎨</span> 合成圖片
+        </button>
+        <button class="btn btn-secondary" id="downloadBtn" style="display: none;">
+          <span>💾</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn" style="display: none;">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="converter.js"></script>
+</body>
+</html>
