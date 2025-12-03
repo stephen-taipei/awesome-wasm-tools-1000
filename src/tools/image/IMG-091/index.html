@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-091 圖片資訊顯示 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-area {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 50px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .upload-area:hover,
+    .upload-area.drag-over {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .result-section {
+      display: none;
+    }
+
+    .result-section.active {
+      display: block;
+    }
+
+    .result-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .preview-panel {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .preview-panel h3 {
+      font-size: 0.9rem;
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+
+    .image-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 8px;
+      padding: 15px;
+      min-height: 200px;
+    }
+
+    .image-preview img {
+      max-width: 100%;
+      max-height: 300px;
+      display: block;
+    }
+
+    .info-panel {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .info-panel h3 {
+      font-size: 0.9rem;
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+
+    .info-group {
+      margin-bottom: 20px;
+    }
+
+    .info-group-title {
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .info-value {
+      color: #e0e0e0;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: right;
+    }
+
+    .info-value.highlight {
+      color: #667eea;
+    }
+
+    .color-info {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .color-box {
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .copy-btn {
+      padding: 4px 8px;
+      background: rgba(102, 126, 234, 0.2);
+      border: none;
+      border-radius: 4px;
+      color: #667eea;
+      cursor: pointer;
+      font-size: 0.75rem;
+      margin-left: 8px;
+    }
+
+    .copy-btn:hover {
+      background: rgba(102, 126, 234, 0.3);
+    }
+
+    @media (max-width: 768px) {
+      .result-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-091 圖片資訊顯示</h1>
+      <p class="subtitle">顯示圖片詳細資訊（尺寸、格式、檔案大小等）</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">ℹ️</div>
+        <div class="upload-text">點擊或拖放圖片到此處</div>
+        <div class="upload-hint">支援所有常見圖片格式</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*">
+
+      <div class="result-section" id="resultSection">
+        <div class="result-layout">
+          <div class="preview-panel">
+            <h3>圖片預覽</h3>
+            <div class="image-preview">
+              <img id="previewImage" src="" alt="Preview">
+            </div>
+          </div>
+
+          <div class="info-panel">
+            <h3>詳細資訊</h3>
+
+            <div class="info-group">
+              <div class="info-group-title">基本資訊</div>
+              <div class="info-row">
+                <span class="info-label">檔案名稱</span>
+                <span class="info-value" id="fileName">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">檔案格式</span>
+                <span class="info-value" id="fileFormat">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">檔案大小</span>
+                <span class="info-value" id="fileSize">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">最後修改</span>
+                <span class="info-value" id="lastModified">-</span>
+              </div>
+            </div>
+
+            <div class="info-group">
+              <div class="info-group-title">尺寸資訊</div>
+              <div class="info-row">
+                <span class="info-label">寬度</span>
+                <span class="info-value highlight" id="imgWidth">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">高度</span>
+                <span class="info-value highlight" id="imgHeight">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">長寬比</span>
+                <span class="info-value" id="aspectRatio">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">總像素</span>
+                <span class="info-value" id="totalPixels">-</span>
+              </div>
+            </div>
+
+            <div class="info-group">
+              <div class="info-group-title">色彩資訊</div>
+              <div class="info-row">
+                <span class="info-label">色彩深度</span>
+                <span class="info-value" id="colorDepth">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">是否透明</span>
+                <span class="info-value" id="hasAlpha">-</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">估計色彩數</span>
+                <span class="info-value" id="colorCount">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="copyBtn" disabled>
+          <span>📋</span> 複製資訊
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新選擇
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="converter.js"></script>
+</body>
+</html>
