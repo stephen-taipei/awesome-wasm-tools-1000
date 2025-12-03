@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-041 查看 EXIF 資訊 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="查看圖片的 EXIF 元資料（拍攝參數、GPS、設備資訊）">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <style>
+    .exif-container {
+      background: #1a1a2e;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .preview-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 768px) {
+      .preview-section {
+        grid-template-columns: 1fr;
+      }
+    }
+    .preview-box {
+      background: #2d2d44;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .preview-box img {
+      width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      display: block;
+    }
+    .exif-category {
+      margin-bottom: 1.5rem;
+    }
+    .exif-category h4 {
+      margin: 0 0 0.75rem 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #3d3d5c;
+      color: #00d9ff;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .exif-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .exif-table tr {
+      border-bottom: 1px solid #2d2d44;
+    }
+    .exif-table tr:last-child {
+      border-bottom: none;
+    }
+    .exif-table td {
+      padding: 0.5rem 0;
+    }
+    .exif-table td:first-child {
+      color: #888;
+      width: 40%;
+    }
+    .exif-table td:last-child {
+      color: #fff;
+      word-break: break-all;
+    }
+    .no-exif {
+      text-align: center;
+      padding: 2rem;
+      color: #888;
+    }
+    .map-container {
+      height: 200px;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 0.75rem;
+      background: #2d2d44;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .map-container a {
+      color: #00d9ff;
+      text-decoration: none;
+    }
+    .map-container a:hover {
+      text-decoration: underline;
+    }
+    .gps-coords {
+      font-family: monospace;
+      background: #2d2d44;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 0.5rem;
+    }
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #3d3d5c;
+      padding-bottom: 0.5rem;
+    }
+    .tab-btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px 6px 0 0;
+      background: transparent;
+      color: #888;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover {
+      color: #fff;
+    }
+    .tab-btn.active {
+      background: #2d2d44;
+      color: #00d9ff;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .raw-json {
+      background: #1a1a2e;
+      border-radius: 8px;
+      padding: 1rem;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-041 <span data-i18n="img041_name">查看 EXIF 資訊</span></h1>
+        <p data-i18n="img041_desc">查看圖片的 EXIF 元資料</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📷</div>
+        <h3>拖放圖片到此處</h3>
+        <p>或點擊選擇檔案</p>
+        <p class="upload-formats">支援格式：JPG, TIFF, HEIC</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/jpeg,image/tiff,image/heic,.heic">
+      </div>
+
+      <div id="resultPanel" class="settings-panel" style="display: none;">
+        <div class="preview-section">
+          <div class="preview-box">
+            <img id="previewImage" alt="Preview">
+          </div>
+          <div class="exif-container">
+            <h3 style="margin-top: 0;">基本資訊</h3>
+            <table class="exif-table" id="basicInfo"></table>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="camera">📷 相機資訊</button>
+          <button class="tab-btn" data-tab="image">🖼️ 圖片資訊</button>
+          <button class="tab-btn" data-tab="gps">📍 GPS 位置</button>
+          <button class="tab-btn" data-tab="raw">📄 原始資料</button>
+        </div>
+
+        <div id="cameraTab" class="tab-content active">
+          <div class="exif-container">
+            <div id="noCamera" class="no-exif" style="display: none;">
+              此圖片無相機資訊
+            </div>
+            <table class="exif-table" id="cameraInfo"></table>
+          </div>
+        </div>
+
+        <div id="imageTab" class="tab-content">
+          <div class="exif-container">
+            <table class="exif-table" id="imageInfo"></table>
+          </div>
+        </div>
+
+        <div id="gpsTab" class="tab-content">
+          <div class="exif-container">
+            <div id="noGps" class="no-exif" style="display: none;">
+              此圖片無 GPS 定位資訊
+            </div>
+            <div id="gpsContent" style="display: none;">
+              <table class="exif-table" id="gpsInfo"></table>
+              <div class="map-container" id="mapContainer">
+                <a id="mapLink" href="#" target="_blank">🗺️ 在 Google Maps 中查看</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="rawTab" class="tab-content">
+          <div class="exif-container">
+            <pre id="rawJson" class="raw-json"></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span>下載 JSON</span>
+        </button>
+        <button id="copyBtn" class="btn btn-secondary" style="display: none;">
+          <span>📋</span>
+          <span>複製資料</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <div class="settings-panel info-panel">
+        <h3>📋 EXIF 資訊說明</h3>
+        <div class="info-content">
+          <p><strong>EXIF (Exchangeable Image File Format)</strong> 包含圖片的元資料：</p>
+          <ul>
+            <li>📷 <strong>相機資訊</strong>：品牌型號、鏡頭、快門、光圈、ISO</li>
+            <li>📅 <strong>拍攝時間</strong>：原始拍攝日期與時間</li>
+            <li>📍 <strong>GPS 位置</strong>：拍攝地點的經緯度座標</li>
+            <li>🖼️ <strong>圖片資訊</strong>：尺寸、色彩空間、方向</li>
+          </ul>
+          <p class="info-tip">💡 PNG 和 WebP 格式通常不含 EXIF 資訊</p>
+          <p class="info-tip">⚠️ EXIF 可能包含敏感位置資訊，分享前建議清除</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/exif-js@2.3.0/exif.min.js"></script>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
