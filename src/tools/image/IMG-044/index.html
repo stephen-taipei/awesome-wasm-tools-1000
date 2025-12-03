@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-044 批量清除 EXIF - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-area {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 50px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .upload-area:hover,
+    .upload-area.drag-over {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .options-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .options-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .option-group {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .option-group label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 8px;
+      transition: background 0.3s;
+    }
+
+    .option-group label:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .option-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #667eea;
+    }
+
+    .format-select {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .format-select label {
+      flex: 1;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .format-select label:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .format-select input:checked + label,
+    .format-select label:has(input:checked) {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.2);
+    }
+
+    .format-select input {
+      display: none;
+    }
+
+    .file-list {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .file-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .file-list-header h3 {
+      font-size: 1rem;
+      color: #aaa;
+    }
+
+    .file-count {
+      background: rgba(102, 126, 234, 0.3);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+
+    .file-items {
+      max-height: 300px;
+      overflow-y: auto;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 12px 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .file-item:last-child {
+      border-bottom: none;
+    }
+
+    .file-thumb {
+      width: 50px;
+      height: 50px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .file-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .file-name {
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-size {
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    .file-status {
+      font-size: 0.85rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .file-status.pending {
+      background: rgba(255, 255, 255, 0.1);
+      color: #888;
+    }
+
+    .file-status.processing {
+      background: rgba(59, 130, 246, 0.2);
+      color: #3b82f6;
+    }
+
+    .file-status.done {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+
+    .file-status.error {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    .file-remove {
+      background: none;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 5px;
+      transition: color 0.3s;
+    }
+
+    .file-remove:hover {
+      color: #ef4444;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .progress-container {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .status-message.info {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+    }
+
+    .result-summary {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .summary-stats {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 15px 25px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #667eea;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 5px;
+    }
+
+    @media (max-width: 600px) {
+      .button-group {
+        flex-direction: column;
+      }
+
+      .options-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-044 批量清除 EXIF</h1>
+      <p class="subtitle">批量移除多張圖片的 EXIF 資訊</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📦</div>
+        <div class="upload-text">點擊或拖放多張圖片到此處</div>
+        <div class="upload-hint">支援 JPG、PNG 格式，可同時選擇多張</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/jpeg,image/png" multiple>
+
+      <div class="options-panel" id="optionsPanel">
+        <div class="options-row">
+          <div class="option-group">
+            <label>
+              <input type="checkbox" id="keepOrientation">
+              保留圖片方向資訊
+            </label>
+          </div>
+        </div>
+        <div class="format-select">
+          <input type="radio" name="format" value="original" id="formatOriginal" checked>
+          <label for="formatOriginal">保持原格式</label>
+          <input type="radio" name="format" value="jpeg" id="formatJpg">
+          <label for="formatJpg">全部轉 JPG</label>
+          <input type="radio" name="format" value="png" id="formatPng">
+          <label for="formatPng">全部轉 PNG</label>
+        </div>
+      </div>
+
+      <div class="file-list" id="fileList">
+        <div class="file-list-header">
+          <h3>待處理圖片</h3>
+          <span class="file-count" id="fileCount">0 張</span>
+        </div>
+        <div class="file-items" id="fileItems"></div>
+      </div>
+
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">處理中...</div>
+      </div>
+
+      <div class="result-summary" id="resultSummary">
+        <div class="summary-stats">
+          <div class="stat-item">
+            <div class="stat-value" id="statProcessed">0</div>
+            <div class="stat-label">已處理</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="statOriginalSize">0 MB</div>
+            <div class="stat-label">原始大小</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="statNewSize">0 MB</div>
+            <div class="stat-label">處理後大小</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="statSaved">0%</div>
+            <div class="stat-label">節省空間</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="processBtn" disabled>
+          <span>🔒</span> 批量清除 EXIF
+        </button>
+        <button class="btn btn-secondary" id="downloadBtn" style="display: none;">
+          <span>💾</span> 下載 ZIP
+        </button>
+        <button class="btn btn-secondary" id="resetBtn" style="display: none;">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="converter.js"></script>
+</body>
+</html>
