@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-058 證件照製作 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-area {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 50px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .upload-area:hover,
+    .upload-area.drag-over {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-area.has-image {
+      padding: 20px;
+      border-style: solid;
+      border-color: #22c55e;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .editor-section {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .editor-container {
+      display: flex;
+      gap: 20px;
+    }
+
+    .preview-panel {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .preview-panel h3 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .crop-container {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 300px;
+      background: #1a1a2e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    #sourceImage {
+      max-width: 100%;
+      max-height: 400px;
+    }
+
+    .crop-overlay {
+      position: absolute;
+      border: 2px solid #667eea;
+      background: rgba(102, 126, 234, 0.2);
+      cursor: move;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+    }
+
+    .output-preview {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    #outputCanvas {
+      border-radius: 4px;
+      background: white;
+    }
+
+    .output-info {
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .settings-panel {
+      width: 300px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .settings-panel h3 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 15px;
+    }
+
+    .size-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .size-option {
+      padding: 12px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .size-option:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .size-option.selected {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.2);
+    }
+
+    .size-name {
+      font-size: 0.9rem;
+      margin-bottom: 3px;
+    }
+
+    .size-dims {
+      font-size: 0.75rem;
+      color: #888;
+    }
+
+    .option-group {
+      margin-bottom: 20px;
+    }
+
+    .option-label {
+      display: block;
+      color: #aaa;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
+
+    .bg-colors {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .bg-color {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .bg-color:hover {
+      transform: scale(1.1);
+    }
+
+    .bg-color.selected {
+      border-color: white;
+    }
+
+    .layout-options {
+      display: flex;
+      gap: 10px;
+    }
+
+    .layout-option {
+      flex: 1;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.85rem;
+    }
+
+    .layout-option:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .layout-option.selected {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.2);
+    }
+
+    .print-preview {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+    }
+
+    .print-preview h4 {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    #printCanvas {
+      width: 100%;
+      border-radius: 4px;
+      background: white;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .status-message.info {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .editor-container {
+        flex-direction: column;
+      }
+
+      .settings-panel {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-058 證件照製作</h1>
+      <p class="subtitle">製作標準證件照，支援多種尺寸與排版列印</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📷</div>
+        <div class="upload-text">點擊或拖放人像照片到此處</div>
+        <div class="upload-hint">建議使用正面免冠照片，支援 PNG、JPG 格式</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp">
+
+      <div class="editor-section" id="editorSection">
+        <div class="editor-container">
+          <div class="preview-panel">
+            <h3>調整裁切區域</h3>
+            <div class="crop-container" id="cropContainer">
+              <img id="sourceImage" alt="原圖">
+              <div class="crop-overlay" id="cropOverlay"></div>
+            </div>
+          </div>
+
+          <div class="settings-panel">
+            <h3>證件照尺寸</h3>
+            <div class="size-grid" id="sizeGrid">
+              <div class="size-option selected" data-width="295" data-height="413" data-name="1吋">
+                <div class="size-name">1吋</div>
+                <div class="size-dims">25×35mm</div>
+              </div>
+              <div class="size-option" data-width="413" data-height="531" data-name="2吋">
+                <div class="size-name">2吋</div>
+                <div class="size-dims">35×45mm</div>
+              </div>
+              <div class="size-option" data-width="390" data-height="567" data-name="護照">
+                <div class="size-name">護照</div>
+                <div class="size-dims">33×48mm</div>
+              </div>
+              <div class="size-option" data-width="354" data-height="472" data-name="身分證">
+                <div class="size-name">身分證</div>
+                <div class="size-dims">30×40mm</div>
+              </div>
+              <div class="size-option" data-width="260" data-height="378" data-name="小1吋">
+                <div class="size-name">小1吋</div>
+                <div class="size-dims">22×32mm</div>
+              </div>
+              <div class="size-option" data-width="472" data-height="649" data-name="大2吋">
+                <div class="size-name">大2吋</div>
+                <div class="size-dims">40×55mm</div>
+              </div>
+            </div>
+
+            <div class="option-group">
+              <span class="option-label">背景顏色</span>
+              <div class="bg-colors">
+                <div class="bg-color selected" style="background: #ffffff" data-color="#ffffff"></div>
+                <div class="bg-color" style="background: #67b7dc" data-color="#67b7dc"></div>
+                <div class="bg-color" style="background: #dc4c46" data-color="#dc4c46"></div>
+                <div class="bg-color" style="background: #f5f5f5" data-color="#f5f5f5"></div>
+                <div class="bg-color" style="background: #e8f4f8" data-color="#e8f4f8"></div>
+              </div>
+            </div>
+
+            <div class="option-group">
+              <span class="option-label">列印排版</span>
+              <div class="layout-options">
+                <div class="layout-option selected" data-layout="single">單張</div>
+                <div class="layout-option" data-layout="4up">4張排版</div>
+                <div class="layout-option" data-layout="8up">8張排版</div>
+              </div>
+            </div>
+
+            <div class="output-preview">
+              <canvas id="outputCanvas"></canvas>
+              <div class="output-info" id="outputInfo"></div>
+            </div>
+
+            <div class="print-preview" id="printPreview" style="display: none;">
+              <h4>列印排版預覽 (4×6 相紙)</h4>
+              <canvas id="printCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="downloadBtn" disabled>
+          <span>💾</span> 下載證件照
+        </button>
+        <button class="btn btn-secondary" id="downloadPrintBtn" style="display: none;">
+          <span>🖨️</span> 下載列印版
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="converter.js"></script>
+</body>
+</html>
