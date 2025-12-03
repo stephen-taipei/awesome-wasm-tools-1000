@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-039 手寫文字 OCR - Awesome WASM Tools 1000</title>
+  <meta name="description" content="辨識手寫文字（英文/中文）">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <style>
+    .ocr-container {
+      background: #1a1a2e;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .lang-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .lang-btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid #3d3d5c;
+      border-radius: 6px;
+      background: #2d2d44;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .lang-btn:hover {
+      background: #3d3d5c;
+    }
+    .lang-btn.active {
+      background: #00d9ff;
+      color: #000;
+      border-color: #00d9ff;
+    }
+    .result-area {
+      background: #2d2d44;
+      border-radius: 8px;
+      padding: 1rem;
+      min-height: 200px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .result-text {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'Noto Sans TC', sans-serif;
+      line-height: 1.8;
+      color: #e0e0e0;
+    }
+    .result-placeholder {
+      color: #666;
+      text-align: center;
+      padding: 2rem;
+    }
+    .preview-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 640px) {
+      .preview-container {
+        grid-template-columns: 1fr;
+      }
+    }
+    .preview-box {
+      background: #2d2d44;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .preview-box .label {
+      padding: 0.5rem;
+      text-align: center;
+      background: #1a1a2e;
+      font-size: 0.85rem;
+    }
+    .preview-box img {
+      width: 100%;
+      display: block;
+    }
+    .stats-row {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #2d2d44;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .stat-label {
+      color: #888;
+    }
+    .stat-value {
+      color: #00d9ff;
+      font-weight: bold;
+    }
+    .preprocess-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    .preprocess-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .preprocess-option input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    .preprocess-option label {
+      font-size: 0.9rem;
+      color: #ccc;
+      cursor: pointer;
+    }
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .loading-overlay.hidden {
+      display: none;
+    }
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid #3d3d5c;
+      border-top-color: #00d9ff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .loading-text {
+      margin-top: 1rem;
+      color: #fff;
+      font-size: 1rem;
+    }
+    .loading-progress {
+      margin-top: 0.5rem;
+      color: #888;
+      font-size: 0.85rem;
+    }
+    .confidence-badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      margin-left: 0.5rem;
+    }
+    .confidence-high {
+      background: rgba(0, 200, 83, 0.2);
+      color: #00c853;
+    }
+    .confidence-medium {
+      background: rgba(255, 193, 7, 0.2);
+      color: #ffc107;
+    }
+    .confidence-low {
+      background: rgba(244, 67, 54, 0.2);
+      color: #f44336;
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-039 <span data-i18n="img039_name">手寫文字 OCR</span></h1>
+        <p data-i18n="img039_desc">辨識手寫文字（英文/中文）</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">✍️</div>
+        <h3>拖放手寫圖片到此處</h3>
+        <p>或點擊選擇檔案</p>
+        <p class="upload-formats">支援格式：PNG, JPG, WebP</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/png,image/jpeg,image/webp">
+      </div>
+
+      <div id="settingsPanel" class="settings-panel" style="display: none;">
+        <h3>手寫 OCR 設定</h3>
+
+        <div class="ocr-container">
+          <label style="display: block; margin-bottom: 0.5rem; color: #aaa; font-size: 0.9rem;">辨識語言</label>
+          <div class="lang-selector">
+            <button class="lang-btn active" data-lang="eng">英文手寫</button>
+            <button class="lang-btn" data-lang="chi_tra">繁體中文</button>
+            <button class="lang-btn" data-lang="chi_sim">簡體中文</button>
+            <button class="lang-btn" data-lang="jpn">日文</button>
+          </div>
+
+          <label style="display: block; margin: 1rem 0 0.5rem 0; color: #aaa; font-size: 0.9rem;">影像預處理</label>
+          <div class="preprocess-options">
+            <div class="preprocess-option">
+              <input type="checkbox" id="preprocessGrayscale" checked>
+              <label for="preprocessGrayscale">灰階轉換</label>
+            </div>
+            <div class="preprocess-option">
+              <input type="checkbox" id="preprocessContrast" checked>
+              <label for="preprocessContrast">增強對比</label>
+            </div>
+            <div class="preprocess-option">
+              <input type="checkbox" id="preprocessThreshold">
+              <label for="preprocessThreshold">二值化</label>
+            </div>
+            <div class="preprocess-option">
+              <input type="checkbox" id="preprocessInvert">
+              <label for="preprocessInvert">反色</label>
+            </div>
+          </div>
+
+          <div class="preview-container">
+            <div class="preview-box">
+              <div class="label">原始圖片</div>
+              <img id="originalImage" alt="Original">
+            </div>
+            <div class="preview-box">
+              <div class="label">預處理後</div>
+              <img id="processedImage" alt="Processed">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="resultPanel" class="settings-panel" style="display: none;">
+        <h3>辨識結果 <span id="confidenceBadge" class="confidence-badge"></span></h3>
+
+        <div class="result-area">
+          <div id="resultText" class="result-text"></div>
+          <div id="resultPlaceholder" class="result-placeholder">
+            辨識結果將顯示在此處
+          </div>
+        </div>
+
+        <div id="statsRow" class="stats-row" style="display: none;">
+          <div class="stat-item">
+            <span class="stat-label">字數：</span>
+            <span id="charCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">信心度：</span>
+            <span id="confidenceScore" class="stat-value">0%</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">處理時間：</span>
+            <span id="processTime" class="stat-value">0s</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">處理中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>✍️</span>
+          <span>開始辨識手寫</span>
+        </button>
+        <button id="copyBtn" class="btn btn-success" style="display: none;">
+          <span>📋</span>
+          <span>複製文字</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-secondary" style="display: none;">
+          <span>⬇️</span>
+          <span>下載 TXT</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <div class="settings-panel info-panel">
+        <h3>📋 手寫文字 OCR 說明</h3>
+        <div class="info-content">
+          <p><strong>手寫 OCR</strong>專門辨識手寫文字：</p>
+          <ul>
+            <li>✍️ <strong>手寫優化</strong>：針對手寫字體特別調校</li>
+            <li>🔧 <strong>影像預處理</strong>：自動增強手寫圖片品質</li>
+            <li>📊 <strong>信心度顯示</strong>：評估辨識結果可靠程度</li>
+            <li>🌐 <strong>多語言支援</strong>：英文、中文、日文手寫</li>
+          </ul>
+          <p class="info-tip">💡 建議使用白紙黑字、筆跡清晰的手寫圖片</p>
+          <p class="info-tip">⚠️ 手寫辨識難度較高，潦草字跡可能影響準確度</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loading-spinner"></div>
+    <div id="loadingText" class="loading-text">正在載入 OCR 引擎...</div>
+    <div id="loadingProgress" class="loading-progress"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
