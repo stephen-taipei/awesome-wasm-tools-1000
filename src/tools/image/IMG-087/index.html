@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-087 文字添加 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-area {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 50px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .upload-area:hover,
+    .upload-area.drag-over {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .editor-layout {
+      display: none;
+      gap: 20px;
+    }
+
+    .editor-layout.active {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+    }
+
+    .options-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .section-title {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 12px;
+      margin-top: 15px;
+    }
+
+    .section-title:first-child {
+      margin-top: 0;
+    }
+
+    .option-row {
+      margin-bottom: 15px;
+    }
+
+    .option-label {
+      display: block;
+      color: #aaa;
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      resize: vertical;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    textarea {
+      min-height: 60px;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      height: 6px;
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .range-value {
+      min-width: 50px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+
+    .color-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .color-item {
+      flex: 1;
+      text-align: center;
+    }
+
+    .color-item label {
+      display: block;
+      font-size: 0.75rem;
+      color: #888;
+      margin-bottom: 5px;
+    }
+
+    input[type="color"] {
+      width: 100%;
+      height: 35px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch {
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #667eea;
+    }
+
+    .preview-section {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .preview-header h3 {
+      font-size: 0.9rem;
+      color: #667eea;
+    }
+
+    .canvas-container {
+      position: relative;
+      display: inline-block;
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: move;
+    }
+
+    #previewCanvas {
+      display: block;
+      max-width: 100%;
+      max-height: 450px;
+    }
+
+    .preview-info {
+      margin-top: 15px;
+      font-size: 0.8rem;
+      color: #666;
+      text-align: center;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .align-buttons {
+      display: flex;
+      gap: 5px;
+    }
+
+    .align-btn {
+      flex: 1;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid transparent;
+      border-radius: 6px;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+    }
+
+    .align-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .align-btn.active {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.2);
+      color: #e0e0e0;
+    }
+
+    @media (max-width: 768px) {
+      .editor-layout.active {
+        grid-template-columns: 1fr;
+      }
+
+      .options-panel {
+        max-height: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-087 文字添加</h1>
+      <p class="subtitle">在圖片上添加自訂文字標註</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">T</div>
+        <div class="upload-text">點擊或拖放圖片到此處</div>
+        <div class="upload-hint">支援 PNG、JPG、WebP 格式</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp">
+
+      <div class="editor-layout" id="editorLayout">
+        <div class="options-panel">
+          <div class="section-title">文字內容</div>
+          <div class="option-row">
+            <textarea id="textInput" placeholder="輸入文字...">Hello World</textarea>
+          </div>
+
+          <div class="section-title">字型設定</div>
+          <div class="option-row">
+            <label class="option-label">字型</label>
+            <select id="fontFamily">
+              <option value="Arial">Arial</option>
+              <option value="Helvetica">Helvetica</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Verdana">Verdana</option>
+              <option value="Courier New">Courier New</option>
+              <option value="Impact">Impact</option>
+              <option value="Comic Sans MS">Comic Sans MS</option>
+              <option value="Trebuchet MS">Trebuchet MS</option>
+              <option value="Palatino Linotype">Palatino Linotype</option>
+            </select>
+          </div>
+
+          <div class="option-row">
+            <label class="option-label">字體大小</label>
+            <div class="slider-row">
+              <input type="range" id="fontSize" min="12" max="200" value="48">
+              <span class="range-value" id="fontSizeValue">48 px</span>
+            </div>
+          </div>
+
+          <div class="option-row">
+            <label class="option-label">字重</label>
+            <select id="fontWeight">
+              <option value="normal">正常</option>
+              <option value="bold">粗體</option>
+              <option value="lighter">細體</option>
+            </select>
+          </div>
+
+          <div class="option-row">
+            <label class="option-label">字型樣式</label>
+            <select id="fontStyle">
+              <option value="normal">正常</option>
+              <option value="italic">斜體</option>
+            </select>
+          </div>
+
+          <div class="section-title">顏色設定</div>
+          <div class="option-row">
+            <div class="color-row">
+              <div class="color-item">
+                <label>填充色</label>
+                <input type="color" id="fillColor" value="#ffffff">
+              </div>
+              <div class="color-item">
+                <label>描邊色</label>
+                <input type="color" id="strokeColor" value="#000000">
+              </div>
+            </div>
+          </div>
+
+          <div class="option-row">
+            <label class="option-label">描邊寬度</label>
+            <div class="slider-row">
+              <input type="range" id="strokeWidth" min="0" max="20" value="0">
+              <span class="range-value" id="strokeWidthValue">0 px</span>
+            </div>
+          </div>
+
+          <div class="section-title">位置與對齊</div>
+          <div class="option-row">
+            <label class="option-label">水平對齊</label>
+            <div class="align-buttons">
+              <button class="align-btn" data-align="left">左</button>
+              <button class="align-btn active" data-align="center">中</button>
+              <button class="align-btn" data-align="right">右</button>
+            </div>
+          </div>
+
+          <div class="option-row">
+            <label class="option-label">X 位置</label>
+            <div class="slider-row">
+              <input type="range" id="posX" min="0" max="100" value="50">
+              <span class="range-value" id="posXValue">50%</span>
+            </div>
+          </div>
+
+          <div class="option-row">
+            <label class="option-label">Y 位置</label>
+            <div class="slider-row">
+              <input type="range" id="posY" min="0" max="100" value="50">
+              <span class="range-value" id="posYValue">50%</span>
+            </div>
+          </div>
+
+          <div class="option-row">
+            <label class="option-label">旋轉角度</label>
+            <div class="slider-row">
+              <input type="range" id="rotation" min="-180" max="180" value="0">
+              <span class="range-value" id="rotationValue">0°</span>
+            </div>
+          </div>
+
+          <div class="section-title">效果</div>
+          <div class="option-row">
+            <label class="option-label">透明度</label>
+            <div class="slider-row">
+              <input type="range" id="opacity" min="0" max="100" value="100">
+              <span class="range-value" id="opacityValue">100%</span>
+            </div>
+          </div>
+
+          <div class="option-row">
+            <div class="checkbox-row">
+              <input type="checkbox" id="enableShadow">
+              <label for="enableShadow">啟用陰影</label>
+            </div>
+          </div>
+
+          <div class="option-row" id="shadowOptions" style="display: none;">
+            <label class="option-label">陰影模糊</label>
+            <div class="slider-row">
+              <input type="range" id="shadowBlur" min="0" max="30" value="5">
+              <span class="range-value" id="shadowBlurValue">5 px</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-section">
+          <div class="preview-header">
+            <h3>預覽結果</h3>
+            <span id="previewInfo"></span>
+          </div>
+          <div class="canvas-container">
+            <canvas id="previewCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="downloadBtn" disabled>
+          <span>💾</span> 下載 PNG
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="converter.js"></script>
+</body>
+</html>
