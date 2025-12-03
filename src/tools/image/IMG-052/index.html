@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-052 多圖垂直拼接 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-area {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 50px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .upload-area:hover,
+    .upload-area.drag-over {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .options-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .option-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .option-label {
+      width: 100px;
+      color: #aaa;
+    }
+
+    .option-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .option-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: #667eea;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .option-value {
+      width: 60px;
+      text-align: right;
+      color: #667eea;
+    }
+
+    .color-picker-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .color-picker {
+      width: 40px;
+      height: 32px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .color-picker::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    .color-picker::-webkit-color-swatch {
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    .align-options {
+      display: flex;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .align-option {
+      flex: 1;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+
+    .align-option:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .align-option.selected {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.2);
+      color: #e0e0e0;
+    }
+
+    .image-list {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .image-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .image-list-header h3 {
+      font-size: 1rem;
+      color: #aaa;
+    }
+
+    .image-count {
+      background: rgba(102, 126, 234, 0.3);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+
+    .sortable-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .sortable-item {
+      position: relative;
+      cursor: grab;
+      transition: transform 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .sortable-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .sortable-item.dragging {
+      opacity: 0.5;
+    }
+
+    .sortable-item img {
+      width: 80px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .sortable-item .item-info {
+      flex: 1;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    .sortable-item .order-badge {
+      background: rgba(102, 126, 234, 0.5);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+    }
+
+    .sortable-item .remove-btn {
+      width: 28px;
+      height: 28px;
+      background: rgba(239, 68, 68, 0.8);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .sortable-item:hover .remove-btn {
+      opacity: 1;
+    }
+
+    .preview-section {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .preview-container {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      overflow: auto;
+      max-height: 400px;
+    }
+
+    .preview-container h3 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 15px;
+    }
+
+    #previewCanvas {
+      max-width: 100%;
+      border-radius: 8px;
+    }
+
+    .preview-info {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .format-select {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .format-select label {
+      flex: 1;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .format-select label:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .format-select input:checked + label,
+    .format-select label:has(input:checked) {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.2);
+    }
+
+    .format-select input {
+      display: none;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .status-message.info {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+    }
+
+    .drag-hint {
+      font-size: 0.85rem;
+      color: #666;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .button-group {
+        flex-direction: column;
+      }
+
+      .align-options {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-052 多圖垂直拼接</h1>
+      <p class="subtitle">將多張圖片垂直縱向拼接成一張</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">⬇️</div>
+        <div class="upload-text">點擊或拖放多張圖片到此處</div>
+        <div class="upload-hint">支援 PNG、JPG、WebP 格式，可同時選擇多張</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" multiple>
+
+      <div class="image-list" id="imageList">
+        <div class="image-list-header">
+          <h3>拖放調整順序（由上而下）</h3>
+          <span class="image-count" id="imageCount">0 張</span>
+        </div>
+        <div class="sortable-list" id="sortableList"></div>
+        <div class="drag-hint">拖放圖片可調整拼接順序</div>
+      </div>
+
+      <div class="options-panel" id="optionsPanel">
+        <div class="option-row">
+          <span class="option-label">圖片間距</span>
+          <input type="range" class="option-slider" id="gapSlider" min="0" max="50" value="0">
+          <span class="option-value" id="gapValue">0px</span>
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">水平對齊</span>
+          <div class="align-options">
+            <div class="align-option" data-align="left">靠左</div>
+            <div class="align-option selected" data-align="center">置中</div>
+            <div class="align-option" data-align="right">靠右</div>
+          </div>
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">背景色</span>
+          <div class="color-picker-row">
+            <input type="color" class="color-picker" id="bgColor" value="#ffffff">
+            <span style="color: #888;">（間距填充色）</span>
+          </div>
+        </div>
+
+        <div class="format-select">
+          <input type="radio" name="format" value="png" id="formatPng" checked>
+          <label for="formatPng">PNG</label>
+          <input type="radio" name="format" value="jpeg" id="formatJpg">
+          <label for="formatJpg">JPG</label>
+          <input type="radio" name="format" value="webp" id="formatWebp">
+          <label for="formatWebp">WebP</label>
+        </div>
+      </div>
+
+      <div class="preview-section" id="previewSection">
+        <div class="preview-container">
+          <h3>拼接預覽</h3>
+          <canvas id="previewCanvas"></canvas>
+          <div class="preview-info" id="previewInfo"></div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="mergeBtn" disabled>
+          <span>⬇️</span> 垂直拼接
+        </button>
+        <button class="btn btn-secondary" id="downloadBtn" style="display: none;">
+          <span>💾</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn" style="display: none;">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="converter.js"></script>
+</body>
+</html>
