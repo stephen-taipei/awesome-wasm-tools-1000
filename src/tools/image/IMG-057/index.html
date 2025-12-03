@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-057 照片拼貼模板 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .step-section {
+      margin-bottom: 25px;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .step-number {
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .step-title {
+      font-size: 1rem;
+      color: #aaa;
+    }
+
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .template-item {
+      aspect-ratio: 1;
+      background: rgba(0, 0, 0, 0.3);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .template-item:hover {
+      border-color: rgba(102, 126, 234, 0.5);
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .template-item.selected {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.2);
+    }
+
+    .template-preview {
+      width: 80px;
+      height: 80px;
+      display: grid;
+      gap: 3px;
+      margin-bottom: 8px;
+    }
+
+    .template-preview div {
+      background: rgba(102, 126, 234, 0.5);
+      border-radius: 3px;
+    }
+
+    .template-name {
+      font-size: 0.8rem;
+      color: #aaa;
+    }
+
+    .editor-section {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .editor-container {
+      display: flex;
+      gap: 20px;
+    }
+
+    .canvas-wrapper {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .canvas-wrapper h3 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 15px;
+    }
+
+    #collageCanvas {
+      max-width: 100%;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .slots-panel {
+      width: 280px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 15px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .slots-panel h3 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 15px;
+    }
+
+    .slot-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .slot-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .slot-item.active {
+      border: 2px solid #667eea;
+    }
+
+    .slot-item.filled {
+      border-left: 3px solid #22c55e;
+    }
+
+    .slot-preview {
+      width: 50px;
+      height: 50px;
+      background: rgba(102, 126, 234, 0.3);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      overflow: hidden;
+    }
+
+    .slot-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .slot-info {
+      flex: 1;
+    }
+
+    .slot-label {
+      font-size: 0.9rem;
+      margin-bottom: 3px;
+    }
+
+    .slot-size {
+      font-size: 0.75rem;
+      color: #666;
+    }
+
+    .slot-actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .slot-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+
+    .slot-btn.upload {
+      background: rgba(102, 126, 234, 0.5);
+      color: white;
+    }
+
+    .slot-btn.remove {
+      background: rgba(239, 68, 68, 0.5);
+      color: white;
+      display: none;
+    }
+
+    .slot-item.filled .slot-btn.remove {
+      display: block;
+    }
+
+    .options-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .option-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .option-label {
+      width: 100px;
+      color: #aaa;
+    }
+
+    .option-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .option-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: #667eea;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .option-value {
+      width: 60px;
+      text-align: right;
+      color: #667eea;
+    }
+
+    .color-picker-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .color-picker {
+      width: 40px;
+      height: 30px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .color-presets {
+      display: flex;
+      gap: 5px;
+    }
+
+    .color-preset {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .color-preset:hover,
+    .color-preset.active {
+      border-color: white;
+      transform: scale(1.1);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .status-message.info {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .output-info {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    @media (max-width: 768px) {
+      .editor-container {
+        flex-direction: column;
+      }
+
+      .slots-panel {
+        width: 100%;
+        max-height: 200px;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .template-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-057 照片拼貼模板</h1>
+      <p class="subtitle">使用預設模板快速製作精美拼貼畫</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="step-section">
+        <div class="step-header">
+          <span class="step-number">1</span>
+          <span class="step-title">選擇拼貼模板</span>
+        </div>
+        <div class="template-grid" id="templateGrid"></div>
+      </div>
+
+      <div class="editor-section" id="editorSection">
+        <div class="step-header">
+          <span class="step-number">2</span>
+          <span class="step-title">編輯拼貼照片</span>
+        </div>
+        <div class="editor-container">
+          <div class="canvas-wrapper">
+            <h3>拼貼預覽</h3>
+            <canvas id="collageCanvas"></canvas>
+            <div class="output-info" id="outputInfo"></div>
+          </div>
+          <div class="slots-panel">
+            <h3>照片位置</h3>
+            <div id="slotsList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="options-panel" id="optionsPanel">
+        <div class="option-row">
+          <span class="option-label">間距大小</span>
+          <input type="range" class="option-slider" id="gapSlider" min="0" max="30" value="10">
+          <span class="option-value" id="gapValue">10px</span>
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">圓角大小</span>
+          <input type="range" class="option-slider" id="radiusSlider" min="0" max="30" value="8">
+          <span class="option-value" id="radiusValue">8px</span>
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">背景顏色</span>
+          <div class="color-picker-wrapper">
+            <input type="color" class="color-picker" id="bgColorPicker" value="#1a1a2e">
+            <div class="color-presets">
+              <div class="color-preset active" style="background: #1a1a2e" data-color="#1a1a2e"></div>
+              <div class="color-preset" style="background: #ffffff" data-color="#ffffff"></div>
+              <div class="color-preset" style="background: #000000" data-color="#000000"></div>
+              <div class="color-preset" style="background: #f5f5f5" data-color="#f5f5f5"></div>
+              <div class="color-preset" style="background: #fef3c7" data-color="#fef3c7"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="downloadBtn" disabled>
+          <span>💾</span> 下載拼貼圖
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp">
+
+  <script src="converter.js"></script>
+</body>
+</html>
