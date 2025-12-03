@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-042 編輯 EXIF 資訊 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="編輯或修改圖片的 EXIF 資訊">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <style>
+    .exif-container {
+      background: #1a1a2e;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .preview-section {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 768px) {
+      .preview-section {
+        grid-template-columns: 1fr;
+      }
+    }
+    .preview-box {
+      background: #2d2d44;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .preview-box img {
+      width: 100%;
+      max-height: 250px;
+      object-fit: contain;
+      display: block;
+    }
+    .edit-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .form-group label {
+      font-size: 0.9rem;
+      color: #aaa;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 0.75rem;
+      border: 1px solid #3d3d5c;
+      border-radius: 6px;
+      background: #2d2d44;
+      color: #fff;
+      font-size: 0.95rem;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #00d9ff;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 500px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+    .section-title {
+      font-size: 1rem;
+      color: #00d9ff;
+      margin: 1.5rem 0 1rem 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #3d3d5c;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-title:first-child {
+      margin-top: 0;
+    }
+    .gps-input {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.5rem;
+    }
+    .gps-input input {
+      flex: 1;
+    }
+    .gps-input select {
+      width: 70px;
+    }
+    .clear-btn {
+      padding: 0.5rem;
+      background: #3d3d5c;
+      border: none;
+      border-radius: 4px;
+      color: #888;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .clear-btn:hover {
+      background: #f44336;
+      color: #fff;
+    }
+    .warning-box {
+      background: rgba(255, 193, 7, 0.1);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .warning-box p {
+      margin: 0;
+      color: #ffc107;
+      font-size: 0.9rem;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+    .no-exif {
+      text-align: center;
+      padding: 2rem;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>IMG-042 <span data-i18n="img042_name">編輯 EXIF 資訊</span></h1>
+        <p data-i18n="img042_desc">編輯或修改圖片的 EXIF 資訊</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">✏️</div>
+        <h3>拖放圖片到此處</h3>
+        <p>或點擊選擇檔案</p>
+        <p class="upload-formats">支援格式：JPG</p>
+        <input type="file" id="fileInput" class="file-input" accept="image/jpeg">
+      </div>
+
+      <div id="editPanel" class="settings-panel" style="display: none;">
+        <h3>編輯 EXIF 資訊</h3>
+
+        <div class="warning-box">
+          <p>⚠️ 注意：修改 EXIF 會重新編碼圖片，可能造成輕微品質損失</p>
+        </div>
+
+        <div class="exif-container">
+          <div class="preview-section">
+            <div class="preview-box">
+              <img id="previewImage" alt="Preview">
+            </div>
+            <div class="edit-form">
+              <h4 class="section-title">📷 相機資訊</h4>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>相機品牌</label>
+                  <input type="text" id="make" placeholder="例：Canon">
+                </div>
+                <div class="form-group">
+                  <label>相機型號</label>
+                  <input type="text" id="model" placeholder="例：EOS R5">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>軟體</label>
+                <input type="text" id="software" placeholder="例：Adobe Lightroom">
+              </div>
+
+              <h4 class="section-title">📅 日期時間</h4>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>拍攝日期</label>
+                  <input type="date" id="dateOriginal">
+                </div>
+                <div class="form-group">
+                  <label>拍攝時間</label>
+                  <input type="time" id="timeOriginal" step="1">
+                </div>
+              </div>
+
+              <h4 class="section-title">📍 GPS 位置</h4>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>緯度</label>
+                  <div class="gps-input">
+                    <input type="number" id="latitude" step="0.000001" placeholder="例：25.033964">
+                    <select id="latRef">
+                      <option value="N">N</option>
+                      <option value="S">S</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>經度</label>
+                  <div class="gps-input">
+                    <input type="number" id="longitude" step="0.000001" placeholder="例：121.564468">
+                    <select id="lngRef">
+                      <option value="E">E</option>
+                      <option value="W">W</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="checkbox-group">
+                  <input type="checkbox" id="clearGps">
+                  <label for="clearGps">清除 GPS 資訊</label>
+                </div>
+              </div>
+
+              <h4 class="section-title">📝 描述</h4>
+
+              <div class="form-group">
+                <label>圖片標題</label>
+                <input type="text" id="imageTitle" placeholder="輸入圖片標題">
+              </div>
+
+              <div class="form-group">
+                <label>圖片描述</label>
+                <textarea id="imageDescription" rows="3" placeholder="輸入圖片描述"></textarea>
+              </div>
+
+              <div class="form-group">
+                <label>作者</label>
+                <input type="text" id="artist" placeholder="輸入攝影師名稱">
+              </div>
+
+              <div class="form-group">
+                <label>版權</label>
+                <input type="text" id="copyright" placeholder="例：© 2024 Your Name">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">處理中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary" disabled>
+          <span>💾</span>
+          <span>儲存變更</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span>下載圖片</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span>重置</span>
+        </button>
+      </div>
+
+      <div class="settings-panel info-panel">
+        <h3>📋 編輯 EXIF 說明</h3>
+        <div class="info-content">
+          <p><strong>EXIF 編輯</strong>可修改圖片的元資料：</p>
+          <ul>
+            <li>📷 <strong>相機資訊</strong>：品牌、型號、軟體</li>
+            <li>📅 <strong>日期時間</strong>：修正拍攝日期與時間</li>
+            <li>📍 <strong>GPS 位置</strong>：新增或修改地理位置</li>
+            <li>📝 <strong>描述資訊</strong>：標題、描述、作者、版權</li>
+          </ul>
+          <p class="info-tip">💡 留空的欄位將保留原始值</p>
+          <p class="info-tip">⚠️ 目前僅支援 JPG 格式的 EXIF 編輯</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/exif-js@2.3.0/exif.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js"></script>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./converter.js"></script>
+</body>
+</html>
