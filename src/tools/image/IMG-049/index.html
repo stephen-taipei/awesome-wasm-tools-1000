@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-049 背景模糊 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-area {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 50px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .upload-area:hover,
+    .upload-area.drag-over {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .options-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .option-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .option-label {
+      width: 120px;
+      color: #aaa;
+    }
+
+    .option-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .option-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: #667eea;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .option-value {
+      width: 60px;
+      text-align: right;
+      color: #667eea;
+    }
+
+    .mode-options {
+      display: flex;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .mode-option {
+      flex: 1;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+
+    .mode-option:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .mode-option.selected {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.2);
+      color: #e0e0e0;
+    }
+
+    .preview-section {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .preview-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .preview-box {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .preview-box h3 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .preview-box canvas,
+    .preview-box img {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 8px;
+    }
+
+    .preview-info {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .progress-container {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .status-message.info {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+    }
+
+    .note-box {
+      background: rgba(234, 179, 8, 0.1);
+      border: 1px solid rgba(234, 179, 8, 0.3);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      color: #eab308;
+    }
+
+    @media (max-width: 600px) {
+      .preview-container {
+        grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .mode-options {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-049 背景模糊</h1>
+      <p class="subtitle">保留主體清晰，模糊背景（景深效果）</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="note-box">
+        💡 提示：此工具使用簡易前景偵測。若需更精準的主體分離，建議先使用「智慧去背」工具處理後再進行合成。
+      </div>
+
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">🌫️</div>
+        <div class="upload-text">點擊或拖放圖片到此處</div>
+        <div class="upload-hint">支援 PNG、JPG、WebP 格式</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp">
+
+      <div class="options-panel" id="optionsPanel">
+        <div class="option-row">
+          <span class="option-label">模糊強度</span>
+          <input type="range" class="option-slider" id="blurSlider" min="1" max="30" value="10">
+          <span class="option-value" id="blurValue">10px</span>
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">主體範圍</span>
+          <input type="range" class="option-slider" id="focusSlider" min="10" max="90" value="50">
+          <span class="option-value" id="focusValue">50%</span>
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">模糊模式</span>
+          <div class="mode-options">
+            <div class="mode-option selected" data-mode="center">中央對焦</div>
+            <div class="mode-option" data-mode="radial">徑向漸變</div>
+            <div class="mode-option" data-mode="tilt">移軸效果</div>
+          </div>
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">邊緣過渡</span>
+          <input type="range" class="option-slider" id="transitionSlider" min="0" max="100" value="30">
+          <span class="option-value" id="transitionValue">30%</span>
+        </div>
+      </div>
+
+      <div class="preview-section" id="previewSection">
+        <div class="preview-container">
+          <div class="preview-box">
+            <h3>原始圖片</h3>
+            <img id="originalPreview" src="" alt="Original">
+            <div class="preview-info" id="originalInfo"></div>
+          </div>
+          <div class="preview-box">
+            <h3>背景模糊效果</h3>
+            <canvas id="resultCanvas"></canvas>
+            <div class="preview-info" id="resultInfo"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">處理中...</div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="applyBtn" disabled>
+          <span>🌫️</span> 套用模糊
+        </button>
+        <button class="btn btn-secondary" id="downloadBtn" style="display: none;">
+          <span>💾</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn" style="display: none;">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="converter.js"></script>
+</body>
+</html>
