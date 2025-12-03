@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-090 馬克筆高亮 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-area {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 50px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .upload-area:hover,
+    .upload-area.drag-over {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .editor-layout {
+      display: none;
+      gap: 20px;
+    }
+
+    .editor-layout.active {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+    }
+
+    .options-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .section-title {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 12px;
+      margin-top: 15px;
+    }
+
+    .section-title:first-child {
+      margin-top: 0;
+    }
+
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .color-btn {
+      width: 100%;
+      aspect-ratio: 1;
+      border: 3px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .color-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .color-btn.active {
+      border-color: #fff;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    .color-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 5px;
+      opacity: 0.7;
+    }
+
+    .option-row {
+      margin-bottom: 15px;
+    }
+
+    .option-label {
+      display: block;
+      color: #aaa;
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      height: 6px;
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .range-value {
+      min-width: 50px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+
+    .preview-section {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .preview-header h3 {
+      font-size: 0.9rem;
+      color: #667eea;
+    }
+
+    .canvas-container {
+      position: relative;
+      display: inline-block;
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    #previewCanvas {
+      display: block;
+      max-width: 100%;
+      max-height: 500px;
+      cursor: crosshair;
+    }
+
+    .preview-info {
+      margin-top: 15px;
+      font-size: 0.8rem;
+      color: #666;
+      text-align: center;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 15px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 8px;
+      color: #e0e0e0;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .action-btn.danger {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+
+    .action-btn.danger:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+
+    .brush-preview {
+      margin-top: 15px;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .brush-preview-label {
+      font-size: 0.75rem;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .brush-sample {
+      height: 20px;
+      border-radius: 10px;
+      margin: 0 auto;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .hint-text {
+      font-size: 0.75rem;
+      color: #666;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+      .editor-layout.active {
+        grid-template-columns: 1fr;
+      }
+
+      .color-grid {
+        grid-template-columns: repeat(6, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-090 馬克筆高亮</h1>
+      <p class="subtitle">在圖片上添加螢光筆高亮效果</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">🖍️</div>
+        <div class="upload-text">點擊或拖放圖片到此處</div>
+        <div class="upload-hint">支援 PNG、JPG、WebP 格式</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp">
+
+      <div class="editor-layout" id="editorLayout">
+        <div class="options-panel">
+          <div class="section-title">螢光筆顏色</div>
+          <div class="color-grid" id="colorGrid">
+            <button class="color-btn active" data-color="#ffff00" style="background: #ffff00;"></button>
+            <button class="color-btn" data-color="#00ff00" style="background: #00ff00;"></button>
+            <button class="color-btn" data-color="#00ffff" style="background: #00ffff;"></button>
+            <button class="color-btn" data-color="#ff69b4" style="background: #ff69b4;"></button>
+            <button class="color-btn" data-color="#ffa500" style="background: #ffa500;"></button>
+            <button class="color-btn" data-color="#ff6347" style="background: #ff6347;"></button>
+            <button class="color-btn" data-color="#9370db" style="background: #9370db;"></button>
+            <button class="color-btn" data-color="#87ceeb" style="background: #87ceeb;"></button>
+          </div>
+
+          <div class="section-title">筆刷大小</div>
+          <div class="option-row">
+            <div class="slider-row">
+              <input type="range" id="brushSize" min="10" max="80" value="30">
+              <span class="range-value" id="brushSizeValue">30 px</span>
+            </div>
+          </div>
+
+          <div class="section-title">透明度</div>
+          <div class="option-row">
+            <div class="slider-row">
+              <input type="range" id="brushOpacity" min="10" max="80" value="40">
+              <span class="range-value" id="brushOpacityValue">40%</span>
+            </div>
+          </div>
+
+          <div class="brush-preview">
+            <div class="brush-preview-label">筆刷預覽</div>
+            <div class="brush-sample" id="brushSample"></div>
+          </div>
+
+          <div class="action-buttons">
+            <button class="action-btn" id="undoBtn">復原</button>
+            <button class="action-btn danger" id="clearBtn">清除全部</button>
+          </div>
+
+          <div class="hint-text">
+            按住滑鼠拖曳繪製高亮。<br>
+            使用較低透明度可達到更自然的螢光效果。
+          </div>
+        </div>
+
+        <div class="preview-section">
+          <div class="preview-header">
+            <h3>預覽 (拖曳繪製高亮)</h3>
+            <span id="previewInfo"></span>
+          </div>
+          <div class="canvas-container">
+            <canvas id="previewCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="downloadBtn" disabled>
+          <span>💾</span> 下載 PNG
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="converter.js"></script>
+</body>
+</html>
