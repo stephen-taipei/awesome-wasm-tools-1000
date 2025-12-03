@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-102 Base64 轉圖片 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .input-section {
+      margin-bottom: 20px;
+    }
+
+    .input-section h3 {
+      font-size: 0.9rem;
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+
+    .input-hint {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .input-textarea {
+      width: 100%;
+      height: 200px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 15px;
+      color: #e0e0e0;
+      font-family: monospace;
+      font-size: 0.85rem;
+      resize: vertical;
+      word-break: break-all;
+      transition: border-color 0.3s;
+    }
+
+    .input-textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .input-textarea::placeholder {
+      color: #666;
+    }
+
+    .input-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .input-action-btn {
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 8px;
+      color: #e0e0e0;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .input-action-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .result-section {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result-section.active {
+      display: block;
+    }
+
+    .result-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .preview-panel {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .preview-panel h3 {
+      font-size: 0.9rem;
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+
+    .image-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 8px;
+      padding: 20px;
+      min-height: 250px;
+    }
+
+    .image-preview img {
+      max-width: 100%;
+      max-height: 300px;
+    }
+
+    .info-panel {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .info-panel h3 {
+      font-size: 0.9rem;
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+
+    .info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+    }
+
+    .info-label {
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .info-value {
+      color: #e0e0e0;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+
+    .download-options {
+      margin-top: 20px;
+    }
+
+    .download-options h4 {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .format-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .format-btn {
+      flex: 1;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 8px;
+      color: #e0e0e0;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .format-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .format-btn.active {
+      background: rgba(102, 126, 234, 0.3);
+      color: #667eea;
+    }
+
+    .error-message {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .error-message.active {
+      display: block;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    @media (max-width: 768px) {
+      .result-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .format-buttons {
+        flex-wrap: wrap;
+      }
+
+      .format-btn {
+        flex: 1 1 45%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-102 Base64 轉圖片</h1>
+      <p class="subtitle">將 Base64 編碼還原為圖片檔案</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="input-section">
+        <h3>輸入 Base64 字串</h3>
+        <p class="input-hint">支援 Data URL 格式（含 data:image/...;base64, 前綴）或純 Base64 編碼</p>
+        <textarea class="input-textarea" id="inputText" placeholder="在此貼上 Base64 編碼字串...
+
+範例:
+data:image/png;base64,iVBORw0KGgoAAAA...
+或
+iVBORw0KGgoAAAA..."></textarea>
+        <div class="input-actions">
+          <button class="input-action-btn" id="pasteBtn">
+            <span>📋</span> 從剪貼簿貼上
+          </button>
+          <button class="input-action-btn" id="clearBtn">
+            <span>🗑️</span> 清除
+          </button>
+          <button class="input-action-btn" id="sampleBtn">
+            <span>📝</span> 載入範例
+          </button>
+        </div>
+      </div>
+
+      <div class="error-message" id="errorMessage"></div>
+
+      <div class="result-section" id="resultSection">
+        <div class="result-layout">
+          <div class="preview-panel">
+            <h3>圖片預覽</h3>
+            <div class="image-preview">
+              <img id="previewImage" src="" alt="Preview">
+            </div>
+          </div>
+
+          <div class="info-panel">
+            <h3>圖片資訊</h3>
+            <div class="info-list">
+              <div class="info-item">
+                <span class="info-label">尺寸</span>
+                <span class="info-value" id="dimensions">-</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">偵測格式</span>
+                <span class="info-value" id="format">-</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Base64 大小</span>
+                <span class="info-value" id="base64Size">-</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">圖片大小</span>
+                <span class="info-value" id="imageSize">-</span>
+              </div>
+            </div>
+
+            <div class="download-options">
+              <h4>下載格式</h4>
+              <div class="format-buttons">
+                <button class="format-btn active" data-format="png">PNG</button>
+                <button class="format-btn" data-format="jpg">JPG</button>
+                <button class="format-btn" data-format="webp">WebP</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="convertBtn">
+          <span>🖼️</span> 轉換
+        </button>
+        <button class="btn btn-primary" id="downloadBtn" disabled>
+          <span>💾</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="converter.js"></script>
+</body>
+</html>
