@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-069 浮雕效果 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-area {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 50px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .upload-area:hover,
+    .upload-area.drag-over {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .preview-section {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .preview-panel {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .preview-panel h3 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .preview-panel canvas {
+      max-width: 100%;
+      max-height: 350px;
+      border-radius: 8px;
+    }
+
+    .preview-info {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .options-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .option-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .option-label {
+      width: 120px;
+      color: #aaa;
+    }
+
+    .option-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .option-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: #667eea;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .option-value {
+      width: 80px;
+      text-align: right;
+      color: #667eea;
+    }
+
+    .direction-options {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    .direction-btn {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.3s;
+    }
+
+    .direction-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .direction-btn.active {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.2);
+      color: #e0e0e0;
+    }
+
+    .style-options {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    .style-btn {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.3s;
+    }
+
+    .style-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .style-btn.active {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.2);
+      color: #e0e0e0;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    @media (max-width: 700px) {
+      .preview-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-069 浮雕效果</h1>
+      <p class="subtitle">產生浮雕/凸起的立體效果</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">🗿</div>
+        <div class="upload-text">點擊或拖放圖片到此處</div>
+        <div class="upload-hint">支援 PNG、JPG、WebP 格式</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp">
+
+      <div class="options-panel" id="optionsPanel">
+        <div class="option-row">
+          <span class="option-label">光源方向</span>
+          <div class="direction-options">
+            <button class="direction-btn" data-direction="tl">↖ 左上</button>
+            <button class="direction-btn" data-direction="t">↑ 上</button>
+            <button class="direction-btn" data-direction="tr">↗ 右上</button>
+            <button class="direction-btn" data-direction="l">← 左</button>
+            <button class="direction-btn" data-direction="r">→ 右</button>
+            <button class="direction-btn active" data-direction="bl">↙ 左下</button>
+            <button class="direction-btn" data-direction="b">↓ 下</button>
+            <button class="direction-btn" data-direction="br">↘ 右下</button>
+          </div>
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">深度強度</span>
+          <input type="range" class="option-slider" id="strengthSlider" min="1" max="10" value="5">
+          <span class="option-value" id="strengthValue">5</span>
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">效果樣式</span>
+          <div class="style-options">
+            <button class="style-btn active" data-style="emboss">浮雕</button>
+            <button class="style-btn" data-style="deboss">凹雕</button>
+            <button class="style-btn" data-style="color">彩色浮雕</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-section" id="previewSection">
+        <div class="preview-grid">
+          <div class="preview-panel">
+            <h3>原圖</h3>
+            <canvas id="originalCanvas"></canvas>
+          </div>
+          <div class="preview-panel">
+            <h3>浮雕效果</h3>
+            <canvas id="resultCanvas"></canvas>
+            <div class="preview-info" id="previewInfo"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="downloadBtn" disabled>
+          <span>💾</span> 下載浮雕圖
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="converter.js"></script>
+</body>
+</html>
