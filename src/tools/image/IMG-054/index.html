@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-054 自訂網格拼圖 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .grid-settings {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .setting-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .setting-label {
+      color: #aaa;
+    }
+
+    .number-input {
+      width: 60px;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      color: #e0e0e0;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    .number-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .apply-grid-btn {
+      padding: 8px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .apply-grid-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+    }
+
+    .grid-container {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 20px;
+      max-height: 500px;
+      overflow: auto;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+    }
+
+    .grid-cell {
+      aspect-ratio: 1;
+      min-height: 80px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px dashed rgba(102, 126, 234, 0.3);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .grid-cell:hover {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .grid-cell.has-image {
+      border-style: solid;
+      border-color: #667eea;
+    }
+
+    .grid-cell img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .grid-cell .cell-placeholder {
+      color: #555;
+      font-size: 0.75rem;
+      text-align: center;
+    }
+
+    .grid-cell .cell-number {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      background: rgba(102, 126, 234, 0.8);
+      color: white;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .grid-cell .remove-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 20px;
+      height: 20px;
+      background: rgba(239, 68, 68, 0.9);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .grid-cell:hover .remove-btn {
+      opacity: 1;
+    }
+
+    .options-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .option-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .option-label {
+      width: 100px;
+      color: #aaa;
+    }
+
+    .option-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .option-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: #667eea;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .option-value {
+      width: 60px;
+      text-align: right;
+      color: #667eea;
+    }
+
+    .color-picker-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .color-picker {
+      width: 40px;
+      height: 32px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .color-picker::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    .color-picker::-webkit-color-swatch {
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    .preview-section {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .preview-container {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      overflow: auto;
+    }
+
+    .preview-container h3 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 15px;
+    }
+
+    #previewCanvas {
+      max-width: 100%;
+      max-height: 500px;
+      border-radius: 8px;
+    }
+
+    .preview-info {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .format-select {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .format-select label {
+      flex: 1;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .format-select label:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .format-select input:checked + label,
+    .format-select label:has(input:checked) {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.2);
+    }
+
+    .format-select input {
+      display: none;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .status-message.info {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+    }
+
+    .hint-text {
+      text-align: center;
+      color: #666;
+      font-size: 0.85rem;
+      margin-bottom: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .button-group {
+        flex-direction: column;
+      }
+
+      .settings-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-054 自訂網格拼圖</h1>
+      <p class="subtitle">自訂行列數的網格圖片拼接</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="grid-settings">
+        <div class="settings-row">
+          <div class="setting-group">
+            <span class="setting-label">列數：</span>
+            <input type="number" class="number-input" id="rowsInput" value="3" min="1" max="10">
+          </div>
+          <div class="setting-group">
+            <span class="setting-label">行數：</span>
+            <input type="number" class="number-input" id="colsInput" value="3" min="1" max="10">
+          </div>
+          <button class="apply-grid-btn" id="applyGridBtn">套用網格</button>
+        </div>
+      </div>
+
+      <p class="hint-text">點擊格子上傳圖片，或直接拖放圖片到格子中</p>
+
+      <div class="grid-container" id="gridContainer">
+        <!-- Cells will be generated by JS -->
+      </div>
+
+      <div class="options-panel" id="optionsPanel">
+        <div class="option-row">
+          <span class="option-label">格子間距</span>
+          <input type="range" class="option-slider" id="gapSlider" min="0" max="30" value="5">
+          <span class="option-value" id="gapValue">5px</span>
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">圓角大小</span>
+          <input type="range" class="option-slider" id="radiusSlider" min="0" max="50" value="0">
+          <span class="option-value" id="radiusValue">0px</span>
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">輸出寬度</span>
+          <input type="range" class="option-slider" id="widthSlider" min="600" max="4000" value="1200" step="100">
+          <span class="option-value" id="widthValue">1200px</span>
+        </div>
+
+        <div class="option-row">
+          <span class="option-label">背景色</span>
+          <div class="color-picker-row">
+            <input type="color" class="color-picker" id="bgColor" value="#ffffff">
+            <span style="color: #888;">（間距填充色）</span>
+          </div>
+        </div>
+
+        <div class="format-select">
+          <input type="radio" name="format" value="png" id="formatPng" checked>
+          <label for="formatPng">PNG</label>
+          <input type="radio" name="format" value="jpeg" id="formatJpg">
+          <label for="formatJpg">JPG</label>
+          <input type="radio" name="format" value="webp" id="formatWebp">
+          <label for="formatWebp">WebP</label>
+        </div>
+      </div>
+
+      <div class="preview-section" id="previewSection">
+        <div class="preview-container">
+          <h3>網格預覽</h3>
+          <canvas id="previewCanvas"></canvas>
+          <div class="preview-info" id="previewInfo"></div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="generateBtn" disabled>
+          <span>🔲</span> 生成網格
+        </button>
+        <button class="btn btn-secondary" id="downloadBtn" style="display: none;">
+          <span>💾</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="converter.js"></script>
+</body>
+</html>
