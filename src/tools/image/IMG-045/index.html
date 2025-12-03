@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-045 複製 EXIF 資訊 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-section {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .upload-box {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .upload-box:hover,
+    .upload-box.drag-over {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-box.loaded {
+      border-color: #22c55e;
+      border-style: solid;
+    }
+
+    .upload-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .upload-text {
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .upload-preview {
+      margin-top: 15px;
+      display: none;
+    }
+
+    .upload-preview img {
+      max-width: 100%;
+      max-height: 120px;
+      border-radius: 8px;
+    }
+
+    .upload-info {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: #aaa;
+    }
+
+    .arrow-icon {
+      font-size: 2rem;
+      color: #667eea;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .exif-preview {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .exif-preview h3 {
+      font-size: 1rem;
+      color: #888;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .exif-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+    }
+
+    .exif-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 10px 12px;
+      border-radius: 8px;
+    }
+
+    .exif-label {
+      font-size: 0.75rem;
+      color: #888;
+      margin-bottom: 3px;
+    }
+
+    .exif-value {
+      font-size: 0.9rem;
+      word-break: break-all;
+    }
+
+    .copy-options {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .copy-options h3 {
+      font-size: 1rem;
+      color: #888;
+      margin-bottom: 15px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .option-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .option-item input {
+      width: 18px;
+      height: 18px;
+      accent-color: #667eea;
+    }
+
+    .option-item label {
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .progress-container {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .status-message.info {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+    }
+
+    .result-section {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .result-section img {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+
+    .result-info {
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      .upload-section {
+        grid-template-columns: 1fr;
+      }
+
+      .arrow-icon {
+        transform: rotate(90deg);
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-045 複製 EXIF 資訊</h1>
+      <p class="subtitle">將一張圖片的 EXIF 複製到另一張圖片</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-section">
+        <div class="upload-box" id="sourceUpload">
+          <div class="upload-icon">📷</div>
+          <div class="upload-title">來源圖片</div>
+          <div class="upload-text">包含 EXIF 資訊的圖片</div>
+          <div class="upload-preview" id="sourcePreview">
+            <img id="sourceImage" src="" alt="Source">
+            <div class="upload-info" id="sourceInfo"></div>
+          </div>
+        </div>
+        <input type="file" id="sourceInput" accept="image/jpeg">
+
+        <div class="arrow-icon">→</div>
+
+        <div class="upload-box" id="targetUpload">
+          <div class="upload-icon">🖼️</div>
+          <div class="upload-title">目標圖片</div>
+          <div class="upload-text">要寫入 EXIF 的圖片</div>
+          <div class="upload-preview" id="targetPreview">
+            <img id="targetImage" src="" alt="Target">
+            <div class="upload-info" id="targetInfo"></div>
+          </div>
+        </div>
+        <input type="file" id="targetInput" accept="image/jpeg">
+      </div>
+
+      <div class="exif-preview" id="exifPreview">
+        <h3>📋 來源 EXIF 資訊</h3>
+        <div class="exif-grid" id="exifGrid"></div>
+      </div>
+
+      <div class="copy-options" id="copyOptions">
+        <h3>選擇要複製的 EXIF 資訊</h3>
+        <div class="options-grid">
+          <div class="option-item">
+            <input type="checkbox" id="copyCamera" checked>
+            <label for="copyCamera">相機資訊</label>
+          </div>
+          <div class="option-item">
+            <input type="checkbox" id="copyDateTime" checked>
+            <label for="copyDateTime">拍攝日期時間</label>
+          </div>
+          <div class="option-item">
+            <input type="checkbox" id="copyGps" checked>
+            <label for="copyGps">GPS 位置</label>
+          </div>
+          <div class="option-item">
+            <input type="checkbox" id="copyExposure" checked>
+            <label for="copyExposure">曝光參數</label>
+          </div>
+          <div class="option-item">
+            <input type="checkbox" id="copyLens" checked>
+            <label for="copyLens">鏡頭資訊</label>
+          </div>
+          <div class="option-item">
+            <input type="checkbox" id="copyDescription" checked>
+            <label for="copyDescription">描述與版權</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">處理中...</div>
+      </div>
+
+      <div class="result-section" id="resultSection">
+        <img id="resultImage" src="" alt="Result">
+        <div class="result-info" id="resultInfo"></div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="copyBtn" disabled>
+          <span>📋</span> 複製 EXIF
+        </button>
+        <button class="btn btn-secondary" id="downloadBtn" style="display: none;">
+          <span>💾</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn" style="display: none;">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/piexifjs/1.0.6/piexif.min.js"></script>
+  <script src="converter.js"></script>
+</body>
+</html>
