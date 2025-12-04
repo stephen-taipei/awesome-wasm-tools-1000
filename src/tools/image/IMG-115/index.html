@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-115 物件偵測 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .ai-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: white;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 50px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-zone.has-file {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .result-section {
+      display: none;
+      margin-bottom: 25px;
+    }
+
+    .result-section.active {
+      display: block;
+    }
+
+    .result-section h3 {
+      font-size: 1rem;
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+
+    .result-layout {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 20px;
+    }
+
+    .preview-container {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 15px;
+    }
+
+    .canvas-wrapper {
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #resultCanvas {
+      display: block;
+      max-width: 100%;
+    }
+
+    .stats-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .stats-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stats-header .count {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #667eea;
+    }
+
+    .stats-header .label {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .object-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .object-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      border-left: 4px solid;
+    }
+
+    .object-icon {
+      font-size: 1.5rem;
+      width: 40px;
+      text-align: center;
+    }
+
+    .object-info {
+      flex: 1;
+    }
+
+    .object-info .object-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 3px;
+    }
+
+    .object-info .object-coords {
+      font-size: 0.75rem;
+      color: #888;
+    }
+
+    .object-confidence {
+      text-align: right;
+    }
+
+    .confidence-value {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .confidence-label {
+      font-size: 0.7rem;
+      color: #888;
+    }
+
+    .settings-panel {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+
+    .settings-panel h4 {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 12px;
+    }
+
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .slider-container input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .slider-container input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .slider-value {
+      font-weight: 600;
+      min-width: 50px;
+      text-align: right;
+    }
+
+    .output-options {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .output-options h4 {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 12px;
+    }
+
+    .output-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .output-btn {
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 8px;
+      color: #e0e0e0;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .output-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .progress-section {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .progress-section.active {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .result-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-115 物件偵測<span class="ai-badge">AI</span></h1>
+      <p class="subtitle">偵測並標註圖片中的物件</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">🔍</div>
+        <div class="upload-text">點擊或拖曳圖片到此處</div>
+        <div class="upload-hint">支援 PNG、JPG、WebP 格式</div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+
+      <div class="progress-section" id="progressSection">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <div class="progress-text" id="progressText">準備中...</div>
+      </div>
+
+      <div class="result-section" id="resultSection">
+        <h3>偵測結果</h3>
+        <div class="result-layout">
+          <div class="preview-container">
+            <div class="canvas-wrapper">
+              <canvas id="resultCanvas"></canvas>
+            </div>
+          </div>
+
+          <div class="stats-panel">
+            <div class="stats-header">
+              <div class="count" id="objectCount">0</div>
+              <div class="label">個物件偵測到</div>
+            </div>
+
+            <div class="object-list" id="objectList"></div>
+
+            <div class="settings-panel">
+              <h4>信心度閾值</h4>
+              <div class="slider-container">
+                <input type="range" id="thresholdSlider" min="10" max="90" value="50">
+                <span class="slider-value" id="thresholdValue">50%</span>
+              </div>
+            </div>
+
+            <div class="output-options">
+              <h4>輸出選項</h4>
+              <div class="output-btns">
+                <button class="output-btn" id="downloadImageBtn">
+                  <span>🖼️</span> 下載標記圖片
+                </button>
+                <button class="output-btn" id="downloadJsonBtn">
+                  <span>📄</span> 下載偵測結果 JSON
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="detectBtn" disabled>
+          <span>🔍</span> 開始偵測
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="detector.js"></script>
+</body>
+</html>
