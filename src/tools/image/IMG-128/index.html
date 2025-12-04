@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-128 圖片鏡頭畸變校正 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 50px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-zone.has-file {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .settings-section {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+
+    .settings-section h3 {
+      font-size: 1rem;
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .mode-item {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+
+    .mode-item:hover {
+      background: rgba(102, 126, 234, 0.2);
+    }
+
+    .mode-item.active {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.3);
+    }
+
+    .mode-icon {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+
+    .mode-name {
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .mode-desc {
+      font-size: 0.7rem;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .slider-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .slider-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .slider-item label {
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .slider-value {
+      font-size: 0.85rem;
+      color: #667eea;
+      font-weight: 600;
+    }
+
+    .slider-item input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .slider-item input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #667eea;
+      cursor: pointer;
+    }
+
+    .checkbox-group {
+      display: flex;
+      gap: 20px;
+      margin-top: 15px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .checkbox-item input {
+      width: 18px;
+      height: 18px;
+      accent-color: #667eea;
+    }
+
+    .checkbox-item label {
+      font-size: 0.85rem;
+      color: #aaa;
+      cursor: pointer;
+    }
+
+    .preview-section {
+      display: none;
+      margin-bottom: 25px;
+    }
+
+    .preview-section.active {
+      display: block;
+    }
+
+    .preview-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .preview-box {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 15px;
+    }
+
+    .preview-box h4 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .preview-area {
+      position: relative;
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+    }
+
+    .preview-area img,
+    .preview-area canvas {
+      max-width: 100%;
+      max-height: 350px;
+      border-radius: 6px;
+    }
+
+    .grid-overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      pointer-events: none;
+    }
+
+    .info-panel {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .info-item {
+      text-align: center;
+    }
+
+    .info-label {
+      font-size: 0.75rem;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .info-value {
+      font-size: 0.9rem;
+      color: #e0e0e0;
+    }
+
+    .progress-section {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .progress-section.active {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .mode-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .slider-group {
+        grid-template-columns: 1fr;
+      }
+
+      .preview-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .checkbox-group {
+        flex-direction: column;
+      }
+
+      .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-128 圖片鏡頭畸變校正</h1>
+      <p class="subtitle">修正桶形、枕形畸變與透視變形</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">📷</div>
+        <div class="upload-text">點擊或拖曳圖片到此處</div>
+        <div class="upload-hint">支援 PNG、JPG、WebP 格式</div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+
+      <div class="settings-section">
+        <h3>畸變類型</h3>
+        <div class="mode-grid">
+          <div class="mode-item active" data-mode="barrel">
+            <div class="mode-icon">🔵</div>
+            <div class="mode-name">桶形畸變</div>
+            <div class="mode-desc">廣角鏡頭常見</div>
+          </div>
+          <div class="mode-item" data-mode="pincushion">
+            <div class="mode-icon">🔷</div>
+            <div class="mode-name">枕形畸變</div>
+            <div class="mode-desc">長焦鏡頭常見</div>
+          </div>
+          <div class="mode-item" data-mode="perspective">
+            <div class="mode-icon">📐</div>
+            <div class="mode-name">透視校正</div>
+            <div class="mode-desc">建築攝影修正</div>
+          </div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-item">
+            <div class="slider-header">
+              <label>畸變強度 (k1)</label>
+              <span class="slider-value" id="k1Value">0.00</span>
+            </div>
+            <input type="range" id="k1" min="-100" max="100" value="0">
+          </div>
+          <div class="slider-item">
+            <div class="slider-header">
+              <label>二次畸變 (k2)</label>
+              <span class="slider-value" id="k2Value">0.00</span>
+            </div>
+            <input type="range" id="k2" min="-50" max="50" value="0">
+          </div>
+          <div class="slider-item">
+            <div class="slider-header">
+              <label>水平透視</label>
+              <span class="slider-value" id="perspectiveXValue">0°</span>
+            </div>
+            <input type="range" id="perspectiveX" min="-45" max="45" value="0">
+          </div>
+          <div class="slider-item">
+            <div class="slider-header">
+              <label>垂直透視</label>
+              <span class="slider-value" id="perspectiveYValue">0°</span>
+            </div>
+            <input type="range" id="perspectiveY" min="-45" max="45" value="0">
+          </div>
+        </div>
+
+        <div class="checkbox-group">
+          <div class="checkbox-item">
+            <input type="checkbox" id="showGrid" checked>
+            <label for="showGrid">顯示參考格線</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="autoCrop" checked>
+            <label for="autoCrop">自動裁切黑邊</label>
+          </div>
+          <div class="checkbox-item">
+            <input type="checkbox" id="livePreview" checked>
+            <label for="livePreview">即時預覽</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-section" id="progressSection">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <div class="progress-text" id="progressText">準備中...</div>
+      </div>
+
+      <div class="preview-section" id="previewSection">
+        <div class="preview-layout">
+          <div class="preview-box">
+            <h4>原始圖片</h4>
+            <div class="preview-area">
+              <img id="originalImage" src="" alt="Original">
+              <canvas id="gridOriginal" class="grid-overlay"></canvas>
+            </div>
+          </div>
+          <div class="preview-box">
+            <h4>校正結果</h4>
+            <div class="preview-area">
+              <canvas id="resultCanvas"></canvas>
+              <canvas id="gridResult" class="grid-overlay"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-panel">
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">原始尺寸</div>
+              <div class="info-value" id="originalSize">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">校正尺寸</div>
+              <div class="info-value" id="correctedSize">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">畸變係數</div>
+              <div class="info-value" id="distortionCoef">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">處理時間</div>
+              <div class="info-value" id="processTime">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="applyBtn" disabled>
+          <span>📷</span> 校正畸變
+        </button>
+        <button class="btn btn-secondary" id="downloadBtn" disabled>
+          <span>💾</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="distortion.js"></script>
+</body>
+</html>
