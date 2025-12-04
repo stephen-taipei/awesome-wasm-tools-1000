@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-105 Instagram 九宮格切圖 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(225, 48, 108, 0.5);
+      border-radius: 15px;
+      padding: 50px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #e1306c;
+      background: rgba(225, 48, 108, 0.1);
+    }
+
+    .upload-zone.has-file {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .file-info {
+      display: none;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+
+    .file-info.active {
+      display: block;
+    }
+
+    .editor-section {
+      display: none;
+      margin-bottom: 25px;
+    }
+
+    .editor-section.active {
+      display: block;
+    }
+
+    .editor-section h3 {
+      font-size: 1rem;
+      color: #e1306c;
+      margin-bottom: 15px;
+    }
+
+    .editor-layout {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 25px;
+    }
+
+    .crop-container {
+      position: relative;
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+    }
+
+    .crop-wrapper {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .crop-image {
+      max-width: 100%;
+      max-height: 500px;
+      display: block;
+    }
+
+    .crop-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .crop-area {
+      position: absolute;
+      border: 3px solid #e1306c;
+      background: rgba(0, 0, 0, 0.4);
+      cursor: move;
+      pointer-events: all;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+    }
+
+    .crop-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .crop-grid-line {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .crop-grid-line.horizontal {
+      width: 100%;
+      height: 1px;
+    }
+
+    .crop-grid-line.vertical {
+      width: 1px;
+      height: 100%;
+    }
+
+    .resize-handle {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #e1306c;
+      border: 2px solid white;
+      border-radius: 50%;
+      pointer-events: all;
+    }
+
+    .resize-handle.top-left { top: -10px; left: -10px; cursor: nwse-resize; }
+    .resize-handle.top-right { top: -10px; right: -10px; cursor: nesw-resize; }
+    .resize-handle.bottom-left { bottom: -10px; left: -10px; cursor: nesw-resize; }
+    .resize-handle.bottom-right { bottom: -10px; right: -10px; cursor: nwse-resize; }
+
+    .preview-panel {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .preview-panel h4 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 15px;
+    }
+
+    .grid-preview {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+      background: #1a1a2e;
+      padding: 3px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .grid-cell {
+      aspect-ratio: 1;
+      background: #2a2a3e;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .grid-cell img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .grid-cell-number {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .upload-order-hint {
+      background: rgba(225, 48, 108, 0.1);
+      border: 1px solid rgba(225, 48, 108, 0.3);
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+
+    .upload-order-hint h5 {
+      color: #e1306c;
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-order-hint p {
+      color: #888;
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    .upload-order-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    .upload-order-cell {
+      aspect-ratio: 1;
+      background: rgba(225, 48, 108, 0.2);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      color: #e1306c;
+    }
+
+    .controls {
+      margin-top: 15px;
+    }
+
+    .control-item {
+      margin-bottom: 15px;
+    }
+
+    .control-label {
+      display: block;
+      color: #888;
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+    }
+
+    .control-slider {
+      width: 100%;
+      accent-color: #e1306c;
+    }
+
+    .result-section {
+      display: none;
+      margin-top: 25px;
+    }
+
+    .result-section.active {
+      display: block;
+    }
+
+    .result-section h3 {
+      font-size: 1rem;
+      color: #e1306c;
+      margin-bottom: 15px;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .result-item {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .result-thumb {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+
+    .result-name {
+      padding: 10px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(225, 48, 108, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .status-message.processing {
+      display: block;
+      background: rgba(225, 48, 108, 0.2);
+      border: 1px solid rgba(225, 48, 108, 0.3);
+      color: #e1306c;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .editor-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        min-width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-105 Instagram 九宮格切圖</h1>
+      <p class="subtitle">將圖片切成 3x3 九宮格供 Instagram 發佈</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">📸</div>
+        <div class="upload-text">點擊或拖曳圖片到此處</div>
+        <div class="upload-hint">支援 PNG、JPG 格式，建議使用高解析度圖片</div>
+        <div class="file-info" id="fileInfo"></div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+
+      <div class="editor-section" id="editorSection">
+        <h3>調整裁切範圍</h3>
+        <div class="editor-layout">
+          <div class="crop-container" id="cropContainer">
+            <div class="crop-wrapper" id="cropWrapper">
+              <img class="crop-image" id="cropImage" src="" alt="Crop">
+              <div class="crop-overlay" id="cropOverlay">
+                <div class="crop-area" id="cropArea">
+                  <div class="crop-grid">
+                    <div class="crop-grid-line horizontal" style="top: 33.33%"></div>
+                    <div class="crop-grid-line horizontal" style="top: 66.66%"></div>
+                    <div class="crop-grid-line vertical" style="left: 33.33%"></div>
+                    <div class="crop-grid-line vertical" style="left: 66.66%"></div>
+                  </div>
+                  <div class="resize-handle top-left" data-handle="tl"></div>
+                  <div class="resize-handle top-right" data-handle="tr"></div>
+                  <div class="resize-handle bottom-left" data-handle="bl"></div>
+                  <div class="resize-handle bottom-right" data-handle="br"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-panel">
+            <h4>九宮格預覽</h4>
+            <div class="grid-preview" id="gridPreview">
+              <div class="grid-cell"><div class="grid-cell-number">1</div></div>
+              <div class="grid-cell"><div class="grid-cell-number">2</div></div>
+              <div class="grid-cell"><div class="grid-cell-number">3</div></div>
+              <div class="grid-cell"><div class="grid-cell-number">4</div></div>
+              <div class="grid-cell"><div class="grid-cell-number">5</div></div>
+              <div class="grid-cell"><div class="grid-cell-number">6</div></div>
+              <div class="grid-cell"><div class="grid-cell-number">7</div></div>
+              <div class="grid-cell"><div class="grid-cell-number">8</div></div>
+              <div class="grid-cell"><div class="grid-cell-number">9</div></div>
+            </div>
+
+            <div class="upload-order-hint">
+              <h5>Instagram 上傳順序</h5>
+              <p>依照以下順序上傳（從最後一張開始上傳），即可正確顯示完整圖片：</p>
+              <div class="upload-order-grid">
+                <div class="upload-order-cell">7</div>
+                <div class="upload-order-cell">8</div>
+                <div class="upload-order-cell">9</div>
+                <div class="upload-order-cell">4</div>
+                <div class="upload-order-cell">5</div>
+                <div class="upload-order-cell">6</div>
+                <div class="upload-order-cell">1</div>
+                <div class="upload-order-cell">2</div>
+                <div class="upload-order-cell">3</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="result-section" id="resultSection">
+        <h3>切割結果（依 Instagram 上傳順序排列）</h3>
+        <div class="result-grid" id="resultGrid"></div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="splitBtn" disabled>
+          <span>✂️</span> 切割九宮格
+        </button>
+        <button class="btn btn-primary" id="downloadBtn" disabled>
+          <span>💾</span> 下載 ZIP
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="splitter.js"></script>
+</body>
+</html>
