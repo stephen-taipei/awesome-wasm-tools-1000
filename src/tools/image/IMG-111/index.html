@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-111 圖片放大（AI 超解析度） - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .ai-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: white;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 50px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-zone.has-file {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .file-info {
+      display: none;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+
+    .file-info.active {
+      display: block;
+    }
+
+    .settings-section {
+      display: none;
+      margin-bottom: 25px;
+    }
+
+    .settings-section.active {
+      display: block;
+    }
+
+    .settings-section h3 {
+      font-size: 1rem;
+      color: #667eea;
+      margin-bottom: 20px;
+    }
+
+    .compare-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .preview-box {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 15px;
+    }
+
+    .preview-box h4 {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .preview-box h4 span {
+      font-size: 1rem;
+    }
+
+    .preview-area {
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 10px;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 250px;
+      overflow: hidden;
+    }
+
+    .preview-area img {
+      max-width: 100%;
+      max-height: 300px;
+      image-rendering: pixelated;
+    }
+
+    .preview-area.result img {
+      image-rendering: auto;
+    }
+
+    .preview-info {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: #888;
+      text-align: center;
+    }
+
+    .options-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .scale-options {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .scale-btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      color: #e0e0e0;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .scale-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .scale-btn.selected {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.15);
+    }
+
+    .scale-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+      color: #667eea;
+    }
+
+    .scale-label {
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    .algorithm-options {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .algorithm-options label {
+      font-size: 0.85rem;
+      color: #888;
+      margin-right: 10px;
+    }
+
+    .algo-btn {
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 8px;
+      color: #e0e0e0;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .algo-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .algo-btn.active {
+      background: rgba(102, 126, 234, 0.5);
+      color: white;
+    }
+
+    .progress-section {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .progress-section.active {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .status-message.processing {
+      display: block;
+      background: rgba(102, 126, 234, 0.2);
+      border: 1px solid rgba(102, 126, 234, 0.3);
+      color: #667eea;
+    }
+
+    .status-message.warning {
+      display: block;
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #f59e0b;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .info-note {
+      background: rgba(102, 126, 234, 0.1);
+      border: 1px solid rgba(102, 126, 234, 0.2);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
+      color: #a0a0ff;
+    }
+
+    .info-note strong {
+      color: #667eea;
+    }
+
+    @media (max-width: 768px) {
+      .compare-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        min-width: auto;
+      }
+
+      .scale-options {
+        flex-direction: column;
+      }
+
+      .scale-btn {
+        min-width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-111 圖片放大<span class="ai-badge">AI 超解析度</span></h1>
+      <p class="subtitle">使用 AI 將小圖放大而不失真</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="info-note">
+        <strong>提示：</strong>此工具使用進階插值演算法模擬超解析度效果。為獲得最佳效果，建議上傳清晰的原始圖片。
+        處理時間取決於圖片大小和放大倍率。
+      </div>
+
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">🔍</div>
+        <div class="upload-text">點擊或拖曳圖片到此處</div>
+        <div class="upload-hint">支援 PNG、JPG、WebP 格式（建議小於 1MB）</div>
+        <div class="file-info" id="fileInfo"></div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+
+      <div class="settings-section" id="settingsSection">
+        <h3>放大設定</h3>
+
+        <div class="compare-layout">
+          <div class="preview-box">
+            <h4><span>📷</span> 原始圖片</h4>
+            <div class="preview-area">
+              <img id="originalPreview" src="" alt="Original">
+            </div>
+            <div class="preview-info" id="originalInfo"></div>
+          </div>
+
+          <div class="preview-box">
+            <h4><span>✨</span> 放大後</h4>
+            <div class="preview-area result" id="resultArea">
+              <img id="resultPreview" src="" alt="Result" style="display: none;">
+              <span style="color: #666;">等待處理...</span>
+            </div>
+            <div class="preview-info" id="resultInfo"></div>
+          </div>
+        </div>
+
+        <div class="options-panel">
+          <div class="scale-options">
+            <button class="scale-btn selected" data-scale="2">
+              <div class="scale-value">2×</div>
+              <div class="scale-label">放大 2 倍</div>
+            </button>
+            <button class="scale-btn" data-scale="3">
+              <div class="scale-value">3×</div>
+              <div class="scale-label">放大 3 倍</div>
+            </button>
+            <button class="scale-btn" data-scale="4">
+              <div class="scale-value">4×</div>
+              <div class="scale-label">放大 4 倍</div>
+            </button>
+          </div>
+
+          <div class="algorithm-options">
+            <label>演算法：</label>
+            <button class="algo-btn active" data-algo="lanczos">Lanczos（推薦）</button>
+            <button class="algo-btn" data-algo="bicubic">Bicubic</button>
+            <button class="algo-btn" data-algo="bilinear">Bilinear</button>
+          </div>
+        </div>
+
+        <div class="progress-section" id="progressSection">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+          </div>
+          <div class="progress-text" id="progressText">準備中...</div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="upscaleBtn" disabled>
+          <span>🔍</span> 開始放大
+        </button>
+        <button class="btn btn-primary" id="downloadBtn" disabled>
+          <span>💾</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="upscaler.js"></script>
+</body>
+</html>
