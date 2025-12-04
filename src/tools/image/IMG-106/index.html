@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-106 Sprite 圖合併 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 50px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-zone.has-file {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .images-list {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .images-list.active {
+      display: block;
+    }
+
+    .images-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .image-item {
+      position: relative;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      overflow: hidden;
+      aspect-ratio: 1;
+    }
+
+    .image-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .image-item .remove-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 20px;
+      height: 20px;
+      background: rgba(239, 68, 68, 0.9);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-item .image-name {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 5px;
+      background: rgba(0, 0, 0, 0.7);
+      font-size: 10px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .settings-section {
+      display: none;
+      margin-top: 25px;
+      margin-bottom: 25px;
+    }
+
+    .settings-section.active {
+      display: block;
+    }
+
+    .settings-section h3 {
+      font-size: 1rem;
+      color: #667eea;
+      margin-bottom: 20px;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .setting-item {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 15px;
+    }
+
+    .setting-label {
+      display: block;
+      color: #888;
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+    }
+
+    .setting-input {
+      width: 100%;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+    }
+
+    .setting-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .result-section {
+      display: none;
+      margin-top: 25px;
+    }
+
+    .result-section.active {
+      display: block;
+    }
+
+    .result-section h3 {
+      font-size: 1rem;
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+
+    .result-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+    }
+
+    .sprite-preview {
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 12px;
+      padding: 20px;
+      overflow: auto;
+      max-height: 500px;
+    }
+
+    .sprite-preview img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .css-output {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .css-output h4 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 15px;
+    }
+
+    .css-code {
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 8px;
+      padding: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #22c55e;
+      max-height: 400px;
+      overflow: auto;
+      white-space: pre;
+    }
+
+    .output-stats {
+      display: flex;
+      gap: 15px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      padding: 10px 15px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+    }
+
+    .stat-label {
+      color: #888;
+      font-size: 0.8rem;
+    }
+
+    .stat-value {
+      color: #e0e0e0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .status-message.processing {
+      display: block;
+      background: rgba(102, 126, 234, 0.2);
+      border: 1px solid rgba(102, 126, 234, 0.3);
+      color: #667eea;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .result-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        min-width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-106 Sprite 圖合併</h1>
+      <p class="subtitle">將多張小圖合併成 CSS Sprite 圖</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">🧩</div>
+        <div class="upload-text">點擊或拖曳多張圖片到此處</div>
+        <div class="upload-hint">支援 PNG 格式，建議使用透明背景圖片</div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*" multiple>
+
+      <div class="images-list" id="imagesList">
+        <h3 style="font-size: 0.9rem; color: #667eea; margin-bottom: 10px;">
+          已選擇圖片 (<span id="imageCount">0</span>)
+        </h3>
+        <div class="images-grid" id="imagesGrid"></div>
+      </div>
+
+      <div class="settings-section" id="settingsSection">
+        <h3>合併設定</h3>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label class="setting-label">排版方式</label>
+            <select class="setting-input" id="layout">
+              <option value="horizontal">水平排列</option>
+              <option value="vertical">垂直排列</option>
+              <option value="packed">緊密排列（優化空間）</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <label class="setting-label">圖片間距 (px)</label>
+            <input type="number" class="setting-input" id="padding" min="0" max="50" value="2">
+          </div>
+
+          <div class="setting-item">
+            <label class="setting-label">CSS 類別前綴</label>
+            <input type="text" class="setting-input" id="classPrefix" value="sprite" placeholder="sprite">
+          </div>
+
+          <div class="setting-item">
+            <label class="setting-label">CSS 格式</label>
+            <select class="setting-input" id="cssFormat">
+              <option value="class">獨立 class</option>
+              <option value="mixin">SCSS mixin</option>
+              <option value="variables">CSS 變數</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="result-section" id="resultSection">
+        <h3>Sprite 圖預覽</h3>
+        <div class="result-layout">
+          <div>
+            <div class="sprite-preview" id="spritePreview">
+              <img id="spriteImage" src="" alt="Sprite">
+            </div>
+            <div class="output-stats" id="outputStats"></div>
+          </div>
+          <div class="css-output">
+            <h4>CSS 程式碼</h4>
+            <pre class="css-code" id="cssCode"></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="generateBtn" disabled>
+          <span>🧩</span> 生成 Sprite
+        </button>
+        <button class="btn btn-secondary" id="downloadImageBtn" disabled>
+          <span>🖼️</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="downloadCssBtn" disabled>
+          <span>📄</span> 下載 CSS
+        </button>
+        <button class="btn btn-secondary" id="copyCssBtn" disabled>
+          <span>📋</span> 複製 CSS
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="generator.js"></script>
+</body>
+</html>
