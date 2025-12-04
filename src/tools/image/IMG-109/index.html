@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-109 Open Graph 圖片生成 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .main-layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 25px;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .section-title {
+      font-size: 0.9rem;
+      color: #667eea;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .template-card {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .template-card:hover {
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .template-card.selected {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .template-preview {
+      width: 100%;
+      aspect-ratio: 1200/630;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: #888;
+    }
+
+    .template-name {
+      font-size: 0.8rem;
+    }
+
+    .settings-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .setting-group {
+      margin-bottom: 20px;
+    }
+
+    .setting-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .setting-label {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .setting-input {
+      width: 100%;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+    }
+
+    .setting-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    textarea.setting-input {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .color-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .color-picker {
+      width: 50px;
+      height: 40px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: none;
+    }
+
+    .color-picker::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    .color-picker::-webkit-color-swatch {
+      border: none;
+      border-radius: 8px;
+    }
+
+    .upload-btn {
+      width: 100%;
+      padding: 15px;
+      background: rgba(102, 126, 234, 0.2);
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 10px;
+      color: #667eea;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .upload-btn:hover {
+      background: rgba(102, 126, 234, 0.3);
+      border-color: #667eea;
+    }
+
+    .upload-btn.has-image {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+    }
+
+    .canvas-area {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .canvas-wrapper {
+      width: 100%;
+      max-width: 800px;
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 15px;
+    }
+
+    #previewCanvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 6px;
+    }
+
+    .canvas-info {
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .format-selector {
+      display: flex;
+      gap: 10px;
+    }
+
+    .format-btn {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 6px;
+      color: #e0e0e0;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .format-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .format-btn.active {
+      background: rgba(102, 126, 234, 0.5);
+      color: white;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    @media (max-width: 900px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        min-width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-109 Open Graph 圖片生成</h1>
+      <p class="subtitle">生成社群分享用 OG 圖片（1200x630）</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="main-layout">
+        <div class="sidebar">
+          <div class="templates-section">
+            <div class="section-title">選擇模板</div>
+            <div class="template-grid" id="templateGrid"></div>
+          </div>
+
+          <div class="settings-panel">
+            <div class="section-title">內容設定</div>
+
+            <div class="setting-group">
+              <label class="setting-label">標題文字</label>
+              <input type="text" class="setting-input" id="titleInput" placeholder="輸入標題..." value="精彩文章標題">
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">副標題</label>
+              <input type="text" class="setting-input" id="subtitleInput" placeholder="輸入副標題（選填）..." value="副標題或描述文字">
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">網站名稱</label>
+              <input type="text" class="setting-input" id="siteNameInput" placeholder="輸入網站名稱..." value="My Website">
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">背景圖片</label>
+              <button class="upload-btn" id="uploadBtn">點擊上傳背景圖片</button>
+              <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">標題顏色</label>
+              <div class="color-row">
+                <input type="color" class="color-picker" id="titleColor" value="#ffffff">
+                <input type="text" class="setting-input" id="titleColorText" value="#ffffff" style="flex: 1;">
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">背景顏色</label>
+              <div class="color-row">
+                <input type="color" class="color-picker" id="bgColor" value="#1a1a2e">
+                <input type="text" class="setting-input" id="bgColorText" value="#1a1a2e" style="flex: 1;">
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">輸出格式</label>
+              <div class="format-selector">
+                <button class="format-btn active" data-format="png">PNG</button>
+                <button class="format-btn" data-format="jpg">JPG</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="canvas-area">
+          <div class="section-title">預覽</div>
+          <div class="canvas-wrapper">
+            <canvas id="previewCanvas" width="1200" height="630"></canvas>
+          </div>
+          <div class="canvas-info">1200 x 630 像素（Open Graph 標準尺寸）</div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="downloadBtn">
+          <span>💾</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="generator.js"></script>
+</body>
+</html>
