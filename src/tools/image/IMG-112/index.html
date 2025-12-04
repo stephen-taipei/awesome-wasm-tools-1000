@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-112 照片修復（AI） - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .ai-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: white;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 50px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-zone.has-file {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .editor-section {
+      display: none;
+      margin-bottom: 25px;
+    }
+
+    .editor-section.active {
+      display: block;
+    }
+
+    .editor-section h3 {
+      font-size: 1rem;
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+
+    .editor-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+    }
+
+    .canvas-container {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 15px;
+      position: relative;
+    }
+
+    .canvas-wrapper {
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #editorCanvas {
+      display: block;
+      max-width: 100%;
+      cursor: crosshair;
+    }
+
+    .tools-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .tool-group {
+      margin-bottom: 20px;
+    }
+
+    .tool-group h4 {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 12px;
+    }
+
+    .brush-sizes {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .brush-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .brush-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .brush-btn.active {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.2);
+    }
+
+    .brush-btn .dot {
+      background: #e0e0e0;
+      border-radius: 50%;
+    }
+
+    .repair-modes {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .mode-btn {
+      padding: 12px 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      color: #e0e0e0;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+    }
+
+    .mode-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .mode-btn.active {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.2);
+    }
+
+    .mode-btn .mode-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 3px;
+    }
+
+    .mode-btn .mode-desc {
+      font-size: 0.75rem;
+      color: #888;
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .action-btn {
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 8px;
+      color: #e0e0e0;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .action-btn.primary:hover {
+      opacity: 0.9;
+    }
+
+    .progress-section {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .progress-section.active {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .compare-section {
+      display: none;
+      margin-bottom: 25px;
+    }
+
+    .compare-section.active {
+      display: block;
+    }
+
+    .compare-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .compare-box {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 15px;
+    }
+
+    .compare-box h4 {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .compare-preview {
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+    }
+
+    .compare-preview img {
+      max-width: 100%;
+      max-height: 300px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .info-note {
+      background: rgba(102, 126, 234, 0.1);
+      border: 1px solid rgba(102, 126, 234, 0.2);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
+      color: #a0a0ff;
+    }
+
+    @media (max-width: 900px) {
+      .editor-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .compare-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-112 照片修復<span class="ai-badge">AI</span></h1>
+      <p class="subtitle">修復老舊照片、刮痕、破損區域</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="info-note">
+        <strong>使用說明：</strong>上傳需要修復的照片，使用筆刷標記需要修復的區域（刮痕、破損、污點等），
+        然後點擊「開始修復」按鈕進行 AI 修復處理。
+      </div>
+
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">🔧</div>
+        <div class="upload-text">點擊或拖曳損壞照片到此處</div>
+        <div class="upload-hint">支援 PNG、JPG 格式</div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden-input" accept="image/png,image/jpeg">
+
+      <div class="editor-section" id="editorSection">
+        <h3>標記修復區域</h3>
+        <div class="editor-layout">
+          <div class="canvas-container">
+            <div class="canvas-wrapper">
+              <canvas id="editorCanvas"></canvas>
+            </div>
+          </div>
+
+          <div class="tools-panel">
+            <div class="tool-group">
+              <h4>筆刷大小</h4>
+              <div class="brush-sizes">
+                <button class="brush-btn" data-size="5">
+                  <div class="dot" style="width: 6px; height: 6px;"></div>
+                </button>
+                <button class="brush-btn" data-size="10">
+                  <div class="dot" style="width: 10px; height: 10px;"></div>
+                </button>
+                <button class="brush-btn active" data-size="20">
+                  <div class="dot" style="width: 16px; height: 16px;"></div>
+                </button>
+                <button class="brush-btn" data-size="40">
+                  <div class="dot" style="width: 24px; height: 24px;"></div>
+                </button>
+              </div>
+            </div>
+
+            <div class="tool-group">
+              <h4>修復模式</h4>
+              <div class="repair-modes">
+                <button class="mode-btn active" data-mode="inpaint">
+                  <div class="mode-name">智慧填充</div>
+                  <div class="mode-desc">自動分析周圍像素填充</div>
+                </button>
+                <button class="mode-btn" data-mode="denoise">
+                  <div class="mode-name">降噪修復</div>
+                  <div class="mode-desc">去除雜訊與顆粒</div>
+                </button>
+                <button class="mode-btn" data-mode="scratch">
+                  <div class="mode-name">刮痕修復</div>
+                  <div class="mode-desc">專門處理線性刮痕</div>
+                </button>
+              </div>
+            </div>
+
+            <div class="tool-group">
+              <h4>操作</h4>
+              <div class="action-buttons">
+                <button class="action-btn" id="clearMaskBtn">清除標記</button>
+                <button class="action-btn" id="undoBtn">復原上一步</button>
+                <button class="action-btn primary" id="repairBtn">開始修復</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-section" id="progressSection">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <div class="progress-text" id="progressText">準備中...</div>
+      </div>
+
+      <div class="compare-section" id="compareSection">
+        <h3 style="font-size: 1rem; color: #667eea; margin-bottom: 15px;">修復結果對比</h3>
+        <div class="compare-layout">
+          <div class="compare-box">
+            <h4><span>📷</span> 修復前</h4>
+            <div class="compare-preview">
+              <img id="beforeImage" src="" alt="Before">
+            </div>
+          </div>
+          <div class="compare-box">
+            <h4><span>✨</span> 修復後</h4>
+            <div class="compare-preview">
+              <img id="afterImage" src="" alt="After">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="downloadBtn" disabled>
+          <span>💾</span> 下載修復圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="repair.js"></script>
+</body>
+</html>
