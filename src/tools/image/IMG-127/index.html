@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-127 圖片色彩校正 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 50px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-zone.has-file {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .settings-section {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+
+    .settings-section h3 {
+      font-size: 1rem;
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+
+    .correction-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border: none;
+      border-radius: 8px;
+      color: #aaa;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .tab-btn:hover {
+      background: rgba(102, 126, 234, 0.2);
+    }
+
+    .tab-btn.active {
+      background: rgba(102, 126, 234, 0.4);
+      color: #fff;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .slider-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .slider-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .slider-item label {
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .slider-value {
+      font-size: 0.85rem;
+      color: #667eea;
+      font-weight: 600;
+    }
+
+    .slider-item input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .slider-item input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #667eea;
+      cursor: pointer;
+    }
+
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .preset-item {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      padding: 12px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.8rem;
+      color: #aaa;
+    }
+
+    .preset-item:hover {
+      background: rgba(102, 126, 234, 0.2);
+      color: #e0e0e0;
+    }
+
+    .preview-section {
+      display: none;
+      margin-bottom: 25px;
+    }
+
+    .preview-section.active {
+      display: block;
+    }
+
+    .preview-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .preview-box {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 15px;
+    }
+
+    .preview-box h4 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .preview-area {
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+    }
+
+    .preview-area img,
+    .preview-area canvas {
+      max-width: 100%;
+      max-height: 350px;
+      border-radius: 6px;
+    }
+
+    .histogram-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .histogram-box {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .histogram-box h5 {
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .histogram-canvas {
+      width: 100%;
+      height: 80px;
+      border-radius: 6px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .slider-group {
+        grid-template-columns: 1fr;
+      }
+
+      .preset-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .preview-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .histogram-container {
+        grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-127 圖片色彩校正</h1>
+      <p class="subtitle">專業色彩調整與白平衡校正</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">🎨</div>
+        <div class="upload-text">點擊或拖曳圖片到此處</div>
+        <div class="upload-hint">支援 PNG、JPG、WebP 格式</div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+
+      <div class="settings-section">
+        <h3>色彩校正</h3>
+
+        <div class="correction-tabs">
+          <button class="tab-btn active" data-tab="basic">基本調整</button>
+          <button class="tab-btn" data-tab="curves">曲線調整</button>
+          <button class="tab-btn" data-tab="wb">白平衡</button>
+          <button class="tab-btn" data-tab="hsl">HSL調整</button>
+          <button class="tab-btn" data-tab="presets">預設風格</button>
+        </div>
+
+        <div class="tab-content active" id="tab-basic">
+          <div class="slider-group">
+            <div class="slider-item">
+              <div class="slider-header">
+                <label>曝光</label>
+                <span class="slider-value" id="exposureValue">0</span>
+              </div>
+              <input type="range" id="exposure" min="-100" max="100" value="0">
+            </div>
+            <div class="slider-item">
+              <div class="slider-header">
+                <label>對比度</label>
+                <span class="slider-value" id="contrastValue">0</span>
+              </div>
+              <input type="range" id="contrast" min="-100" max="100" value="0">
+            </div>
+            <div class="slider-item">
+              <div class="slider-header">
+                <label>亮部</label>
+                <span class="slider-value" id="highlightsValue">0</span>
+              </div>
+              <input type="range" id="highlights" min="-100" max="100" value="0">
+            </div>
+            <div class="slider-item">
+              <div class="slider-header">
+                <label>暗部</label>
+                <span class="slider-value" id="shadowsValue">0</span>
+              </div>
+              <input type="range" id="shadows" min="-100" max="100" value="0">
+            </div>
+            <div class="slider-item">
+              <div class="slider-header">
+                <label>白色色階</label>
+                <span class="slider-value" id="whitesValue">0</span>
+              </div>
+              <input type="range" id="whites" min="-100" max="100" value="0">
+            </div>
+            <div class="slider-item">
+              <div class="slider-header">
+                <label>黑色色階</label>
+                <span class="slider-value" id="blacksValue">0</span>
+              </div>
+              <input type="range" id="blacks" min="-100" max="100" value="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="tab-curves">
+          <div class="slider-group">
+            <div class="slider-item">
+              <div class="slider-header">
+                <label>RGB 整體</label>
+                <span class="slider-value" id="curveRGBValue">1.0</span>
+              </div>
+              <input type="range" id="curveRGB" min="50" max="150" value="100">
+            </div>
+            <div class="slider-item">
+              <div class="slider-header">
+                <label>紅色通道</label>
+                <span class="slider-value" id="curveRValue">1.0</span>
+              </div>
+              <input type="range" id="curveR" min="50" max="150" value="100">
+            </div>
+            <div class="slider-item">
+              <div class="slider-header">
+                <label>綠色通道</label>
+                <span class="slider-value" id="curveGValue">1.0</span>
+              </div>
+              <input type="range" id="curveG" min="50" max="150" value="100">
+            </div>
+            <div class="slider-item">
+              <div class="slider-header">
+                <label>藍色通道</label>
+                <span class="slider-value" id="curveBValue">1.0</span>
+              </div>
+              <input type="range" id="curveB" min="50" max="150" value="100">
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="tab-wb">
+          <div class="slider-group">
+            <div class="slider-item">
+              <div class="slider-header">
+                <label>色溫</label>
+                <span class="slider-value" id="temperatureValue">0</span>
+              </div>
+              <input type="range" id="temperature" min="-100" max="100" value="0">
+            </div>
+            <div class="slider-item">
+              <div class="slider-header">
+                <label>色調</label>
+                <span class="slider-value" id="tintValue">0</span>
+              </div>
+              <input type="range" id="tint" min="-100" max="100" value="0">
+            </div>
+          </div>
+          <div class="preset-grid" style="margin-top: 20px;">
+            <div class="preset-item" data-wb="auto">自動</div>
+            <div class="preset-item" data-wb="daylight">日光</div>
+            <div class="preset-item" data-wb="cloudy">陰天</div>
+            <div class="preset-item" data-wb="tungsten">鎢絲燈</div>
+            <div class="preset-item" data-wb="fluorescent">螢光燈</div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="tab-hsl">
+          <div class="slider-group">
+            <div class="slider-item">
+              <div class="slider-header">
+                <label>色相偏移</label>
+                <span class="slider-value" id="hueValue">0°</span>
+              </div>
+              <input type="range" id="hue" min="-180" max="180" value="0">
+            </div>
+            <div class="slider-item">
+              <div class="slider-header">
+                <label>飽和度</label>
+                <span class="slider-value" id="saturationValue">0</span>
+              </div>
+              <input type="range" id="saturation" min="-100" max="100" value="0">
+            </div>
+            <div class="slider-item">
+              <div class="slider-header">
+                <label>明度</label>
+                <span class="slider-value" id="lightnessValue">0</span>
+              </div>
+              <input type="range" id="lightness" min="-100" max="100" value="0">
+            </div>
+            <div class="slider-item">
+              <div class="slider-header">
+                <label>自然飽和度</label>
+                <span class="slider-value" id="vibranceValue">0</span>
+              </div>
+              <input type="range" id="vibrance" min="-100" max="100" value="0">
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" id="tab-presets">
+          <div class="preset-grid">
+            <div class="preset-item" data-preset="vivid">鮮豔</div>
+            <div class="preset-item" data-preset="natural">自然</div>
+            <div class="preset-item" data-preset="portrait">人像</div>
+            <div class="preset-item" data-preset="landscape">風景</div>
+            <div class="preset-item" data-preset="bw">黑白</div>
+            <div class="preset-item" data-preset="sepia">懷舊</div>
+            <div class="preset-item" data-preset="cool">冷色調</div>
+            <div class="preset-item" data-preset="warm">暖色調</div>
+            <div class="preset-item" data-preset="cinema">電影感</div>
+            <div class="preset-item" data-preset="reset">重置</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-section" id="previewSection">
+        <div class="preview-layout">
+          <div class="preview-box">
+            <h4>原始圖片</h4>
+            <div class="preview-area">
+              <img id="originalImage" src="" alt="Original">
+            </div>
+          </div>
+          <div class="preview-box">
+            <h4>校正結果</h4>
+            <div class="preview-area">
+              <canvas id="resultCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="histogram-container">
+          <div class="histogram-box">
+            <h5>原始直方圖</h5>
+            <canvas id="histogramOriginal" class="histogram-canvas"></canvas>
+          </div>
+          <div class="histogram-box">
+            <h5>校正後直方圖</h5>
+            <canvas id="histogramResult" class="histogram-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="applyBtn" disabled>
+          <span>🎨</span> 即時預覽
+        </button>
+        <button class="btn btn-secondary" id="downloadBtn" disabled>
+          <span>💾</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="color.js"></script>
+</body>
+</html>
