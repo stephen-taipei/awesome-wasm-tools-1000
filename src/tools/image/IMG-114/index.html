@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-114 人臉模糊/馬賽克 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #667eea;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .ai-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: white;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(102, 126, 234, 0.5);
+      border-radius: 15px;
+      padding: 50px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    .upload-zone.has-file {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .settings-section {
+      display: none;
+      margin-bottom: 25px;
+    }
+
+    .settings-section.active {
+      display: block;
+    }
+
+    .settings-section h3 {
+      font-size: 1rem;
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+
+    .settings-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+    }
+
+    .preview-container {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 15px;
+    }
+
+    .canvas-wrapper {
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #resultCanvas {
+      display: block;
+      max-width: 100%;
+    }
+
+    .preview-info {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #888;
+      text-align: center;
+    }
+
+    .options-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .option-group {
+      margin-bottom: 25px;
+    }
+
+    .option-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .option-group h4 {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 12px;
+    }
+
+    .blur-modes {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .mode-btn {
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid transparent;
+      border-radius: 10px;
+      color: #e0e0e0;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+    }
+
+    .mode-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .mode-btn.active {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.2);
+    }
+
+    .mode-btn .mode-icon {
+      font-size: 1.5rem;
+      margin-bottom: 5px;
+    }
+
+    .mode-btn .mode-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 3px;
+    }
+
+    .mode-btn .mode-desc {
+      font-size: 0.75rem;
+      color: #888;
+    }
+
+    .intensity-slider {
+      width: 100%;
+    }
+
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .slider-container input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .slider-container input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .slider-value {
+      font-weight: 600;
+      min-width: 40px;
+      text-align: right;
+    }
+
+    .face-stats {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .face-count {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #667eea;
+    }
+
+    .face-label {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .face-toggles {
+      margin-top: 15px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .face-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      margin-bottom: 5px;
+    }
+
+    .face-toggle input[type="checkbox"] {
+      accent-color: #667eea;
+      width: 18px;
+      height: 18px;
+    }
+
+    .face-toggle label {
+      font-size: 0.85rem;
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .progress-section {
+      display: none;
+      margin-bottom: 20px;
+    }
+
+    .progress-section.active {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .status-message.warning {
+      display: block;
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #f59e0b;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .info-note {
+      background: rgba(102, 126, 234, 0.1);
+      border: 1px solid rgba(102, 126, 234, 0.2);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
+      color: #a0a0ff;
+    }
+
+    @media (max-width: 900px) {
+      .settings-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-114 人臉模糊/馬賽克<span class="ai-badge">AI</span></h1>
+      <p class="subtitle">自動偵測並模糊圖片中的人臉</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="info-note">
+        <strong>隱私保護：</strong>此工具可自動偵測照片中的人臉並套用模糊或馬賽克效果，
+        適用於保護他人隱私、社群發文、或需要遮蔽人臉的情況。
+      </div>
+
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">🔒</div>
+        <div class="upload-text">點擊或拖曳圖片到此處</div>
+        <div class="upload-hint">支援 PNG、JPG、WebP 格式</div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+
+      <div class="progress-section" id="progressSection">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <div class="progress-text" id="progressText">準備中...</div>
+      </div>
+
+      <div class="settings-section" id="settingsSection">
+        <h3>模糊設定</h3>
+        <div class="settings-layout">
+          <div class="preview-container">
+            <div class="canvas-wrapper">
+              <canvas id="resultCanvas"></canvas>
+            </div>
+            <div class="preview-info" id="previewInfo"></div>
+          </div>
+
+          <div class="options-panel">
+            <div class="option-group">
+              <h4>效果類型</h4>
+              <div class="blur-modes">
+                <button class="mode-btn active" data-mode="blur">
+                  <div class="mode-icon">🌫️</div>
+                  <div class="mode-name">高斯模糊</div>
+                  <div class="mode-desc">平滑柔和的模糊效果</div>
+                </button>
+                <button class="mode-btn" data-mode="mosaic">
+                  <div class="mode-icon">🧱</div>
+                  <div class="mode-name">馬賽克</div>
+                  <div class="mode-desc">方塊像素化效果</div>
+                </button>
+                <button class="mode-btn" data-mode="pixelate">
+                  <div class="mode-icon">👾</div>
+                  <div class="mode-name">像素化</div>
+                  <div class="mode-desc">低解析度像素風格</div>
+                </button>
+              </div>
+            </div>
+
+            <div class="option-group">
+              <h4>效果強度</h4>
+              <div class="slider-container">
+                <input type="range" id="intensitySlider" min="5" max="50" value="20">
+                <span class="slider-value" id="intensityValue">20</span>
+              </div>
+            </div>
+
+            <div class="option-group">
+              <h4>偵測到的人臉</h4>
+              <div class="face-stats">
+                <div class="face-count" id="faceCount">0</div>
+                <div class="face-label">個人臉</div>
+                <div class="face-toggles" id="faceToggles"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="processBtn" disabled>
+          <span>🔒</span> 偵測並模糊
+        </button>
+        <button class="btn btn-primary" id="downloadBtn" disabled>
+          <span>💾</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="blur.js"></script>
+</body>
+</html>
