@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-148 批量重新命名 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #3b82f6;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(59, 130, 246, 0.5);
+      border-radius: 15px;
+      padding: 40px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .upload-zone.has-files {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .settings-section {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+      display: none;
+    }
+
+    .settings-section.active {
+      display: block;
+    }
+
+    .settings-section h3 {
+      font-size: 1rem;
+      color: #3b82f6;
+      margin-bottom: 15px;
+    }
+
+    .template-section {
+      margin-bottom: 20px;
+    }
+
+    .template-input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .template-input {
+      flex: 1;
+      padding: 12px 15px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      color: #e0e0e0;
+      font-size: 1rem;
+      font-family: monospace;
+    }
+
+    .template-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+
+    .template-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .template-tag {
+      padding: 6px 12px;
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 6px;
+      color: #3b82f6;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: monospace;
+    }
+
+    .template-tag:hover {
+      background: rgba(59, 130, 246, 0.3);
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .setting-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .setting-item label {
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .setting-item select,
+    .setting-item input {
+      width: 100%;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+    }
+
+    .setting-item select {
+      cursor: pointer;
+    }
+
+    .setting-item input:focus,
+    .setting-item select:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+
+    .preview-section {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+      display: none;
+    }
+
+    .preview-section.active {
+      display: block;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .preview-header h3 {
+      font-size: 1rem;
+      color: #3b82f6;
+    }
+
+    .file-count {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .preview-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .preview-table th,
+    .preview-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .preview-table th {
+      font-size: 0.8rem;
+      color: #888;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .preview-table td {
+      font-size: 0.9rem;
+    }
+
+    .preview-table tbody tr:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .original-name {
+      color: #888;
+      font-family: monospace;
+    }
+
+    .new-name {
+      color: #22c55e;
+      font-family: monospace;
+    }
+
+    .preview-thumb {
+      width: 40px;
+      height: 30px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .table-wrapper {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    @media (max-width: 768px) {
+      .settings-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .preview-table th:nth-child(1),
+      .preview-table td:nth-child(1) {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-148 批量重新命名</h1>
+      <p class="subtitle">使用模板批量重新命名圖片檔案</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">📝</div>
+        <div class="upload-text">點擊或拖曳多張圖片到此處</div>
+        <div class="upload-hint">支援任意圖片格式，可多選</div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*" multiple>
+
+      <div class="settings-section" id="settingsSection">
+        <h3>命名模板設定</h3>
+
+        <div class="template-section">
+          <div class="template-input-group">
+            <input type="text" class="template-input" id="templateInput" value="IMG_{date}_{num}" placeholder="輸入命名模板...">
+          </div>
+          <div class="template-tags">
+            <span class="template-tag" data-tag="{num}">{num} 序號</span>
+            <span class="template-tag" data-tag="{date}">{date} 日期</span>
+            <span class="template-tag" data-tag="{time}">{time} 時間</span>
+            <span class="template-tag" data-tag="{original}">{original} 原名</span>
+            <span class="template-tag" data-tag="{width}">{width} 寬度</span>
+            <span class="template-tag" data-tag="{height}">{height} 高度</span>
+            <span class="template-tag" data-tag="{size}">{size} 檔案大小</span>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <div class="setting-item">
+            <label>起始序號</label>
+            <input type="number" id="startNumber" value="1" min="0">
+          </div>
+          <div class="setting-item">
+            <label>序號位數</label>
+            <select id="numberPadding">
+              <option value="1">1 (1, 2, 3...)</option>
+              <option value="2">2 (01, 02, 03...)</option>
+              <option value="3" selected>3 (001, 002, 003...)</option>
+              <option value="4">4 (0001, 0002...)</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <label>日期格式</label>
+            <select id="dateFormat">
+              <option value="YYYYMMDD" selected>YYYYMMDD</option>
+              <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+              <option value="DDMMYYYY">DDMMYYYY</option>
+              <option value="MMDDYYYY">MMDDYYYY</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <label>大小寫轉換</label>
+            <select id="caseTransform">
+              <option value="none">不轉換</option>
+              <option value="lower">全部小寫</option>
+              <option value="upper">全部大寫</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <label>空格替換為</label>
+            <select id="spaceReplace">
+              <option value=" ">保留空格</option>
+              <option value="_" selected>底線 _</option>
+              <option value="-">連字號 -</option>
+              <option value="">移除空格</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <label>副檔名處理</label>
+            <select id="extensionCase">
+              <option value="keep">保持原樣</option>
+              <option value="lower" selected>小寫 (.jpg)</option>
+              <option value="upper">大寫 (.JPG)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-section" id="previewSection">
+        <div class="preview-header">
+          <h3>預覽結果</h3>
+          <span class="file-count" id="fileCount">0 個檔案</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="preview-table">
+            <thead>
+              <tr>
+                <th>預覽</th>
+                <th>原始檔名</th>
+                <th>新檔名</th>
+              </tr>
+            </thead>
+            <tbody id="previewTableBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-secondary" id="previewBtn" disabled>
+          <span>👁️</span> 預覽命名
+        </button>
+        <button class="btn btn-primary" id="downloadBtn" disabled>
+          <span>💾</span> 下載 ZIP
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="batch-rename.js"></script>
+</body>
+</html>
