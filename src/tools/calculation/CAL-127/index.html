@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAL-127 Chart Generator</title>
+    <link rel="stylesheet" href="../../../styles/global.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .container-split {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .controls {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            font-family: monospace;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .chart-wrapper {
+            position: relative;
+            height: 500px;
+            width: 100%;
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        select, button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        .helper-text {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CAL-127 Chart Generator</h1>
+        <p>Generate standard charts (Line, Bar, Pie, Scatter) from JSON data.</p>
+
+        <div class="container-split">
+            <div class="controls">
+                <h3>Configuration</h3>
+                
+                <label for="chart-type">Chart Type:</label>
+                <select id="chart-type">
+                    <option value="bar">Bar Chart</option>
+                    <option value="line">Line Chart</option>
+                    <option value="pie">Pie Chart</option>
+                    <option value="doughnut">Doughnut Chart</option>
+                    <option value="radar">Radar Chart</option>
+                    <option value="polarArea">Polar Area</option>
+                </select>
+
+                <label for="data-input">Data (JSON):</label>
+                <p class="helper-text">Format: { "labels": [], "datasets": [{ "label": "Name", "data": [] }] }</p>
+                <textarea id="data-input"></textarea>
+
+                <button class="btn-secondary" id="load-sample">Load Sample Data</button>
+                <button class="btn-primary" id="render-btn" style="margin-top: 15px;">Render Chart</button>
+                <button class="btn-success" id="download-btn" style="margin-top: 10px;">Download PNG</button>
+            </div>
+
+            <div class="main-area">
+                <div class="chart-wrapper">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="chart_gen.js"></script>
+</body>
+</html>
