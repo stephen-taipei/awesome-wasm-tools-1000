@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-150 圖片處理工作流 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #06b6d4;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .main-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr 300px;
+      gap: 25px;
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(6, 182, 212, 0.5);
+      border-radius: 15px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #06b6d4;
+      background: rgba(6, 182, 212, 0.1);
+    }
+
+    .upload-zone.has-file {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.8rem;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    /* Steps Panel */
+    .steps-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+    }
+
+    .steps-panel h3 {
+      font-size: 1rem;
+      color: #06b6d4;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-categories {
+      margin-bottom: 20px;
+    }
+
+    .step-category {
+      margin-bottom: 15px;
+    }
+
+    .step-category-title {
+      font-size: 0.75rem;
+      color: #888;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      padding-left: 5px;
+    }
+
+    .step-options {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .step-option {
+      padding: 10px 12px;
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.2);
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-option:hover {
+      background: rgba(6, 182, 212, 0.2);
+      border-color: rgba(6, 182, 212, 0.4);
+    }
+
+    /* Workflow Area */
+    .workflow-area {
+      min-height: 500px;
+    }
+
+    .preview-section {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .preview-header h3 {
+      font-size: 1rem;
+      color: #06b6d4;
+    }
+
+    .preview-info {
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    .preview-canvas-wrapper {
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+      overflow: hidden;
+    }
+
+    .preview-canvas-wrapper canvas {
+      max-width: 100%;
+      max-height: 400px;
+    }
+
+    .workflow-steps {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+    }
+
+    .workflow-steps h3 {
+      font-size: 1rem;
+      color: #06b6d4;
+      margin-bottom: 15px;
+    }
+
+    .steps-list {
+      min-height: 150px;
+    }
+
+    .workflow-step {
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.2);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .workflow-step:hover {
+      background: rgba(6, 182, 212, 0.15);
+    }
+
+    .workflow-step.active {
+      border-color: #06b6d4;
+      background: rgba(6, 182, 212, 0.2);
+    }
+
+    .step-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .step-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-num {
+      background: #06b6d4;
+      color: white;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+    }
+
+    .step-actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .step-action-btn {
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #888;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.3s;
+    }
+
+    .step-action-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #e0e0e0;
+    }
+
+    .step-action-btn.delete:hover {
+      background: rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .step-params {
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    .empty-workflow {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    /* Settings Panel */
+    .settings-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+    }
+
+    .settings-panel h3 {
+      font-size: 1rem;
+      color: #06b6d4;
+      margin-bottom: 15px;
+    }
+
+    .setting-group {
+      margin-bottom: 20px;
+    }
+
+    .setting-label {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .setting-input,
+    .setting-select {
+      width: 100%;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+    }
+
+    .setting-input:focus,
+    .setting-select:focus {
+      outline: none;
+      border-color: #06b6d4;
+    }
+
+    .setting-range {
+      width: 100%;
+      margin-top: 5px;
+    }
+
+    .range-value {
+      text-align: right;
+      font-size: 0.8rem;
+      color: #06b6d4;
+      margin-top: 5px;
+    }
+
+    .presets-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .presets-section h4 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .preset-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .preset-btn {
+      padding: 10px;
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.2);
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: left;
+    }
+
+    .preset-btn:hover {
+      background: rgba(6, 182, 212, 0.2);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(6, 182, 212, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    @media (max-width: 1200px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .steps-panel {
+        order: 1;
+      }
+
+      .workflow-area {
+        order: 2;
+      }
+
+      .settings-panel {
+        order: 3;
+      }
+
+      .step-options {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .step-option {
+        flex: 1;
+        min-width: 120px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .button-group {
+        flex-direction: column;
+      }
+
+      .step-options {
+        flex-direction: column;
+      }
+
+      .step-option {
+        min-width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-150 圖片處理工作流</h1>
+      <p class="subtitle">組合多個處理步驟，建立自動化圖片處理流程</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="main-layout">
+        <!-- Steps Panel -->
+        <div class="steps-panel">
+          <h3>🛠️ 可用步驟</h3>
+
+          <div class="step-categories">
+            <div class="step-category">
+              <div class="step-category-title">基本調整</div>
+              <div class="step-options">
+                <div class="step-option" data-step="resize">📐 調整尺寸</div>
+                <div class="step-option" data-step="rotate">🔄 旋轉</div>
+                <div class="step-option" data-step="flip">↔️ 翻轉</div>
+                <div class="step-option" data-step="crop">✂️ 裁切</div>
+              </div>
+            </div>
+
+            <div class="step-category">
+              <div class="step-category-title">色彩調整</div>
+              <div class="step-options">
+                <div class="step-option" data-step="brightness">☀️ 亮度</div>
+                <div class="step-option" data-step="contrast">🌓 對比</div>
+                <div class="step-option" data-step="saturation">🎨 飽和度</div>
+                <div class="step-option" data-step="hue">🌈 色相</div>
+              </div>
+            </div>
+
+            <div class="step-category">
+              <div class="step-category-title">濾鏡效果</div>
+              <div class="step-options">
+                <div class="step-option" data-step="grayscale">⬛ 灰階</div>
+                <div class="step-option" data-step="sepia">🟤 復古</div>
+                <div class="step-option" data-step="invert">🔀 反轉</div>
+                <div class="step-option" data-step="blur">🌫️ 模糊</div>
+              </div>
+            </div>
+
+            <div class="step-category">
+              <div class="step-category-title">進階處理</div>
+              <div class="step-options">
+                <div class="step-option" data-step="sharpen">🔪 銳化</div>
+                <div class="step-option" data-step="noise">📡 雜訊</div>
+                <div class="step-option" data-step="vignette">🔲 暗角</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Workflow Area -->
+        <div class="workflow-area">
+          <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">🖼️</div>
+            <div class="upload-text">點擊或拖曳圖片到此處</div>
+            <div class="upload-hint">支援 JPG、PNG、WebP 等格式</div>
+          </div>
+
+          <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+
+          <div class="preview-section">
+            <div class="preview-header">
+              <h3>預覽</h3>
+              <span class="preview-info" id="previewInfo">尚未載入圖片</span>
+            </div>
+            <div class="preview-canvas-wrapper">
+              <canvas id="previewCanvas"></canvas>
+            </div>
+          </div>
+
+          <div class="workflow-steps">
+            <h3>📋 工作流程步驟</h3>
+            <div class="steps-list" id="stepsList">
+              <div class="empty-workflow">
+                點擊左側步驟加入工作流程
+              </div>
+            </div>
+          </div>
+
+          <div class="button-group">
+            <button class="btn btn-primary" id="processBtn" disabled>
+              <span>▶️</span> 執行處理
+            </button>
+            <button class="btn btn-secondary" id="downloadBtn" disabled>
+              <span>💾</span> 下載結果
+            </button>
+            <button class="btn btn-secondary" id="resetBtn">
+              <span>🔄</span> 重置
+            </button>
+          </div>
+
+          <div class="status-message" id="statusMessage"></div>
+        </div>
+
+        <!-- Settings Panel -->
+        <div class="settings-panel">
+          <h3>⚙️ 步驟設定</h3>
+          <div id="settingsContent">
+            <p style="color: #666; font-size: 0.9rem;">選擇工作流程中的步驟來調整參數</p>
+          </div>
+
+          <div class="presets-section">
+            <h4>快速預設</h4>
+            <div class="preset-btns">
+              <button class="preset-btn" data-preset="instagram">📷 Instagram 風格</button>
+              <button class="preset-btn" data-preset="vintage">🎞️ 復古風格</button>
+              <button class="preset-btn" data-preset="hdr">🌅 HDR 效果</button>
+              <button class="preset-btn" data-preset="bw">⬛ 黑白經典</button>
+              <button class="preset-btn" data-preset="thumbnail">🖼️ 縮圖處理</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="workflow.js"></script>
+</body>
+</html>
