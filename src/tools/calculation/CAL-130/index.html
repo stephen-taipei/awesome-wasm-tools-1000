@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAL-130 Calculation Workflow</title>
+    <link rel="stylesheet" href="../../../styles/global.css">
+    <style>
+        .workflow-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .toolbox {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .toolbox-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background: white;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .toolbox-item:hover {
+            background: #f0f0f0;
+        }
+        .workflow-builder {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 400px;
+        }
+        .step {
+            background: #eef;
+            border: 1px solid #ccd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .step-content {
+            flex-grow: 1;
+        }
+        .remove-step {
+            color: red;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .controls {
+            margin-top: 20px;
+            padding: 15px;
+            background: #eee;
+            border-radius: 8px;
+        }
+        #result-area {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CAL-130 Calculation Workflow</h1>
+        <p>Build and execute custom calculation workflows by chaining steps.</p>
+
+        <div class="workflow-container">
+            <div class="toolbox">
+                <h3>Available Operations</h3>
+                <div id="tool-list">
+                    <!-- Tools will be injected here -->
+                </div>
+            </div>
+            
+            <div class="main-area">
+                <div class="workflow-builder">
+                    <h3>Your Workflow</h3>
+                    <div id="workflow-steps">
+                        <p class="placeholder">Click operations on the left to add them here.</p>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <h3>Execution</h3>
+                    <label for="initial-input">Initial Input (Number or JSON):</label>
+                    <input type="text" id="initial-input" value="10" style="width: 100%; padding: 8px; margin: 10px 0;">
+                    <button id="run-btn" class="btn-primary">Run Workflow</button>
+                </div>
+
+                <div id="result-area">Results will appear here...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="workflow.js"></script>
+</body>
+</html>
