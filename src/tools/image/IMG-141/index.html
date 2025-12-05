@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-141 HDR 合成 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #10b981;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(245, 158, 11, 0.5);
+      border-radius: 15px;
+      padding: 50px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.1);
+    }
+
+    .upload-zone.has-files {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .image-list-section {
+      display: none;
+      margin-bottom: 25px;
+    }
+
+    .image-list-section.active {
+      display: block;
+    }
+
+    .image-list-section h3 {
+      font-size: 1rem;
+      color: #f59e0b;
+      margin-bottom: 15px;
+    }
+
+    .image-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 15px;
+    }
+
+    .image-item {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .image-item img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+    }
+
+    .image-info {
+      padding: 10px;
+    }
+
+    .image-name {
+      font-size: 0.8rem;
+      color: #e0e0e0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .image-exposure {
+      font-size: 0.75rem;
+      color: #f59e0b;
+      margin-top: 4px;
+    }
+
+    .image-remove {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      background: rgba(239, 68, 68, 0.8);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .image-remove:hover {
+      background: rgba(239, 68, 68, 1);
+      transform: scale(1.1);
+    }
+
+    .settings-section {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+      display: none;
+    }
+
+    .settings-section.active {
+      display: block;
+    }
+
+    .settings-section h3 {
+      font-size: 1rem;
+      color: #f59e0b;
+      margin-bottom: 15px;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .setting-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .setting-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .setting-item label {
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .setting-value {
+      font-size: 0.85rem;
+      color: #f59e0b;
+      font-weight: 600;
+    }
+
+    .setting-item input[type="range"] {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .setting-item input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #f59e0b;
+      cursor: pointer;
+    }
+
+    .setting-item select {
+      width: 100%;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .setting-item select:focus {
+      outline: none;
+      border-color: #f59e0b;
+    }
+
+    .method-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .method-btn {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      color: #e0e0e0;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.9rem;
+    }
+
+    .method-btn:hover {
+      background: rgba(245, 158, 11, 0.2);
+    }
+
+    .method-btn.active {
+      border-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.3);
+    }
+
+    .preview-section {
+      display: none;
+      margin-bottom: 25px;
+    }
+
+    .preview-section.active {
+      display: block;
+    }
+
+    .preview-container {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 15px;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .preview-header h4 {
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    .preview-tabs {
+      display: flex;
+      gap: 5px;
+    }
+
+    .preview-tab {
+      padding: 6px 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: none;
+      border-radius: 6px;
+      color: #888;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.3s;
+    }
+
+    .preview-tab:hover, .preview-tab.active {
+      background: rgba(245, 158, 11, 0.3);
+      color: #f59e0b;
+    }
+
+    .canvas-wrapper {
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      overflow: hidden;
+    }
+
+    .canvas-wrapper canvas {
+      max-width: 100%;
+      max-height: 400px;
+    }
+
+    .info-panel {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .info-item {
+      text-align: center;
+    }
+
+    .info-label {
+      font-size: 0.75rem;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .info-value {
+      font-size: 0.9rem;
+      color: #e0e0e0;
+    }
+
+    .progress-section {
+      display: none;
+      margin-bottom: 25px;
+    }
+
+    .progress-section.active {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+      border-radius: 4px;
+      transition: width 0.3s;
+      width: 0%;
+    }
+
+    .progress-text {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(245, 158, 11, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .status-message.info {
+      display: block;
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .tips-box {
+      background: rgba(245, 158, 11, 0.1);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .tips-box h4 {
+      font-size: 0.9rem;
+      color: #f59e0b;
+      margin-bottom: 10px;
+    }
+
+    .tips-box ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .tips-box li {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-bottom: 5px;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .tips-box li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: #f59e0b;
+    }
+
+    @media (max-width: 768px) {
+      .settings-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .method-buttons {
+        flex-wrap: wrap;
+      }
+
+      .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-141 HDR 合成</h1>
+      <p class="subtitle">合成多張不同曝光的照片，創造高動態範圍影像</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="tips-box">
+        <h4>使用提示</h4>
+        <ul>
+          <li>上傳 2-5 張不同曝光度的同場景照片</li>
+          <li>建議使用三腳架拍攝，確保照片對齊</li>
+          <li>包含過曝、正常、欠曝的照片效果最佳</li>
+          <li>支援 JPG、PNG 格式</li>
+        </ul>
+      </div>
+
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">☀️</div>
+        <div class="upload-text">點擊或拖曳多張圖片到此處</div>
+        <div class="upload-hint">選擇 2-5 張不同曝光的照片</div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*" multiple>
+
+      <div class="image-list-section" id="imageListSection">
+        <h3>已上傳圖片 (<span id="imageCount">0</span>/5)</h3>
+        <div class="image-list" id="imageList"></div>
+      </div>
+
+      <div class="settings-section" id="settingsSection">
+        <h3>HDR 設定</h3>
+
+        <div class="method-buttons">
+          <button class="method-btn active" data-method="exposure">
+            曝光融合
+          </button>
+          <button class="method-btn" data-method="mertens">
+            Mertens 融合
+          </button>
+          <button class="method-btn" data-method="debevec">
+            Debevec 法
+          </button>
+        </div>
+
+        <div class="settings-grid">
+          <div class="setting-item">
+            <div class="setting-header">
+              <label>對比度</label>
+              <span class="setting-value" id="contrastValue">1.0</span>
+            </div>
+            <input type="range" id="contrast" min="0.5" max="2" step="0.1" value="1.0">
+          </div>
+          <div class="setting-item">
+            <div class="setting-header">
+              <label>飽和度</label>
+              <span class="setting-value" id="saturationValue">1.0</span>
+            </div>
+            <input type="range" id="saturation" min="0" max="2" step="0.1" value="1.0">
+          </div>
+          <div class="setting-item">
+            <div class="setting-header">
+              <label>曝光調整</label>
+              <span class="setting-value" id="exposureValue">0</span>
+            </div>
+            <input type="range" id="exposure" min="-2" max="2" step="0.1" value="0">
+          </div>
+          <div class="setting-item">
+            <div class="setting-header">
+              <label>色調映射</label>
+              <span class="setting-value" id="tonemapValue">自動</span>
+            </div>
+            <select id="tonemap">
+              <option value="auto">自動</option>
+              <option value="reinhard">Reinhard</option>
+              <option value="drago">Drago</option>
+              <option value="mantiuk">Mantiuk</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <div class="setting-header">
+              <label>Gamma</label>
+              <span class="setting-value" id="gammaValue">2.2</span>
+            </div>
+            <input type="range" id="gamma" min="1" max="3" step="0.1" value="2.2">
+          </div>
+          <div class="setting-item">
+            <div class="setting-header">
+              <label>高光壓縮</label>
+              <span class="setting-value" id="highlightValue">50%</span>
+            </div>
+            <input type="range" id="highlight" min="0" max="100" value="50">
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-section" id="progressSection">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">處理中...</div>
+      </div>
+
+      <div class="preview-section" id="previewSection">
+        <div class="preview-container">
+          <div class="preview-header">
+            <h4>HDR 合成結果</h4>
+            <div class="preview-tabs">
+              <button class="preview-tab active" data-view="result">結果</button>
+              <button class="preview-tab" data-view="original">原始</button>
+            </div>
+          </div>
+          <div class="canvas-wrapper" id="canvasWrapper">
+            <canvas id="resultCanvas"></canvas>
+          </div>
+        </div>
+
+        <div class="info-panel">
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">輸出尺寸</div>
+              <div class="info-value" id="outputSize">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">使用方法</div>
+              <div class="info-value" id="methodUsed">曝光融合</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">輸入數量</div>
+              <div class="info-value" id="inputCount">0 張</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">動態範圍</div>
+              <div class="info-value" id="dynamicRange">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-secondary" id="processBtn" disabled>
+          <span>⚡</span> 開始合成
+        </button>
+        <button class="btn btn-primary" id="downloadBtn" disabled>
+          <span>💾</span> 下載 HDR 圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="hdr.js"></script>
+</body>
+</html>
