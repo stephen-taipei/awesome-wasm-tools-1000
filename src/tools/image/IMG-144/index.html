@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-144 圖層合成 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #ec4899;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .main-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 25px;
+    }
+
+    .sidebar {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 15px;
+    }
+
+    .sidebar h3 {
+      font-size: 1rem;
+      color: #ec4899;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .add-layer-btn {
+      background: rgba(236, 72, 153, 0.3);
+      border: none;
+      color: #ec4899;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: background 0.3s;
+    }
+
+    .add-layer-btn:hover {
+      background: rgba(236, 72, 153, 0.5);
+    }
+
+    .layer-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .layer-item {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+
+    .layer-item:hover {
+      background: rgba(236, 72, 153, 0.1);
+    }
+
+    .layer-item.selected {
+      border-color: #ec4899;
+    }
+
+    .layer-item.dragging {
+      opacity: 0.5;
+    }
+
+    .layer-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .layer-visibility {
+      background: none;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 2px;
+    }
+
+    .layer-visibility:hover {
+      color: #ec4899;
+    }
+
+    .layer-visibility.hidden {
+      color: #444;
+    }
+
+    .layer-thumb {
+      width: 40px;
+      height: 30px;
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 8px 8px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .layer-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .layer-name {
+      flex: 1;
+      font-size: 0.8rem;
+      color: #e0e0e0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .layer-remove {
+      background: none;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      font-size: 0.9rem;
+      opacity: 0.5;
+      transition: opacity 0.3s;
+    }
+
+    .layer-remove:hover {
+      opacity: 1;
+    }
+
+    .layer-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .layer-opacity {
+      flex: 1;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      -webkit-appearance: none;
+    }
+
+    .layer-opacity::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ec4899;
+      cursor: pointer;
+    }
+
+    .layer-opacity-value {
+      font-size: 0.7rem;
+      color: #888;
+      width: 35px;
+      text-align: right;
+    }
+
+    .blend-select {
+      width: 100%;
+      padding: 6px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+      color: #e0e0e0;
+      font-size: 0.75rem;
+      margin-top: 8px;
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(236, 72, 153, 0.5);
+      border-radius: 15px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #ec4899;
+      background: rgba(236, 72, 153, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.8rem;
+    }
+
+    .canvas-section {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 15px;
+    }
+
+    .canvas-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .canvas-header h4 {
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    .canvas-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .canvas-action {
+      background: rgba(0, 0, 0, 0.3);
+      border: none;
+      color: #888;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.3s;
+    }
+
+    .canvas-action:hover {
+      background: rgba(236, 72, 153, 0.3);
+      color: #ec4899;
+    }
+
+    .canvas-wrapper {
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      overflow: hidden;
+    }
+
+    .canvas-wrapper canvas {
+      max-width: 100%;
+      max-height: 400px;
+    }
+
+    .info-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(236, 72, 153, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      display: none;
+      font-size: 0.9rem;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px;
+      color: #666;
+    }
+
+    .empty-state .icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        order: 2;
+      }
+
+      .layer-list {
+        max-height: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-144 圖層合成</h1>
+      <p class="subtitle">使用不同混合模式合成多個圖層</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="main-layout">
+        <div class="sidebar">
+          <h3>
+            圖層
+            <button class="add-layer-btn" id="addLayerBtn">+ 新增</button>
+          </h3>
+          <div class="layer-list" id="layerList">
+            <div class="empty-state">
+              <div class="icon">📑</div>
+              <div>尚無圖層</div>
+              <div style="font-size: 0.8rem; margin-top: 5px;">上傳圖片以新增圖層</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="main-content">
+          <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">🖼️</div>
+            <div class="upload-text">點擊或拖曳圖片到此處新增圖層</div>
+            <div class="upload-hint">支援 PNG、JPG 格式，可多選</div>
+          </div>
+
+          <input type="file" id="fileInput" class="hidden-input" accept="image/*" multiple>
+
+          <div class="canvas-section">
+            <div class="canvas-header">
+              <h4>合成預覽</h4>
+              <div class="canvas-actions">
+                <button class="canvas-action" id="fitCanvasBtn">適應畫布</button>
+                <button class="canvas-action" id="actualSizeBtn">原始尺寸</button>
+              </div>
+            </div>
+            <div class="canvas-wrapper" id="canvasWrapper">
+              <canvas id="compositeCanvas"></canvas>
+            </div>
+            <div class="info-bar">
+              <span id="canvasSize">畫布: - × -</span>
+              <span id="layerCount">圖層: 0</span>
+            </div>
+          </div>
+
+          <div class="button-group">
+            <button class="btn btn-secondary" id="flattenBtn" disabled>
+              <span>📋</span> 合併圖層
+            </button>
+            <button class="btn btn-primary" id="downloadBtn" disabled>
+              <span>💾</span> 下載 PNG
+            </button>
+            <button class="btn btn-secondary" id="resetBtn">
+              <span>🔄</span> 重新開始
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="layers.js"></script>
+</body>
+</html>
