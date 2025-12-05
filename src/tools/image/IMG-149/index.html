@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-149 圖片排序工具 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #f97316;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(249, 115, 22, 0.5);
+      border-radius: 15px;
+      padding: 40px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #f97316;
+      background: rgba(249, 115, 22, 0.1);
+    }
+
+    .upload-zone.has-files {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .controls-section {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+      display: none;
+    }
+
+    .controls-section.active {
+      display: block;
+    }
+
+    .controls-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .controls-header h3 {
+      font-size: 1rem;
+      color: #f97316;
+    }
+
+    .sort-options {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .sort-btn {
+      padding: 8px 16px;
+      background: rgba(249, 115, 22, 0.2);
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      border-radius: 8px;
+      color: #f97316;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sort-btn:hover {
+      background: rgba(249, 115, 22, 0.3);
+    }
+
+    .sort-btn.active {
+      background: #f97316;
+      color: white;
+    }
+
+    .sort-direction {
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .sort-direction:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .file-count {
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    .gallery-section {
+      margin-bottom: 25px;
+      display: none;
+    }
+
+    .gallery-section.active {
+      display: block;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+    }
+
+    .gallery-item {
+      position: relative;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: grab;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+
+    .gallery-item:hover {
+      border-color: rgba(249, 115, 22, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .gallery-item.dragging {
+      opacity: 0.5;
+      border-color: #f97316;
+    }
+
+    .gallery-item.drag-over {
+      border-color: #22c55e;
+      transform: scale(1.02);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .item-info {
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .item-name {
+      font-size: 0.75rem;
+      color: #e0e0e0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+
+    .item-meta {
+      font-size: 0.7rem;
+      color: #888;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .item-order {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(249, 115, 22, 0.9);
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .item-remove {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(239, 68, 68, 0.9);
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      font-size: 0.8rem;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gallery-item:hover .item-remove {
+      display: flex;
+    }
+
+    .list-view {
+      display: none;
+    }
+
+    .list-view.active {
+      display: block;
+    }
+
+    .list-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .list-table th,
+    .list-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .list-table th {
+      font-size: 0.8rem;
+      color: #888;
+      font-weight: 600;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .list-table th:hover {
+      color: #f97316;
+    }
+
+    .list-table th.sorted {
+      color: #f97316;
+    }
+
+    .list-table tbody tr {
+      cursor: grab;
+    }
+
+    .list-table tbody tr:hover {
+      background: rgba(249, 115, 22, 0.1);
+    }
+
+    .list-table tbody tr.dragging {
+      opacity: 0.5;
+    }
+
+    .list-thumb {
+      width: 50px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 5px;
+    }
+
+    .view-btn {
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 8px;
+      color: #888;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .view-btn:hover {
+      color: #e0e0e0;
+    }
+
+    .view-btn.active {
+      background: #f97316;
+      color: white;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(249, 115, 22, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    @media (max-width: 768px) {
+      .controls-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .sort-options {
+        width: 100%;
+      }
+
+      .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .list-table th:nth-child(3),
+      .list-table td:nth-child(3),
+      .list-table th:nth-child(4),
+      .list-table td:nth-child(4) {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-149 圖片排序工具</h1>
+      <p class="subtitle">拖曳排序或按屬性自動排序圖片</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">📋</div>
+        <div class="upload-text">點擊或拖曳多張圖片到此處</div>
+        <div class="upload-hint">支援任意圖片格式，可多選</div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*" multiple>
+
+      <div class="controls-section" id="controlsSection">
+        <div class="controls-header">
+          <h3>排序方式</h3>
+          <div class="sort-options">
+            <button class="sort-btn" data-sort="name">
+              <span>🔤</span> 檔名
+            </button>
+            <button class="sort-btn" data-sort="size">
+              <span>📦</span> 大小
+            </button>
+            <button class="sort-btn" data-sort="date">
+              <span>📅</span> 日期
+            </button>
+            <button class="sort-btn" data-sort="width">
+              <span>↔️</span> 寬度
+            </button>
+            <button class="sort-btn" data-sort="height">
+              <span>↕️</span> 高度
+            </button>
+            <button class="sort-btn" data-sort="type">
+              <span>🏷️</span> 類型
+            </button>
+            <button class="sort-direction" id="sortDirection">↑ 升序</button>
+          </div>
+          <div class="view-toggle">
+            <button class="view-btn active" data-view="grid" title="網格檢視">▦</button>
+            <button class="view-btn" data-view="list" title="清單檢視">☰</button>
+          </div>
+        </div>
+        <div class="file-count" id="fileCount">0 個檔案</div>
+      </div>
+
+      <div class="gallery-section" id="gallerySection">
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </div>
+
+      <div class="list-view" id="listView">
+        <table class="list-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>預覽</th>
+              <th data-sort="name">檔名 ↕</th>
+              <th data-sort="size">大小 ↕</th>
+              <th data-sort="width">尺寸 ↕</th>
+              <th data-sort="type">類型 ↕</th>
+            </tr>
+          </thead>
+          <tbody id="listTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="downloadBtn" disabled>
+          <span>💾</span> 下載排序後的 ZIP
+        </button>
+        <button class="btn btn-secondary" id="shuffleBtn" disabled>
+          <span>🔀</span> 隨機排序
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="image-sorter.js"></script>
+</body>
+</html>
