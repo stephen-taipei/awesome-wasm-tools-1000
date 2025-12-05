@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-133 透視校正 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #00b4d8;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(0, 180, 216, 0.5);
+      border-radius: 15px;
+      padding: 50px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #00b4d8;
+      background: rgba(0, 180, 216, 0.1);
+    }
+
+    .upload-zone.has-file {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .editor-section {
+      display: none;
+      margin-bottom: 25px;
+    }
+
+    .editor-section.active {
+      display: block;
+    }
+
+    .editor-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .editor-box {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 15px;
+    }
+
+    .editor-box h4 {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .canvas-container {
+      position: relative;
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      overflow: hidden;
+    }
+
+    .canvas-container canvas {
+      max-width: 100%;
+      max-height: 400px;
+    }
+
+    .corner-point {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #00b4d8;
+      border: 3px solid white;
+      border-radius: 50%;
+      cursor: move;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      z-index: 10;
+    }
+
+    .corner-point:hover {
+      background: #0077b6;
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+
+    .corner-point.active {
+      background: #ff6b6b;
+    }
+
+    .corner-label {
+      position: absolute;
+      font-size: 0.7rem;
+      color: white;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 2px 6px;
+      border-radius: 4px;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .settings-section {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+
+    .settings-section h3 {
+      font-size: 1rem;
+      color: #00b4d8;
+      margin-bottom: 15px;
+    }
+
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .preset-item {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 15px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+
+    .preset-item:hover {
+      background: rgba(0, 180, 216, 0.2);
+    }
+
+    .preset-item.active {
+      border-color: #00b4d8;
+      background: rgba(0, 180, 216, 0.3);
+    }
+
+    .preset-icon {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+
+    .preset-name {
+      font-size: 0.8rem;
+      color: #aaa;
+    }
+
+    .option-row {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .option-item label {
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .option-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #00b4d8;
+    }
+
+    .option-item select {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+    }
+
+    .instructions {
+      background: rgba(0, 180, 216, 0.2);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .instructions h4 {
+      font-size: 0.9rem;
+      color: #00b4d8;
+      margin-bottom: 10px;
+    }
+
+    .instructions ol {
+      padding-left: 20px;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .instructions li {
+      margin-bottom: 5px;
+    }
+
+    .info-panel {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .info-item {
+      text-align: center;
+    }
+
+    .info-label {
+      font-size: 0.75rem;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .info-value {
+      font-size: 0.9rem;
+      color: #e0e0e0;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 150px;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(0, 180, 216, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .editor-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .preset-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .option-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-133 透視校正</h1>
+      <p class="subtitle">校正透視變形，如文件拍攝、建築照片</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">📐</div>
+        <div class="upload-text">點擊或拖曳圖片到此處</div>
+        <div class="upload-hint">支援 PNG、JPG、WebP 格式</div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+
+      <div class="instructions" id="instructions" style="display: none;">
+        <h4>使用說明</h4>
+        <ol>
+          <li>拖曳四個角點到需要校正區域的四個角落</li>
+          <li>角點會自動吸附到圖片邊緣</li>
+          <li>選擇輸出比例或保持自動</li>
+          <li>點擊「套用校正」查看效果</li>
+        </ol>
+      </div>
+
+      <div class="settings-section" id="settingsSection" style="display: none;">
+        <h3>輸出比例預設</h3>
+        <div class="preset-grid">
+          <div class="preset-item active" data-ratio="auto">
+            <div class="preset-icon">🔄</div>
+            <div class="preset-name">自動</div>
+          </div>
+          <div class="preset-item" data-ratio="a4">
+            <div class="preset-icon">📄</div>
+            <div class="preset-name">A4 紙張</div>
+          </div>
+          <div class="preset-item" data-ratio="square">
+            <div class="preset-icon">⬜</div>
+            <div class="preset-name">正方形</div>
+          </div>
+          <div class="preset-item" data-ratio="4:3">
+            <div class="preset-icon">🖼️</div>
+            <div class="preset-name">4:3</div>
+          </div>
+          <div class="preset-item" data-ratio="16:9">
+            <div class="preset-icon">📺</div>
+            <div class="preset-name">16:9</div>
+          </div>
+          <div class="preset-item" data-ratio="3:2">
+            <div class="preset-icon">📷</div>
+            <div class="preset-name">3:2</div>
+          </div>
+          <div class="preset-item" data-ratio="card">
+            <div class="preset-icon">💳</div>
+            <div class="preset-name">名片/卡片</div>
+          </div>
+          <div class="preset-item" data-ratio="custom">
+            <div class="preset-icon">✏️</div>
+            <div class="preset-name">自訂</div>
+          </div>
+        </div>
+
+        <div class="option-row">
+          <div class="option-item">
+            <input type="checkbox" id="autoEnhance" checked>
+            <label for="autoEnhance">自動增強對比度</label>
+          </div>
+          <div class="option-item">
+            <label for="outputFormat">輸出格式：</label>
+            <select id="outputFormat">
+              <option value="png">PNG</option>
+              <option value="jpg">JPG</option>
+              <option value="webp">WebP</option>
+            </select>
+          </div>
+          <div class="option-item">
+            <label for="outputQuality">品質：</label>
+            <select id="outputQuality">
+              <option value="1">最高</option>
+              <option value="0.9" selected>高</option>
+              <option value="0.8">中</option>
+              <option value="0.6">低</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="editor-section" id="editorSection">
+        <div class="editor-layout">
+          <div class="editor-box">
+            <h4>原始圖片（拖曳角點選取區域）</h4>
+            <div class="canvas-container" id="sourceContainer">
+              <canvas id="sourceCanvas"></canvas>
+              <div class="corner-point" id="corner-tl" data-corner="tl"></div>
+              <div class="corner-point" id="corner-tr" data-corner="tr"></div>
+              <div class="corner-point" id="corner-bl" data-corner="bl"></div>
+              <div class="corner-point" id="corner-br" data-corner="br"></div>
+              <div class="corner-label" id="label-tl">左上</div>
+              <div class="corner-label" id="label-tr">右上</div>
+              <div class="corner-label" id="label-bl">左下</div>
+              <div class="corner-label" id="label-br">右下</div>
+            </div>
+          </div>
+          <div class="editor-box">
+            <h4>校正後預覽</h4>
+            <div class="canvas-container">
+              <canvas id="resultCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-panel">
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">原始尺寸</div>
+              <div class="info-value" id="originalSize">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">輸出尺寸</div>
+              <div class="info-value" id="outputSize">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">選取比例</div>
+              <div class="info-value" id="selectedRatio">-</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">處理時間</div>
+              <div class="info-value" id="processTime">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="applyBtn" disabled>
+          <span>📐</span> 套用校正
+        </button>
+        <button class="btn btn-secondary" id="downloadBtn" disabled>
+          <span>💾</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="perspective.js"></script>
+</body>
+</html>
