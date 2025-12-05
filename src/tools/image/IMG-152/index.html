@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-152 圖片拼貼工具 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #8b5cf6;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .main-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 25px;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(139, 92, 246, 0.5);
+      border-radius: 15px;
+      padding: 25px 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #8b5cf6;
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      font-size: 0.9rem;
+      margin-bottom: 5px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.8rem;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .images-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 15px;
+      flex: 1;
+      overflow-y: auto;
+      max-height: 400px;
+    }
+
+    .images-panel h3 {
+      font-size: 0.9rem;
+      color: #8b5cf6;
+      margin-bottom: 15px;
+    }
+
+    .image-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .image-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      background: rgba(139, 92, 246, 0.1);
+      border-radius: 8px;
+      cursor: grab;
+    }
+
+    .image-item:hover {
+      background: rgba(139, 92, 246, 0.2);
+    }
+
+    .image-item.dragging {
+      opacity: 0.5;
+    }
+
+    .image-thumb {
+      width: 50px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .image-name {
+      flex: 1;
+      font-size: 0.8rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .image-remove {
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .image-remove:hover {
+      background: rgba(239, 68, 68, 0.5);
+    }
+
+    .settings-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 15px;
+    }
+
+    .settings-panel h3 {
+      font-size: 0.9rem;
+      color: #8b5cf6;
+      margin-bottom: 15px;
+    }
+
+    .setting-group {
+      margin-bottom: 15px;
+    }
+
+    .setting-label {
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .setting-select,
+    .setting-input {
+      width: 100%;
+      padding: 8px 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.85rem;
+    }
+
+    .setting-select:focus,
+    .setting-input:focus {
+      outline: none;
+      border-color: #8b5cf6;
+    }
+
+    .color-picker-wrapper {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .color-picker {
+      width: 40px;
+      height: 32px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .color-value {
+      flex: 1;
+      padding: 8px 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.85rem;
+      font-family: monospace;
+    }
+
+    /* Canvas Area */
+    .canvas-area {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .layout-presets {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .layout-btn {
+      padding: 10px 15px;
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 8px;
+      color: #8b5cf6;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .layout-btn:hover {
+      background: rgba(139, 92, 246, 0.3);
+    }
+
+    .layout-btn.active {
+      background: #8b5cf6;
+      color: white;
+    }
+
+    .preview-container {
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 15px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+    }
+
+    .preview-container canvas {
+      max-width: 100%;
+      max-height: 500px;
+    }
+
+    .canvas-info {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+
+    .info-item {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .info-item span {
+      color: #8b5cf6;
+      font-weight: 600;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(139, 92, 246, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    @media (max-width: 1000px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .upload-zone {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .images-panel {
+        flex: 2;
+        min-width: 300px;
+        max-height: 200px;
+      }
+
+      .settings-panel {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .image-list {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      .image-item {
+        flex-direction: column;
+        width: 80px;
+      }
+
+      .image-name {
+        text-align: center;
+        font-size: 0.7rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .layout-presets {
+        justify-content: center;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-152 圖片拼貼工具</h1>
+      <p class="subtitle">將多張圖片組合成精美拼貼</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="main-layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+          <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">📷</div>
+            <div class="upload-text">上傳圖片</div>
+            <div class="upload-hint">可多選，支援拖曳</div>
+          </div>
+
+          <input type="file" id="fileInput" class="hidden-input" accept="image/*" multiple>
+
+          <div class="images-panel">
+            <h3>已上傳圖片 (<span id="imageCount">0</span>)</h3>
+            <div class="image-list" id="imageList"></div>
+          </div>
+
+          <div class="settings-panel">
+            <h3>設定</h3>
+
+            <div class="setting-group">
+              <label class="setting-label">畫布尺寸</label>
+              <select class="setting-select" id="canvasSize">
+                <option value="1080x1080">1080 × 1080 (方形)</option>
+                <option value="1080x1350">1080 × 1350 (4:5)</option>
+                <option value="1080x1920">1080 × 1920 (9:16)</option>
+                <option value="1920x1080">1920 × 1080 (16:9)</option>
+                <option value="1200x628">1200 × 628 (FB 貼文)</option>
+                <option value="custom">自訂</option>
+              </select>
+            </div>
+
+            <div class="setting-group" id="customSizeGroup" style="display: none;">
+              <div style="display: flex; gap: 10px;">
+                <input type="number" class="setting-input" id="customWidth" placeholder="寬" value="1080">
+                <input type="number" class="setting-input" id="customHeight" placeholder="高" value="1080">
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">間距 (px)</label>
+              <input type="number" class="setting-input" id="spacing" value="10" min="0" max="50">
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">圓角 (px)</label>
+              <input type="number" class="setting-input" id="borderRadius" value="0" min="0" max="50">
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">背景顏色</label>
+              <div class="color-picker-wrapper">
+                <input type="color" class="color-picker" id="bgColor" value="#ffffff">
+                <input type="text" class="color-value" id="bgColorValue" value="#ffffff">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas Area -->
+        <div class="canvas-area">
+          <div class="layout-presets">
+            <button class="layout-btn active" data-layout="grid2x2">
+              <span>⊞</span> 2×2 網格
+            </button>
+            <button class="layout-btn" data-layout="grid3x3">
+              <span>⊞</span> 3×3 網格
+            </button>
+            <button class="layout-btn" data-layout="horizontal">
+              <span>═</span> 水平排列
+            </button>
+            <button class="layout-btn" data-layout="vertical">
+              <span>║</span> 垂直排列
+            </button>
+            <button class="layout-btn" data-layout="featured">
+              <span>◲</span> 主圖+小圖
+            </button>
+            <button class="layout-btn" data-layout="mosaic">
+              <span>▦</span> 馬賽克
+            </button>
+          </div>
+
+          <div class="preview-container">
+            <canvas id="previewCanvas"></canvas>
+          </div>
+
+          <div class="canvas-info">
+            <div class="info-item">尺寸: <span id="infoSize">1080 × 1080</span></div>
+            <div class="info-item">圖片數: <span id="infoCount">0</span></div>
+            <div class="info-item">版面: <span id="infoLayout">2×2 網格</span></div>
+          </div>
+
+          <div class="button-group">
+            <button class="btn btn-primary" id="generateBtn" disabled>
+              <span>🎨</span> 產生拼貼
+            </button>
+            <button class="btn btn-secondary" id="downloadBtn" disabled>
+              <span>💾</span> 下載圖片
+            </button>
+            <button class="btn btn-secondary" id="resetBtn">
+              <span>🔄</span> 重新開始
+            </button>
+          </div>
+
+          <div class="status-message" id="statusMessage"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="collage.js"></script>
+</body>
+</html>
