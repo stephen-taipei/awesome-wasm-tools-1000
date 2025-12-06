@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-157 圖片浮水印工具 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #f59e0b;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(245, 158, 11, 0.5);
+      border-radius: 15px;
+      padding: 40px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.1);
+    }
+
+    .upload-zone.has-file {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .editor-section {
+      display: none;
+      margin-bottom: 25px;
+    }
+
+    .editor-section.active {
+      display: block;
+    }
+
+    .editor-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+    }
+
+    .preview-area {
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 15px;
+      min-height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-canvas {
+      max-width: 100%;
+      max-height: 500px;
+    }
+
+    .settings-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+    }
+
+    .settings-title {
+      font-size: 1rem;
+      color: #f59e0b;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .setting-group {
+      margin-bottom: 20px;
+    }
+
+    .setting-label {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .setting-input,
+    .setting-select,
+    .setting-textarea {
+      width: 100%;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+    }
+
+    .setting-textarea {
+      min-height: 60px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .setting-input:focus,
+    .setting-select:focus,
+    .setting-textarea:focus {
+      outline: none;
+      border-color: #f59e0b;
+    }
+
+    .setting-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .watermark-type-tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 15px;
+    }
+
+    .type-tab {
+      flex: 1;
+      padding: 10px;
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 8px;
+      color: #f59e0b;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .type-tab:hover {
+      background: rgba(245, 158, 11, 0.3);
+    }
+
+    .type-tab.active {
+      background: #f59e0b;
+      color: white;
+    }
+
+    .watermark-image-upload {
+      border: 2px dashed rgba(245, 158, 11, 0.5);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .watermark-image-upload:hover {
+      border-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.1);
+    }
+
+    .watermark-image-upload.has-image {
+      border-color: #22c55e;
+      padding: 10px;
+    }
+
+    .watermark-image-upload img {
+      max-width: 100%;
+      max-height: 80px;
+      border-radius: 5px;
+    }
+
+    .position-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+    }
+
+    .position-btn {
+      padding: 10px;
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 6px;
+      color: #888;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .position-btn:hover {
+      background: rgba(245, 158, 11, 0.3);
+      color: #e0e0e0;
+    }
+
+    .position-btn.active {
+      background: #f59e0b;
+      color: white;
+    }
+
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .slider-group input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .slider-group input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #f59e0b;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .slider-value {
+      min-width: 40px;
+      text-align: right;
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .color-picker-wrapper {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .color-picker {
+      width: 40px;
+      height: 36px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(245, 158, 11, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    @media (max-width: 768px) {
+      .editor-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .settings-panel {
+        order: -1;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-157 圖片浮水印工具</h1>
+      <p class="subtitle">為圖片添加文字或圖片浮水印</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">💧</div>
+        <div class="upload-text">點擊或拖曳圖片到此處</div>
+        <div class="upload-hint">支援 JPG、PNG、WebP 等格式</div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+      <input type="file" id="watermarkInput" class="hidden-input" accept="image/*">
+
+      <div class="editor-section" id="editorSection">
+        <div class="editor-layout">
+          <div class="preview-area">
+            <canvas id="previewCanvas" class="preview-canvas"></canvas>
+          </div>
+
+          <div class="settings-panel">
+            <h3 class="settings-title">浮水印設定</h3>
+
+            <div class="watermark-type-tabs">
+              <button class="type-tab active" data-type="text">文字浮水印</button>
+              <button class="type-tab" data-type="image">圖片浮水印</button>
+            </div>
+
+            <div id="textSettings">
+              <div class="setting-group">
+                <label class="setting-label">浮水印文字</label>
+                <textarea class="setting-textarea" id="watermarkText" placeholder="輸入浮水印文字...">© My Watermark</textarea>
+              </div>
+
+              <div class="setting-group">
+                <label class="setting-label">字型大小</label>
+                <div class="slider-group">
+                  <input type="range" id="fontSize" min="12" max="120" value="32">
+                  <span class="slider-value" id="fontSizeValue">32px</span>
+                </div>
+              </div>
+
+              <div class="setting-group">
+                <label class="setting-label">文字顏色</label>
+                <div class="color-picker-wrapper">
+                  <input type="color" class="color-picker" id="textColor" value="#ffffff">
+                  <input type="text" class="setting-input" id="textColorValue" value="#ffffff" style="flex: 1;">
+                </div>
+              </div>
+            </div>
+
+            <div id="imageSettings" style="display: none;">
+              <div class="setting-group">
+                <label class="setting-label">浮水印圖片</label>
+                <div class="watermark-image-upload" id="watermarkUpload">
+                  <div>點擊選擇圖片</div>
+                </div>
+              </div>
+
+              <div class="setting-group">
+                <label class="setting-label">圖片大小</label>
+                <div class="slider-group">
+                  <input type="range" id="imageSize" min="5" max="50" value="20">
+                  <span class="slider-value" id="imageSizeValue">20%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">位置</label>
+              <div class="position-grid">
+                <button class="position-btn" data-pos="top-left">左上</button>
+                <button class="position-btn" data-pos="top-center">上中</button>
+                <button class="position-btn" data-pos="top-right">右上</button>
+                <button class="position-btn" data-pos="middle-left">左中</button>
+                <button class="position-btn active" data-pos="middle-center">中央</button>
+                <button class="position-btn" data-pos="middle-right">右中</button>
+                <button class="position-btn" data-pos="bottom-left">左下</button>
+                <button class="position-btn" data-pos="bottom-center">下中</button>
+                <button class="position-btn" data-pos="bottom-right">右下</button>
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">透明度</label>
+              <div class="slider-group">
+                <input type="range" id="opacity" min="10" max="100" value="50">
+                <span class="slider-value" id="opacityValue">50%</span>
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">旋轉角度</label>
+              <div class="slider-group">
+                <input type="range" id="rotation" min="-180" max="180" value="0">
+                <span class="slider-value" id="rotationValue">0°</span>
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">平鋪模式</label>
+              <select class="setting-select" id="tileMode">
+                <option value="single">單一浮水印</option>
+                <option value="tile">平鋪全圖</option>
+                <option value="diagonal">對角線平鋪</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="button-group" id="buttonGroup" style="display: none;">
+        <button class="btn btn-primary" id="applyBtn">
+          <span>💧</span> 套用浮水印
+        </button>
+        <button class="btn btn-secondary" id="downloadBtn" disabled>
+          <span>💾</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+    </div>
+  </div>
+
+  <script src="watermark.js"></script>
+</body>
+</html>
