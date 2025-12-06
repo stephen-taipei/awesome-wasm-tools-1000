@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-161 圖片圓角工具 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #06b6d4;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(6, 182, 212, 0.5);
+      border-radius: 15px;
+      padding: 40px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #06b6d4;
+      background: rgba(6, 182, 212, 0.1);
+    }
+
+    .upload-zone.has-file {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .editor-section {
+      display: none;
+      margin-bottom: 25px;
+    }
+
+    .editor-section.active {
+      display: block;
+    }
+
+    .editor-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+    }
+
+    .preview-area {
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 15px;
+      min-height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .preview-canvas {
+      max-width: 100%;
+      max-height: 500px;
+    }
+
+    .settings-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+    }
+
+    .settings-title {
+      font-size: 1rem;
+      color: #06b6d4;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .shape-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 25px;
+    }
+
+    .shape-btn {
+      padding: 15px 10px;
+      background: rgba(6, 182, 212, 0.15);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 10px;
+      color: #e0e0e0;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .shape-btn:hover {
+      background: rgba(6, 182, 212, 0.3);
+    }
+
+    .shape-btn.active {
+      background: #06b6d4;
+      color: white;
+      border-color: #06b6d4;
+    }
+
+    .shape-icon {
+      font-size: 1.8rem;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .setting-group {
+      margin-bottom: 20px;
+    }
+
+    .setting-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .setting-label {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .setting-value {
+      font-size: 0.85rem;
+      color: #06b6d4;
+    }
+
+    .slider-input {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #06b6d4;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .corner-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+
+    .corner-control {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .corner-control label {
+      font-size: 0.75rem;
+      color: #666;
+    }
+
+    .corner-input {
+      width: 100%;
+      padding: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #e0e0e0;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .corner-input:focus {
+      outline: none;
+      border-color: #06b6d4;
+    }
+
+    .link-corners {
+      grid-column: span 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.2);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .link-corners:hover {
+      background: rgba(6, 182, 212, 0.2);
+    }
+
+    .link-corners.active {
+      background: rgba(6, 182, 212, 0.3);
+      border-color: #06b6d4;
+    }
+
+    .link-corners input {
+      display: none;
+    }
+
+    .link-icon {
+      font-size: 1.2rem;
+    }
+
+    .link-text {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .color-picker-wrapper {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .color-picker {
+      width: 40px;
+      height: 36px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .color-input {
+      flex: 1;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+    }
+
+    .transparent-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .transparent-option input {
+      width: 18px;
+      height: 18px;
+      accent-color: #06b6d4;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(6, 182, 212, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    @media (max-width: 768px) {
+      .editor-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .settings-panel {
+        order: -1;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-161 圖片圓角工具</h1>
+      <p class="subtitle">為圖片添加圓角或裁切成各種形狀</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">⭕</div>
+        <div class="upload-text">點擊或拖曳圖片到此處</div>
+        <div class="upload-hint">支援 JPG、PNG、WebP 等格式</div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+
+      <div class="editor-section" id="editorSection">
+        <div class="editor-layout">
+          <div class="preview-area">
+            <canvas id="previewCanvas" class="preview-canvas"></canvas>
+          </div>
+
+          <div class="settings-panel">
+            <h3 class="settings-title">形狀選擇</h3>
+
+            <div class="shape-grid">
+              <button class="shape-btn active" data-shape="rounded">
+                <span class="shape-icon">▢</span>
+                圓角
+              </button>
+              <button class="shape-btn" data-shape="circle">
+                <span class="shape-icon">⬤</span>
+                圓形
+              </button>
+              <button class="shape-btn" data-shape="ellipse">
+                <span class="shape-icon">⬭</span>
+                橢圓
+              </button>
+              <button class="shape-btn" data-shape="squircle">
+                <span class="shape-icon">⏹</span>
+                超橢圓
+              </button>
+              <button class="shape-btn" data-shape="hexagon">
+                <span class="shape-icon">⬡</span>
+                六角形
+              </button>
+              <button class="shape-btn" data-shape="star">
+                <span class="shape-icon">⭐</span>
+                星形
+              </button>
+            </div>
+
+            <div id="roundedSettings">
+              <h3 class="settings-title">圓角設定</h3>
+
+              <div class="setting-group">
+                <div class="setting-header">
+                  <span class="setting-label">圓角大小</span>
+                  <span class="setting-value" id="radiusValue">30px</span>
+                </div>
+                <input type="range" class="slider-input" id="radius" min="0" max="200" value="30">
+              </div>
+
+              <div class="corner-controls">
+                <div class="corner-control">
+                  <label>左上</label>
+                  <input type="number" class="corner-input" id="topLeft" value="30" min="0">
+                </div>
+                <div class="corner-control">
+                  <label>右上</label>
+                  <input type="number" class="corner-input" id="topRight" value="30" min="0">
+                </div>
+                <div class="corner-control">
+                  <label>左下</label>
+                  <input type="number" class="corner-input" id="bottomLeft" value="30" min="0">
+                </div>
+                <div class="corner-control">
+                  <label>右下</label>
+                  <input type="number" class="corner-input" id="bottomRight" value="30" min="0">
+                </div>
+                <label class="link-corners active">
+                  <input type="checkbox" id="linkCorners" checked>
+                  <span class="link-icon">🔗</span>
+                  <span class="link-text">統一圓角</span>
+                </label>
+              </div>
+            </div>
+
+            <div id="starSettings" style="display: none;">
+              <h3 class="settings-title">星形設定</h3>
+
+              <div class="setting-group">
+                <div class="setting-header">
+                  <span class="setting-label">頂點數量</span>
+                  <span class="setting-value" id="pointsValue">5</span>
+                </div>
+                <input type="range" class="slider-input" id="starPoints" min="3" max="12" value="5">
+              </div>
+
+              <div class="setting-group">
+                <div class="setting-header">
+                  <span class="setting-label">內徑比例</span>
+                  <span class="setting-value" id="innerRadiusValue">50%</span>
+                </div>
+                <input type="range" class="slider-input" id="innerRadius" min="20" max="80" value="50">
+              </div>
+            </div>
+
+            <h3 class="settings-title">背景設定</h3>
+
+            <div class="setting-group">
+              <label class="setting-label">背景顏色</label>
+              <div class="color-picker-wrapper">
+                <input type="color" class="color-picker" id="bgColor" value="#ffffff">
+                <input type="text" class="color-input" id="bgColorValue" value="#ffffff">
+              </div>
+              <label class="transparent-option">
+                <input type="checkbox" id="transparentBg" checked>
+                透明背景 (PNG)
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="button-group" id="buttonGroup" style="display: none;">
+        <button class="btn btn-primary" id="applyBtn">
+          <span>⭕</span> 套用形狀
+        </button>
+        <button class="btn btn-secondary" id="downloadBtn" disabled>
+          <span>💾</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+    </div>
+  </div>
+
+  <script src="rounded.js"></script>
+</body>
+</html>
