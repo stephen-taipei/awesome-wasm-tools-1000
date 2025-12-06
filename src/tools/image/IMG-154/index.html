@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-154 圖片截圖工具 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #f43f5e;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(244, 63, 94, 0.5);
+      border-radius: 15px;
+      padding: 40px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #f43f5e;
+      background: rgba(244, 63, 94, 0.1);
+    }
+
+    .upload-zone.has-file {
+      display: none;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .editor-section {
+      display: none;
+      margin-bottom: 25px;
+    }
+
+    .editor-section.active {
+      display: block;
+    }
+
+    .crop-controls {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .control-label {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .control-input {
+      width: 80px;
+      padding: 8px 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      color: #e0e0e0;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .control-input:focus {
+      outline: none;
+      border-color: #f43f5e;
+    }
+
+    .aspect-ratios {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .ratio-btn {
+      padding: 8px 12px;
+      background: rgba(244, 63, 94, 0.2);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      border-radius: 6px;
+      color: #f43f5e;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .ratio-btn:hover {
+      background: rgba(244, 63, 94, 0.3);
+    }
+
+    .ratio-btn.active {
+      background: #f43f5e;
+      color: white;
+    }
+
+    .canvas-container {
+      position: relative;
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 15px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    #imageCanvas {
+      display: block;
+      max-width: 100%;
+      max-height: 500px;
+    }
+
+    .crop-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .crop-box {
+      position: absolute;
+      border: 2px dashed #f43f5e;
+      background: rgba(244, 63, 94, 0.1);
+      pointer-events: auto;
+      cursor: move;
+    }
+
+    .crop-handle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #f43f5e;
+      border: 2px solid white;
+      border-radius: 2px;
+    }
+
+    .crop-handle.nw { top: -6px; left: -6px; cursor: nw-resize; }
+    .crop-handle.ne { top: -6px; right: -6px; cursor: ne-resize; }
+    .crop-handle.sw { bottom: -6px; left: -6px; cursor: sw-resize; }
+    .crop-handle.se { bottom: -6px; right: -6px; cursor: se-resize; }
+    .crop-handle.n { top: -6px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+    .crop-handle.s { bottom: -6px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+    .crop-handle.w { top: 50%; left: -6px; transform: translateY(-50%); cursor: w-resize; }
+    .crop-handle.e { top: 50%; right: -6px; transform: translateY(-50%); cursor: e-resize; }
+
+    .crop-dim-overlay {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.5);
+      pointer-events: none;
+    }
+
+    .crop-info {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #f43f5e;
+    }
+
+    .preview-section {
+      display: none;
+      margin-top: 25px;
+    }
+
+    .preview-section.active {
+      display: block;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .preview-header h3 {
+      font-size: 1rem;
+      color: #f43f5e;
+    }
+
+    .preview-info {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .preview-container {
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-container img {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 8px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(244, 63, 94, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    @media (max-width: 768px) {
+      .crop-controls {
+        flex-direction: column;
+      }
+
+      .aspect-ratios {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-154 圖片截圖工具</h1>
+      <p class="subtitle">自由選取並裁切圖片區域</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">✂️</div>
+        <div class="upload-text">點擊或拖曳圖片到此處</div>
+        <div class="upload-hint">支援 JPG、PNG、WebP 等格式</div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+
+      <div class="editor-section" id="editorSection">
+        <div class="crop-controls">
+          <div class="control-group">
+            <span class="control-label">X:</span>
+            <input type="number" class="control-input" id="cropX" value="0">
+          </div>
+          <div class="control-group">
+            <span class="control-label">Y:</span>
+            <input type="number" class="control-input" id="cropY" value="0">
+          </div>
+          <div class="control-group">
+            <span class="control-label">寬:</span>
+            <input type="number" class="control-input" id="cropWidth" value="100">
+          </div>
+          <div class="control-group">
+            <span class="control-label">高:</span>
+            <input type="number" class="control-input" id="cropHeight" value="100">
+          </div>
+          <div class="aspect-ratios">
+            <button class="ratio-btn active" data-ratio="free">自由</button>
+            <button class="ratio-btn" data-ratio="1:1">1:1</button>
+            <button class="ratio-btn" data-ratio="4:3">4:3</button>
+            <button class="ratio-btn" data-ratio="16:9">16:9</button>
+            <button class="ratio-btn" data-ratio="3:2">3:2</button>
+            <button class="ratio-btn" data-ratio="9:16">9:16</button>
+          </div>
+        </div>
+
+        <div class="canvas-container">
+          <div class="canvas-wrapper" id="canvasWrapper">
+            <canvas id="imageCanvas"></canvas>
+            <div class="crop-overlay" id="cropOverlay">
+              <div class="crop-dim-overlay" id="dimTop"></div>
+              <div class="crop-dim-overlay" id="dimBottom"></div>
+              <div class="crop-dim-overlay" id="dimLeft"></div>
+              <div class="crop-dim-overlay" id="dimRight"></div>
+              <div class="crop-box" id="cropBox">
+                <div class="crop-handle nw" data-handle="nw"></div>
+                <div class="crop-handle n" data-handle="n"></div>
+                <div class="crop-handle ne" data-handle="ne"></div>
+                <div class="crop-handle w" data-handle="w"></div>
+                <div class="crop-handle e" data-handle="e"></div>
+                <div class="crop-handle sw" data-handle="sw"></div>
+                <div class="crop-handle s" data-handle="s"></div>
+                <div class="crop-handle se" data-handle="se"></div>
+                <div class="crop-info" id="cropInfo">100 × 100</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-section" id="previewSection">
+        <div class="preview-header">
+          <h3>裁切預覽</h3>
+          <span class="preview-info" id="previewInfo">-</span>
+        </div>
+        <div class="preview-container">
+          <img id="previewImage" src="" alt="預覽">
+        </div>
+      </div>
+
+      <div class="button-group" id="buttonGroup" style="display: none;">
+        <button class="btn btn-primary" id="cropBtn">
+          <span>✂️</span> 裁切
+        </button>
+        <button class="btn btn-secondary" id="downloadBtn" disabled>
+          <span>💾</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+    </div>
+  </div>
+
+  <script src="screenshot.js"></script>
+</body>
+</html>
