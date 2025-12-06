@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-159 圖片模糊工具 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.3s;
+    }
+
+    .back-link:hover {
+      color: #8b5cf6;
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+    }
+
+    .tool-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(139, 92, 246, 0.5);
+      border-radius: 15px;
+      padding: 40px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 25px;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #8b5cf6;
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    .upload-zone.has-file {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .upload-text {
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .editor-section {
+      display: none;
+      margin-bottom: 25px;
+    }
+
+    .editor-section.active {
+      display: block;
+    }
+
+    .editor-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+    }
+
+    .preview-area {
+      background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px;
+      border-radius: 15px;
+      min-height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-canvas-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .preview-canvas {
+      max-width: 100%;
+      max-height: 500px;
+      display: block;
+    }
+
+    .blur-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .brush-cursor {
+      position: absolute;
+      border: 2px solid #8b5cf6;
+      border-radius: 50%;
+      pointer-events: none;
+      display: none;
+      transform: translate(-50%, -50%);
+    }
+
+    .settings-panel {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      padding: 20px;
+    }
+
+    .settings-title {
+      font-size: 1rem;
+      color: #8b5cf6;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .blur-mode-tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 20px;
+    }
+
+    .mode-tab {
+      flex: 1;
+      padding: 12px 8px;
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 10px;
+      color: #8b5cf6;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .mode-tab:hover {
+      background: rgba(139, 92, 246, 0.3);
+    }
+
+    .mode-tab.active {
+      background: #8b5cf6;
+      color: white;
+    }
+
+    .mode-icon {
+      font-size: 1.3rem;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .setting-group {
+      margin-bottom: 20px;
+    }
+
+    .setting-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .setting-label {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .setting-value {
+      font-size: 0.85rem;
+      color: #8b5cf6;
+    }
+
+    .slider-input {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      outline: none;
+    }
+
+    .slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #8b5cf6;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .blur-type-select {
+      width: 100%;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 0.9rem;
+    }
+
+    .blur-type-select:focus {
+      outline: none;
+      border-color: #8b5cf6;
+    }
+
+    .brush-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 10px;
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 8px;
+      color: #8b5cf6;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .action-btn:hover {
+      background: rgba(139, 92, 246, 0.3);
+    }
+
+    .action-btn.active {
+      background: #8b5cf6;
+      color: white;
+    }
+
+    .hint-text {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(139, 92, 246, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .status-message {
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .status-message.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #22c55e;
+    }
+
+    .status-message.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    @media (max-width: 768px) {
+      .editor-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .settings-panel {
+        order: -1;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-159 圖片模糊工具</h1>
+      <p class="subtitle">為圖片添加各種模糊效果或局部馬賽克</p>
+    </header>
+
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">🌫️</div>
+        <div class="upload-text">點擊或拖曳圖片到此處</div>
+        <div class="upload-hint">支援 JPG、PNG、WebP 等格式</div>
+      </div>
+
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+
+      <div class="editor-section" id="editorSection">
+        <div class="editor-layout">
+          <div class="preview-area" id="previewArea">
+            <div class="preview-canvas-wrapper" id="canvasWrapper">
+              <canvas id="previewCanvas" class="preview-canvas"></canvas>
+              <canvas id="blurCanvas" class="blur-overlay"></canvas>
+              <div class="brush-cursor" id="brushCursor"></div>
+            </div>
+          </div>
+
+          <div class="settings-panel">
+            <h3 class="settings-title">模糊模式</h3>
+
+            <div class="blur-mode-tabs">
+              <button class="mode-tab active" data-mode="full">
+                <span class="mode-icon">🌫️</span>
+                全圖模糊
+              </button>
+              <button class="mode-tab" data-mode="brush">
+                <span class="mode-icon">🖌️</span>
+                筆刷模糊
+              </button>
+            </div>
+
+            <div id="fullSettings">
+              <div class="setting-group">
+                <label class="setting-label">模糊類型</label>
+                <select class="blur-type-select" id="blurType">
+                  <option value="gaussian">高斯模糊</option>
+                  <option value="motion">動態模糊</option>
+                  <option value="radial">放射模糊</option>
+                  <option value="mosaic">馬賽克</option>
+                  <option value="pixelate">像素化</option>
+                </select>
+              </div>
+
+              <div class="setting-group">
+                <div class="setting-header">
+                  <span class="setting-label">模糊強度</span>
+                  <span class="setting-value" id="blurIntensityValue">10</span>
+                </div>
+                <input type="range" class="slider-input" id="blurIntensity" min="1" max="50" value="10">
+              </div>
+
+              <div class="setting-group" id="motionAngleGroup" style="display: none;">
+                <div class="setting-header">
+                  <span class="setting-label">動態角度</span>
+                  <span class="setting-value" id="motionAngleValue">0°</span>
+                </div>
+                <input type="range" class="slider-input" id="motionAngle" min="0" max="360" value="0">
+              </div>
+            </div>
+
+            <div id="brushSettings" style="display: none;">
+              <div class="setting-group">
+                <label class="setting-label">筆刷效果</label>
+                <select class="blur-type-select" id="brushType">
+                  <option value="blur">模糊</option>
+                  <option value="mosaic">馬賽克</option>
+                  <option value="pixelate">像素化</option>
+                </select>
+              </div>
+
+              <div class="setting-group">
+                <div class="setting-header">
+                  <span class="setting-label">筆刷大小</span>
+                  <span class="setting-value" id="brushSizeValue">30px</span>
+                </div>
+                <input type="range" class="slider-input" id="brushSize" min="10" max="100" value="30">
+              </div>
+
+              <div class="setting-group">
+                <div class="setting-header">
+                  <span class="setting-label">效果強度</span>
+                  <span class="setting-value" id="brushIntensityValue">15</span>
+                </div>
+                <input type="range" class="slider-input" id="brushIntensity" min="5" max="30" value="15">
+              </div>
+
+              <div class="brush-actions">
+                <button class="action-btn" id="undoBtn">↶ 撤銷</button>
+                <button class="action-btn" id="clearBtn">清除全部</button>
+              </div>
+
+              <div class="hint-text">
+                在圖片上點擊或拖曳來塗抹模糊效果
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="button-group" id="buttonGroup" style="display: none;">
+        <button class="btn btn-primary" id="applyBtn">
+          <span>🌫️</span> 套用效果
+        </button>
+        <button class="btn btn-secondary" id="downloadBtn" disabled>
+          <span>💾</span> 下載圖片
+        </button>
+        <button class="btn btn-secondary" id="resetBtn">
+          <span>🔄</span> 重新開始
+        </button>
+      </div>
+
+      <div class="status-message" id="statusMessage"></div>
+    </div>
+  </div>
+
+  <script src="blur.js"></script>
+</body>
+</html>
