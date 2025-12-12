@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAL-005 Complex Number Calculator</title>
+    <link rel="stylesheet" href="../../../styles/global.css">
+    <style>
+        .calculator {
+            max-width: 500px;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background: #f9f9f9;
+        }
+        .complex-input {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            gap: 5px;
+        }
+        input {
+            width: 80px;
+            padding: 8px;
+            text-align: right;
+        }
+        .op-select {
+            margin: 20px 0;
+            text-align: center;
+        }
+        select {
+            padding: 8px;
+            font-size: 16px;
+        }
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .polar-result {
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CAL-005 Complex Number Calculator</h1>
+        <p>Perform operations on complex numbers (a + bi).</p>
+
+        <div class="calculator">
+            <div class="complex-input">
+                <input type="number" id="r1" placeholder="Re">
+                <span>+</span>
+                <input type="number" id="i1" placeholder="Im">
+                <span>i</span>
+            </div>
+
+            <div class="op-select">
+                <select id="op">
+                    <option value="+">+</option>
+                    <option value="-">-</option>
+                    <option value="*">×</option>
+                    <option value="/">÷</option>
+                </select>
+            </div>
+
+            <div class="complex-input">
+                <input type="number" id="r2" placeholder="Re">
+                <span>+</span>
+                <input type="number" id="i2" placeholder="Im">
+                <span>i</span>
+            </div>
+
+            <button class="btn-primary" style="width:100%; margin-top:10px; padding:10px;" onclick="calculate()">Calculate</button>
+
+            <div class="result-box">
+                <div id="rect-result" style="font-size: 20px; font-weight: bold;"></div>
+                <div id="polar-result" class="polar-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="complex.js"></script>
+</body>
+</html>
