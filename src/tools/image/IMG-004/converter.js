@@ -196,7 +196,7 @@ class HeicConverter {
     try {
       // Dynamic import heic2any from CDN
       const script = document.createElement('script');
-      script.src = 'https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js';
+      script.src = '/vendor/misc/heic2any.min.js';
 
       await new Promise((resolve, reject) => {
         script.onload = resolve;

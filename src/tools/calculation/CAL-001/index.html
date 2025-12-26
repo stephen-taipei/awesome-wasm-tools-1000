@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAL-001 Scientific Calculator</title>
+    <link rel="stylesheet" href="../../../styles/global.css">
+    <style>
+        .calculator {
+            max-width: 400px;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background: #f9f9f9;
+        }
+        #display {
+            width: 100%;
+            height: 60px;
+            font-size: 24px;
+            text-align: right;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
+            box-sizing: border-box;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        button {
+            padding: 15px 5px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #eef;
+        }
+        button.operator {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+        button.equals {
+            background: #4a90e2;
+            color: white;
+            border-color: #357abd;
+        }
+        button.equals:hover {
+            background: #357abd;
+        }
+        button.clear {
+            background: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+        button.clear:hover {
+            background: #c0392b;
+        }
+        .history {
+            margin-top: 20px;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #666;
+            padding: 2px 0;
+            cursor: pointer;
+        }
+        .history-item:hover {
+            background: #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CAL-001 Scientific Calculator</h1>
+        <p>A scientific calculator supporting trigonometric functions, logarithms, and powers.</p>
+
+        <div class="calculator">
+            <input type="text" id="display" readonly value="0">
+            <div class="buttons">
+                <!-- Row 1 -->
+                <button onclick="appendFunc('sin(')">sin</button>
+                <button onclick="appendFunc('cos(')">cos</button>
+                <button onclick="appendFunc('tan(')">tan</button>
+                <button class="clear" onclick="clearDisplay()">AC</button>
+                <button class="clear" onclick="deleteChar()">DEL</button>
+
+                <!-- Row 2 -->
+                <button onclick="appendFunc('asin(')">asin</button>
+                <button onclick="appendFunc('acos(')">acos</button>
+                <button onclick="appendFunc('atan(')">atan</button>
+                <button onclick="appendOperator('(')">(</button>
+                <button onclick="appendOperator(')')">)</button>
+
+                <!-- Row 3 -->
+                <button onclick="appendFunc('log(')">log</button>
+                <button onclick="appendFunc('ln(')">ln</button>
+                <button onclick="appendFunc('sqrt(')">√</button>
+                <button onclick="appendOperator('^')">^</button>
+                <button onclick="appendOperator('%')">%</button>
+
+                <!-- Row 4 -->
+                <button onclick="appendNumber('7')">7</button>
+                <button onclick="appendNumber('8')">8</button>
+                <button onclick="appendNumber('9')">9</button>
+                <button class="operator" onclick="appendOperator('/')">÷</button>
+                <button onclick="memoryStore()">MS</button>
+
+                <!-- Row 5 -->
+                <button onclick="appendNumber('4')">4</button>
+                <button onclick="appendNumber('5')">5</button>
+                <button onclick="appendNumber('6')">6</button>
+                <button class="operator" onclick="appendOperator('*')">×</button>
+                <button onclick="memoryRecall()">MR</button>
+
+                <!-- Row 6 -->
+                <button onclick="appendNumber('1')">1</button>
+                <button onclick="appendNumber('2')">2</button>
+                <button onclick="appendNumber('3')">3</button>
+                <button class="operator" onclick="appendOperator('-')">-</button>
+                <button onclick="memoryClear()">MC</button>
+
+                <!-- Row 7 -->
+                <button onclick="appendNumber('0')">0</button>
+                <button onclick="appendNumber('.')">.</button>
+                <button onclick="appendConstant('PI')">π</button>
+                <button class="operator" onclick="appendOperator('+')">+</button>
+                <button class="equals" onclick="calculate()">=</button>
+            </div>
+
+            <div class="history" id="history">
+                <!-- History items -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="calculator.js"></script>
+</body>
+</html>

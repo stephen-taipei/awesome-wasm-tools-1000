@@ -281,7 +281,7 @@ class GifCompressor {
         width: newWidth,
         height: newHeight,
         dither: this.settings.dither,
-        workerScript: 'https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.js'
+        workerScript: '/vendor/gif/gif.worker.js'
       });
 
       // Filter frames based on frameSkip
