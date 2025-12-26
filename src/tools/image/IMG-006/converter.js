@@ -642,7 +642,7 @@ class GifConverter {
         quality: 10,
         width: width,
         height: height,
-        workerScript: 'https://unpkg.com/gif.js@0.2.0/dist/gif.worker.js'
+        workerScript: '/vendor/gif/gif.worker.js'
       });
 
       // Add frames
@@ -714,7 +714,7 @@ class GifConverter {
 
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = 'https://unpkg.com/gif.js@0.2.0/dist/gif.js';
+      script.src = '/vendor/gif/gif.min.js';
       script.onload = resolve;
       script.onerror = reject;
       document.head.appendChild(script);

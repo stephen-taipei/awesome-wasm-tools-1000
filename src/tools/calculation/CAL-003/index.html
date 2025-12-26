@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAL-003 Big Number Calculator</title>
+    <link rel="stylesheet" href="../../../styles/global.css">
+    <style>
+        .calculator {
+            max-width: 600px;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background: #f9f9f9;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            font-size: 18px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            flex-grow: 1;
+        }
+        button:hover {
+            background: #eef;
+        }
+        button.primary {
+            background: #4a90e2;
+            color: white;
+            border-color: #357abd;
+        }
+        .result-area {
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            min-height: 50px;
+            word-break: break-all;
+            font-family: monospace;
+        }
+        .settings {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CAL-003 Big Number Calculator</h1>
+        <p>Perform calculations with arbitrary precision.</p>
+
+        <div class="calculator">
+            <div class="settings">
+                <label>Precision (decimal places): <input type="number" id="precision" value="20" min="0" max="1000"></label>
+            </div>
+
+            <textarea id="input1" placeholder="Enter first big number"></textarea>
+
+            <div class="controls">
+                <button onclick="calc('plus')">+</button>
+                <button onclick="calc('minus')">-</button>
+                <button onclick="calc('times')">×</button>
+                <button onclick="calc('div')">÷</button>
+                <button onclick="calc('pow')">^</button>
+                <button onclick="calc('sqrt')">√ (Input 1)</button>
+            </div>
+
+            <textarea id="input2" placeholder="Enter second big number (if needed)"></textarea>
+
+            <h3>Result:</h3>
+            <div id="result" class="result-area"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import decimal.js from node_modules if we were in a bundler environment.
+        // But since this is a raw HTML file being served, we rely on Vite to resolve imports.
+        import Decimal from 'decimal.js';
+
+        window.calc = function(op) {
+            const val1Str = document.getElementById('input1').value;
+            const val2Str = document.getElementById('input2').value;
+            const prec = parseInt(document.getElementById('precision').value) || 20;
+
+            Decimal.set({ precision: prec + 20 }); // Set internal precision higher
+
+            try {
+                const d1 = new Decimal(val1Str || '0');
+                let res;
+
+                if (op === 'sqrt') {
+                    res = d1.sqrt();
+                } else {
+                    const d2 = new Decimal(val2Str || '0');
+                    switch(op) {
+                        case 'plus': res = d1.plus(d2); break;
+                        case 'minus': res = d1.minus(d2); break;
+                        case 'times': res = d1.times(d2); break;
+                        case 'div': res = d1.div(d2); break;
+                        case 'pow': res = d1.pow(d2); break;
+                    }
+                }
+
+                document.getElementById('result').textContent = res.toString();
+            } catch (e) {
+                document.getElementById('result').textContent = 'Error: ' + e.message;
+            }
+        }
+    </script>
+</body>
+</html>
