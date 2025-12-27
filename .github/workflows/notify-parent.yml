@@ -1,0 +1,30 @@
+name: Notify Parent Repo
+
+on:
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger stephen.taipei deployment
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GH_PAT }}
+          repository: stephen-taipei/stephen.taipei
+          event-type: submodule-updated
+          client-payload: |
+            {
+              "submodule": "${{ github.repository }}",
+              "ref": "${{ github.ref }}",
+              "sha": "${{ github.sha }}",
+              "message": "${{ github.event.head_commit.message }}"
+            }
+
+      - name: Log notification
+        run: |
+          echo "Notified stephen.taipei about update in ${{ github.repository }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref }}"
