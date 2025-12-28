@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-039 音頻空間化 - Audio Spatialization</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .header p {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 16px;
+    }
+
+    .upload-area {
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #f9fafb;
+    }
+
+    .upload-area:hover {
+      border-color: #6366f1;
+      background: #eef2ff;
+    }
+
+    .upload-area.dragover {
+      border-color: #6366f1;
+      background: #e0e7ff;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      color: #6b7280;
+      font-size: 1rem;
+    }
+
+    .upload-text strong {
+      color: #6366f1;
+    }
+
+    .upload-hint {
+      color: #9ca3af;
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .file-info {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      background: #eef2ff;
+      border-radius: 8px;
+    }
+
+    .file-info.show {
+      display: block;
+    }
+
+    .file-name {
+      font-weight: 600;
+      color: #4338ca;
+      margin-bottom: 8px;
+    }
+
+    .file-details {
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+
+    .spatial-canvas {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+      aspect-ratio: 1;
+      background: radial-gradient(circle, #e0e7ff 0%, #c7d2fe 100%);
+      border-radius: 50%;
+      cursor: crosshair;
+    }
+
+    .listener-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2rem;
+      pointer-events: none;
+    }
+
+    .source-dot {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background: #6366f1;
+      border: 3px solid white;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+
+    .source-dot:active {
+      cursor: grabbing;
+    }
+
+    .axis-labels {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .axis-label {
+      position: absolute;
+      font-size: 0.8rem;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    .axis-label.front { top: 5%; left: 50%; transform: translateX(-50%); }
+    .axis-label.back { bottom: 5%; left: 50%; transform: translateX(-50%); }
+    .axis-label.left { left: 5%; top: 50%; transform: translateY(-50%); }
+    .axis-label.right { right: 5%; top: 50%; transform: translateY(-50%); }
+
+    .position-info {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+
+    .position-info strong {
+      color: #4338ca;
+    }
+
+    .param-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .param-row label {
+      flex: 0 0 120px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .param-row input[type="range"] {
+      flex: 1;
+      height: 8px;
+      -webkit-appearance: none;
+      background: #e5e7eb;
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .param-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #6366f1;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .param-value {
+      flex: 0 0 60px;
+      text-align: right;
+      font-weight: 500;
+      color: #4338ca;
+    }
+
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .preset-btn {
+      padding: 10px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .preset-btn:hover {
+      border-color: #6366f1;
+      background: #eef2ff;
+    }
+
+    .preset-btn.active {
+      border-color: #6366f1;
+      background: #6366f1;
+      color: white;
+    }
+
+    .output-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .output-row label {
+      flex: 0 0 100px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .output-row select {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .bitrate-row {
+      display: none;
+    }
+
+    .progress-container {
+      display: none;
+      margin-top: 16px;
+    }
+
+    .progress-container.show {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #4f46e5);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #6b7280;
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, #4f46e5, #4338ca);
+      color: white;
+      display: none;
+    }
+
+    .btn-download.show, .btn-reset.show {
+      display: block;
+    }
+
+    .btn-reset {
+      display: none;
+    }
+
+    .result-panel {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result-panel.show {
+      display: block;
+    }
+
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-item {
+      background: #eef2ff;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #4f46e5;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .audio-preview {
+      margin-top: 16px;
+    }
+
+    .audio-preview audio {
+      width: 100%;
+    }
+
+    .preview-label {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .info-box {
+      background: #eef2ff;
+      border: 1px solid #c7d2fe;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .info-box h4 {
+      color: #4338ca;
+      margin-bottom: 8px;
+    }
+
+    .info-box p {
+      color: #4b5563;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 640px) {
+      .button-group {
+        flex-direction: column;
+      }
+
+      .param-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .param-row label {
+        margin-bottom: 8px;
+      }
+
+      .param-value {
+        text-align: left;
+        margin-top: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>AUD-039 音頻空間化</h1>
+      <p>Audio Spatialization - 3D 空間音效模擬</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">1. 上傳音訊</div>
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">🎧</div>
+        <div class="upload-text">
+          <strong>點擊上傳</strong> 或拖放音訊檔案到這裡
+        </div>
+        <div class="upload-hint">支援 MP3, WAV, OGG, AAC, FLAC 等格式</div>
+      </div>
+      <input type="file" id="fileInput" accept="audio/*">
+      <div class="file-info" id="fileInfo">
+        <div class="file-name" id="fileName"></div>
+        <div class="file-details">
+          <span id="fileDuration"></span>
+          <span id="fileSampleRate"></span>
+          <span id="fileChannels"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">2. 空間位置設定</div>
+
+      <div class="spatial-canvas" id="spatialCanvas">
+        <div class="axis-labels">
+          <span class="axis-label front">前</span>
+          <span class="axis-label back">後</span>
+          <span class="axis-label left">左</span>
+          <span class="axis-label right">右</span>
+        </div>
+        <div class="listener-icon">👤</div>
+        <div class="source-dot" id="sourceDot" style="left: 50%; top: 30%;">🔊</div>
+      </div>
+
+      <div class="position-info" id="positionInfo">
+        位置：<strong>前方</strong> | 角度：<strong id="angleValue">0°</strong> | 距離：<strong id="distanceValue">40%</strong>
+      </div>
+
+      <div class="preset-grid">
+        <button class="preset-btn" data-x="50" data-y="20">正前方</button>
+        <button class="preset-btn" data-x="80" data-y="50">右側</button>
+        <button class="preset-btn" data-x="50" data-y="80">後方</button>
+        <button class="preset-btn" data-x="20" data-y="50">左側</button>
+        <button class="preset-btn" data-x="80" data-y="20">右前</button>
+        <button class="preset-btn" data-x="20" data-y="20">左前</button>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <div class="param-row">
+          <label>距離衰減</label>
+          <input type="range" id="distanceAttenuation" min="0" max="100" value="50">
+          <span class="param-value" id="distanceAttenuationValue">50%</span>
+        </div>
+        <div class="param-row">
+          <label>空間混響</label>
+          <input type="range" id="roomReverb" min="0" max="100" value="30">
+          <span class="param-value" id="roomReverbValue">30%</span>
+        </div>
+        <div class="param-row">
+          <label>高頻衰減</label>
+          <input type="range" id="highFreqRolloff" min="0" max="100" value="40">
+          <span class="param-value" id="highFreqRolloffValue">40%</span>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <h4>空間化說明</h4>
+        <p>
+          拖動音源圖示來設定聲音在 3D 空間中的位置。系統會模擬雙耳效應（ITD/ILD），
+          包含時間差、音量差、頻率衰減等效果，創造出立體的空間感。
+          建議使用耳機聆聽以獲得最佳效果。
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">3. 輸出設定</div>
+      <div class="output-row">
+        <label>輸出格式</label>
+        <select id="outputFormat">
+          <option value="wav">WAV (無損)</option>
+          <option value="mp3">MP3</option>
+        </select>
+      </div>
+      <div class="output-row bitrate-row" id="bitrateRow">
+        <label>位元率</label>
+        <select id="bitrate">
+          <option value="128">128 kbps</option>
+          <option value="192">192 kbps</option>
+          <option value="256">256 kbps</option>
+          <option value="320" selected>320 kbps</option>
+        </select>
+      </div>
+
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">準備中...</div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="processBtn" disabled>套用空間化</button>
+        <button class="btn btn-download" id="downloadBtn">
+          <span id="downloadLabel">下載</span>
+        </button>
+        <button class="btn btn-secondary btn-reset" id="resetBtn">重置</button>
+      </div>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="card">
+        <div class="card-title">處理結果</div>
+        <div class="result-stats">
+          <div class="stat-item">
+            <div class="stat-value" id="resultAngle">0°</div>
+            <div class="stat-label">音源角度</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="resultDistance">0%</div>
+            <div class="stat-label">音源距離</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="outputSize">0 KB</div>
+            <div class="stat-label">檔案大小</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="processTime">0s</div>
+            <div class="stat-label">處理時間</div>
+          </div>
+        </div>
+
+        <div class="audio-preview">
+          <div class="preview-label">原始音訊：</div>
+          <audio id="originalPreview" controls></audio>
+        </div>
+        <div class="audio-preview">
+          <div class="preview-label">空間化音訊（建議使用耳機）：</div>
+          <audio id="audioPreview" controls></audio>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+  <script src="spatialization.js"></script>
+</body>
+</html>

@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-028 風聲噪音生成器 - Wind Noise Generator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .header p {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .settings-grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .setting-row label {
+      flex: 0 0 120px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .setting-row input[type="range"] {
+      flex: 1;
+      height: 8px;
+      -webkit-appearance: none;
+      background: #e5e7eb;
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .setting-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #64748b;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .setting-row .value {
+      flex: 0 0 80px;
+      text-align: right;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .duration-input {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .duration-input label {
+      flex: 0 0 120px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .duration-input input[type="number"] {
+      width: 100px;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .duration-input input[type="number"]:focus {
+      border-color: #64748b;
+    }
+
+    .duration-input span {
+      color: #6b7280;
+    }
+
+    .preset-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .preset-btn {
+      padding: 8px 16px;
+      border: 2px solid #e5e7eb;
+      background: white;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+      color: #4b5563;
+    }
+
+    .preset-btn:hover {
+      border-color: #64748b;
+      color: #64748b;
+    }
+
+    .preset-btn.active {
+      border-color: #64748b;
+      background: #64748b;
+      color: white;
+    }
+
+    .output-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .output-row label {
+      flex: 0 0 100px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .output-row select {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .output-row select:focus {
+      border-color: #64748b;
+    }
+
+    .bitrate-row {
+      display: none;
+    }
+
+    .progress-container {
+      display: none;
+      margin-top: 16px;
+    }
+
+    .progress-container.show {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #64748b, #475569);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #6b7280;
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #64748b, #475569);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(100, 116, 139, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .btn-preview {
+      background: linear-gradient(135deg, #475569, #334155);
+      color: white;
+    }
+
+    .btn-preview:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(71, 85, 105, 0.4);
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, #475569, #334155);
+      color: white;
+      display: none;
+    }
+
+    .btn-download.show,
+    .btn-reset.show {
+      display: flex;
+    }
+
+    .btn-reset {
+      display: none;
+    }
+
+    .result-panel {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result-panel.show {
+      display: block;
+    }
+
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-item {
+      background: #f1f5f9;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .audio-preview {
+      margin-top: 16px;
+    }
+
+    .audio-preview audio {
+      width: 100%;
+    }
+
+    .preview-label {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .info-box {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .info-box h4 {
+      color: #475569;
+      margin-bottom: 8px;
+    }
+
+    .info-box p {
+      color: #4b5563;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .visualizer {
+      width: 100%;
+      height: 80px;
+      background: #1e293b;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .setting-row {
+        flex-wrap: wrap;
+      }
+
+      .setting-row label {
+        flex: 0 0 100%;
+      }
+
+      .setting-row .value {
+        flex: 0 0 60px;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .output-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .output-row label {
+        margin-bottom: 8px;
+      }
+
+      .duration-input {
+        flex-wrap: wrap;
+      }
+
+      .duration-input label {
+        flex: 0 0 100%;
+        margin-bottom: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>AUD-028 風聲噪音生成器</h1>
+      <p>Wind Noise Generator - 創造自然的風聲與氣流音效</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>1. 風聲設定</span>
+      </div>
+
+      <canvas id="visualizer" class="visualizer"></canvas>
+
+      <div class="settings-grid">
+        <div class="setting-row">
+          <label>風速強度</label>
+          <input type="range" id="intensity" min="0" max="100" value="50">
+          <span class="value" id="intensityValue">50%</span>
+        </div>
+        <div class="setting-row">
+          <label>陣風變化</label>
+          <input type="range" id="gustiness" min="0" max="100" value="30">
+          <span class="value" id="gustinessValue">30%</span>
+        </div>
+        <div class="setting-row">
+          <label>陣風頻率</label>
+          <input type="range" id="gustFreq" min="1" max="20" step="0.5" value="5">
+          <span class="value" id="gustFreqValue">5 Hz</span>
+        </div>
+        <div class="setting-row">
+          <label>低頻嗡鳴</label>
+          <input type="range" id="lowRumble" min="0" max="100" value="40">
+          <span class="value" id="lowRumbleValue">40%</span>
+        </div>
+        <div class="setting-row">
+          <label>高頻嘯音</label>
+          <input type="range" id="highWhistle" min="0" max="100" value="30">
+          <span class="value" id="highWhistleValue">30%</span>
+        </div>
+        <div class="setting-row">
+          <label>立體聲寬度</label>
+          <input type="range" id="stereoWidth" min="0" max="100" value="80">
+          <span class="value" id="stereoWidthValue">80%</span>
+        </div>
+        <div class="duration-input">
+          <label>生成長度</label>
+          <input type="number" id="duration" min="1" max="600" value="30">
+          <span>秒 (最長 10 分鐘)</span>
+        </div>
+      </div>
+
+      <div class="preset-buttons" id="presetButtons">
+        <button class="preset-btn" data-preset="breeze">微風</button>
+        <button class="preset-btn active" data-preset="moderate">和風</button>
+        <button class="preset-btn" data-preset="strong">強風</button>
+        <button class="preset-btn" data-preset="storm">暴風</button>
+        <button class="preset-btn" data-preset="howling">呼嘯</button>
+      </div>
+
+      <div class="info-box">
+        <h4>風聲生成說明</h4>
+        <p>
+          本工具使用濾波噪音和調製技術生成逼真的風聲效果。
+          風速強度控制基礎音量，陣風變化創造自然的強弱起伏，
+          低頻嗡鳴模擬風穿過空間的共鳴，高頻嘯音則是風通過縫隙的聲音。
+          適合用於影片配音、環境音效、放鬆音樂、ASMR 等用途。
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>2. 輸出設定</span>
+      </div>
+      <div class="output-row">
+        <label>輸出格式</label>
+        <select id="outputFormat">
+          <option value="wav">WAV (無損)</option>
+          <option value="mp3">MP3</option>
+        </select>
+      </div>
+      <div class="output-row bitrate-row" id="bitrateRow">
+        <label>位元率</label>
+        <select id="bitrate">
+          <option value="128">128 kbps</option>
+          <option value="192">192 kbps</option>
+          <option value="256">256 kbps</option>
+          <option value="320" selected>320 kbps</option>
+        </select>
+      </div>
+      <div class="output-row">
+        <label>取樣率</label>
+        <select id="sampleRate">
+          <option value="44100" selected>44.1 kHz</option>
+          <option value="48000">48 kHz</option>
+        </select>
+      </div>
+
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">準備中...</div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-preview" id="previewBtn">預覽 (5秒)</button>
+        <button class="btn btn-primary" id="generateBtn">生成風聲</button>
+        <button class="btn btn-download" id="downloadBtn">
+          <span id="downloadLabel">下載</span>
+        </button>
+        <button class="btn btn-secondary btn-reset" id="resetBtn">重置</button>
+      </div>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="card">
+        <div class="card-title">生成結果</div>
+        <div class="result-stats">
+          <div class="stat-item">
+            <div class="stat-value" id="resultDuration">30s</div>
+            <div class="stat-label">時長</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="resultIntensity">50%</div>
+            <div class="stat-label">風速強度</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="resultGustiness">30%</div>
+            <div class="stat-label">陣風變化</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="outputSize">0 KB</div>
+            <div class="stat-label">檔案大小</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="processTime">0s</div>
+            <div class="stat-label">生成時間</div>
+          </div>
+        </div>
+
+        <div class="audio-preview">
+          <div class="preview-label">風聲音訊：</div>
+          <audio id="audioPreview" controls></audio>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+  <script src="wind.js"></script>
+</body>
+</html>

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-006 Opus 轉換器 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #f97316, #eab308);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #a0a0a0;
+      font-size: 1rem;
+    }
+
+    .format-info {
+      background: rgba(249, 115, 22, 0.1);
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .format-info h4 {
+      color: #f97316;
+      margin-bottom: 10px;
+    }
+
+    .format-info p {
+      font-size: 0.9rem;
+      color: #a0a0a0;
+      line-height: 1.6;
+    }
+
+    .upload-area {
+      border: 2px dashed #4a4a6a;
+      border-radius: 16px;
+      padding: 60px 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.02);
+      margin-bottom: 20px;
+    }
+
+    .upload-area:hover {
+      border-color: #f97316;
+      background: rgba(249, 115, 22, 0.05);
+    }
+
+    .upload-area.dragover {
+      border-color: #f97316;
+      background: rgba(249, 115, 22, 0.1);
+      transform: scale(1.02);
+    }
+
+    .upload-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    .upload-text {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .settings-panel {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+
+    .settings-title {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      color: #f97316;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .setting-row:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .setting-label {
+      font-weight: 500;
+    }
+
+    .setting-control {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    select {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      min-width: 180px;
+    }
+
+    .file-info {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .file-info.show {
+      display: block;
+    }
+
+    .file-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
+    }
+
+    .detail-item {
+      text-align: center;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+    }
+
+    .detail-label {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 5px;
+    }
+
+    .detail-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #f97316;
+    }
+
+    .progress-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .progress-container.show {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f97316, #eab308);
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #a0a0a0;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      padding: 15px 35px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #f97316, #eab308);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(249, 115, 22, 0.3);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .result-panel {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .result-panel.show {
+      display: block;
+    }
+
+    .result-title {
+      color: #10b981;
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 5px;
+    }
+
+    .stat-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #10b981;
+    }
+
+    .audio-player {
+      width: 100%;
+      margin-top: 15px;
+      border-radius: 8px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 600px) {
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .setting-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .setting-control {
+        width: 100%;
+      }
+
+      select {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-006 Opus 轉換器</h1>
+      <p class="subtitle">Opus 高效音訊編碼格式與其他格式互轉</p>
+    </header>
+
+    <div class="format-info">
+      <h4>關於 Opus 格式</h4>
+      <p>Opus 是一種開放、免專利費的音訊編解碼器，由 IETF 標準化。它專為網際網路即時通訊設計，在低位元率下表現出色，廣泛用於 WebRTC、Discord、WhatsApp 等語音通訊應用，也適合音樂串流。</p>
+    </div>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">🎼</div>
+      <div class="upload-text">拖放音訊檔案到此處</div>
+      <div class="upload-hint">支援 Opus、OGG、WAV、MP3 格式</div>
+      <input type="file" id="fileInput" class="file-input" accept=".opus,.ogg,.wav,.mp3,audio/opus,audio/ogg,audio/wav,audio/mpeg">
+    </div>
+
+    <div class="file-info" id="fileInfo">
+      <div class="file-details">
+        <div class="detail-item">
+          <div class="detail-label">檔案名稱</div>
+          <div class="detail-value" id="fileName">-</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">檔案大小</div>
+          <div class="detail-value" id="fileSize">-</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">原始格式</div>
+          <div class="detail-value" id="sourceFormat">-</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">時長</div>
+          <div class="detail-value" id="duration">-</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-panel">
+      <div class="settings-title">轉換設定</div>
+      <div class="setting-row">
+        <span class="setting-label">輸出格式</span>
+        <div class="setting-control">
+          <select id="outputFormat">
+            <option value="opus">Opus (.ogg)</option>
+            <option value="wav">WAV (無損)</option>
+            <option value="mp3">MP3</option>
+          </select>
+        </div>
+      </div>
+      <div class="setting-row" id="bitrateRow">
+        <span class="setting-label">位元率</span>
+        <div class="setting-control">
+          <select id="bitrate">
+            <option value="32">32 kbps (語音)</option>
+            <option value="64">64 kbps (語音高品質)</option>
+            <option value="96">96 kbps</option>
+            <option value="128" selected>128 kbps</option>
+            <option value="192">192 kbps</option>
+            <option value="256">256 kbps (音樂)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-container" id="progressContainer">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text" id="progressText">準備中...</div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="convertBtn" disabled>
+        <span>🔄</span>
+        <span>開始轉換</span>
+      </button>
+      <button class="btn btn-success" id="downloadBtn" style="display: none;">
+        <span>⬇️</span>
+        <span id="downloadLabel">下載</span>
+      </button>
+      <button class="btn btn-secondary" id="resetBtn" style="display: none;">
+        <span>🗑️</span>
+        <span>重置</span>
+      </button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">
+        <span>✅</span>
+        <span>轉換完成</span>
+      </div>
+      <div class="result-stats">
+        <div class="stat-item">
+          <div class="stat-label">原始大小</div>
+          <div class="stat-value" id="originalSize">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">輸出大小</div>
+          <div class="stat-value" id="outputSize">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">壓縮比</div>
+          <div class="stat-value" id="compressionRatio">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">處理時間</div>
+          <div class="stat-value" id="processTime">-</div>
+        </div>
+      </div>
+      <audio id="audioPreview" class="audio-player" controls></audio>
+    </div>
+
+    <footer>
+      <p>所有音訊處理均在本地完成，檔案不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+  <script src="./converter.js"></script>
+</body>
+</html>

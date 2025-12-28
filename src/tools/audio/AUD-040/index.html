@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUD-040 音頻頻譜分析 - Audio Spectrum Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #8b5cf6;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(139, 92, 246, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #a78bfa;
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        .upload-area.dragover {
+            border-color: #a78bfa;
+            background: rgba(139, 92, 246, 0.3);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .settings-panel {
+            background: rgba(30, 27, 75, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .settings-panel.show {
+            display: block;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .setting-group {
+            background: rgba(139, 92, 246, 0.1);
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .setting-group label {
+            display: block;
+            color: #a78bfa;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .setting-group select,
+        .setting-group input[type="range"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #8b5cf6;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .setting-group select:focus {
+            outline: none;
+            border-color: #a78bfa;
+        }
+
+        .setting-value {
+            text-align: center;
+            color: #a78bfa;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .playback-controls {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .play-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .pause-btn {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .pause-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .stop-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .stop-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .visualizer-container {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .visualizer-container.show {
+            display: block;
+        }
+
+        .visualizer-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(139, 92, 246, 0.3);
+        }
+
+        #spectrumCanvas {
+            width: 100%;
+            height: 300px;
+            background: #0f172a;
+            border-radius: 12px;
+        }
+
+        .info-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .info-item {
+            background: rgba(139, 92, 246, 0.1);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .info-label {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            color: #a78bfa;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .frequency-labels {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px 0;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .peak-display {
+            background: rgba(30, 27, 75, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 20px;
+        }
+
+        .peak-display h3 {
+            color: #a78bfa;
+            margin-bottom: 16px;
+        }
+
+        .peak-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .peak-item {
+            background: rgba(139, 92, 246, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .peak-freq {
+            color: #a78bfa;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .peak-db {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .file-info {
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .file-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .file-info-row:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .upload-area {
+                padding: 30px 20px;
+            }
+
+            #spectrumCanvas {
+                height: 200px;
+            }
+
+            .playback-controls {
+                flex-direction: column;
+            }
+
+            .control-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 音頻頻譜分析</h1>
+        <p class="subtitle">Audio Spectrum Analyzer - FFT 頻率視覺化</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📊</div>
+            <div class="upload-text">點擊或拖放音頻文件到這裡</div>
+            <div class="upload-hint">支援 MP3, WAV, OGG, FLAC, M4A 等格式</div>
+            <input type="file" id="fileInput" accept="audio/*">
+        </div>
+
+        <div class="file-info" id="fileInfo">
+            <div class="file-info-row">
+                <span>文件名稱:</span>
+                <span id="fileName">-</span>
+            </div>
+            <div class="file-info-row">
+                <span>時長:</span>
+                <span id="fileDuration">-</span>
+            </div>
+            <div class="file-info-row">
+                <span>取樣率:</span>
+                <span id="fileSampleRate">-</span>
+            </div>
+            <div class="file-info-row">
+                <span>聲道數:</span>
+                <span id="fileChannels">-</span>
+            </div>
+        </div>
+
+        <div class="settings-panel" id="settingsPanel">
+            <div class="settings-grid">
+                <div class="setting-group">
+                    <label>FFT 大小</label>
+                    <select id="fftSize">
+                        <option value="256">256</option>
+                        <option value="512">512</option>
+                        <option value="1024">1024</option>
+                        <option value="2048" selected>2048</option>
+                        <option value="4096">4096</option>
+                        <option value="8192">8192</option>
+                        <option value="16384">16384</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>頻率縮放</label>
+                    <select id="freqScale">
+                        <option value="linear">線性 (Linear)</option>
+                        <option value="log" selected>對數 (Logarithmic)</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>平滑度</label>
+                    <input type="range" id="smoothing" min="0" max="0.99" step="0.01" value="0.8">
+                    <div class="setting-value" id="smoothingValue">0.80</div>
+                </div>
+                <div class="setting-group">
+                    <label>顯示模式</label>
+                    <select id="displayMode">
+                        <option value="bars">頻譜條 (Bars)</option>
+                        <option value="line">曲線 (Line)</option>
+                        <option value="gradient">漸層條 (Gradient Bars)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="playback-controls" id="playbackControls" style="display: none;">
+            <button class="control-btn play-btn" id="playBtn">
+                <span>▶️</span> 播放
+            </button>
+            <button class="control-btn pause-btn" id="pauseBtn" disabled>
+                <span>⏸️</span> 暫停
+            </button>
+            <button class="control-btn stop-btn" id="stopBtn" disabled>
+                <span>⏹️</span> 停止
+            </button>
+        </div>
+
+        <div class="visualizer-container" id="visualizerContainer">
+            <div class="visualizer-tabs">
+                <button class="tab-btn active" data-view="spectrum">頻譜圖</button>
+                <button class="tab-btn" data-view="spectrogram">時頻圖</button>
+            </div>
+            <canvas id="spectrumCanvas"></canvas>
+            <div class="frequency-labels" id="freqLabels">
+                <span>20Hz</span>
+                <span>100Hz</span>
+                <span>1kHz</span>
+                <span>10kHz</span>
+                <span>20kHz</span>
+            </div>
+            <div class="info-panel">
+                <div class="info-item">
+                    <div class="info-label">主頻率</div>
+                    <div class="info-value" id="dominantFreq">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">RMS 音量</div>
+                    <div class="info-value" id="rmsLevel">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">峰值頻率</div>
+                    <div class="info-value" id="peakFreq">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">頻譜重心</div>
+                    <div class="info-value" id="spectralCentroid">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="peak-display" id="peakDisplay" style="display: none;">
+            <h3>🔝 頻譜峰值 (Top 8)</h3>
+            <div class="peak-list" id="peakList"></div>
+        </div>
+    </div>
+
+    <script src="spectrum.js"></script>
+</body>
+</html>

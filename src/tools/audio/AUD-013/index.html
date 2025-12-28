@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-013 音頻淡入淡出 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1rem;
+    }
+
+    .format-info {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .format-info h4 {
+      color: #fcd34d;
+      margin-bottom: 10px;
+    }
+
+    .format-info p {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.6;
+    }
+
+    .upload-area {
+      border: 2px dashed rgba(255, 255, 255, 0.4);
+      border-radius: 16px;
+      padding: 60px 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: rgba(0, 0, 0, 0.2);
+      margin-bottom: 20px;
+    }
+
+    .upload-area:hover {
+      border-color: #fff;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .upload-area.dragover {
+      border-color: #fcd34d;
+      background: rgba(252, 211, 77, 0.1);
+      transform: scale(1.02);
+    }
+
+    .upload-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    .upload-text {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .upload-hint {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .file-info {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .file-info.show {
+      display: block;
+    }
+
+    .file-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+      color: #fcd34d;
+    }
+
+    .file-details {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.9rem;
+    }
+
+    .waveform-container {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .waveform-container.show {
+      display: block;
+    }
+
+    .waveform-title {
+      font-size: 1.1rem;
+      color: #fcd34d;
+      margin-bottom: 15px;
+    }
+
+    .waveform-wrapper {
+      position: relative;
+      height: 150px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    #waveformCanvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    .fade-overlay {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .fade-in-overlay {
+      left: 0;
+      background: linear-gradient(90deg, rgba(252, 211, 77, 0.4), transparent);
+    }
+
+    .fade-out-overlay {
+      right: 0;
+      background: linear-gradient(270deg, rgba(252, 211, 77, 0.4), transparent);
+    }
+
+    .settings-panel {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+
+    .settings-title {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      color: #fcd34d;
+    }
+
+    .setting-group {
+      margin-bottom: 25px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .setting-group:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .setting-group-title {
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #fff;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    .setting-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .setting-label {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .setting-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="range"] {
+      width: 150px;
+      accent-color: #f59e0b;
+    }
+
+    input[type="number"] {
+      width: 80px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 8px;
+      color: #fff;
+      text-align: center;
+    }
+
+    select {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #fff;
+      font-size: 0.95rem;
+      min-width: 150px;
+    }
+
+    select option {
+      background: #1a1a2e;
+      color: #fff;
+    }
+
+    .curve-options {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .curve-btn {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .curve-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .curve-btn.active {
+      background: #f59e0b;
+      border-color: #f59e0b;
+    }
+
+    .progress-container {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .progress-container.show {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #fcd34d, #f59e0b);
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      padding: 15px 35px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-primary {
+      background: rgba(0, 0, 0, 0.4);
+      color: white;
+      border: 2px solid #fcd34d;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #fcd34d;
+      color: #1a1a2e;
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .result-panel {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .result-panel.show {
+      display: block;
+    }
+
+    .result-title {
+      color: #10b981;
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 5px;
+    }
+
+    .stat-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #10b981;
+    }
+
+    .audio-player {
+      width: 100%;
+      margin-top: 15px;
+      border-radius: 8px;
+    }
+
+    .compare-section {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .compare-title {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 10px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 600px) {
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .setting-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .curve-options {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-013 音頻淡入淡出</h1>
+      <p class="subtitle">為音訊添加平滑的淡入淡出效果</p>
+    </header>
+
+    <div class="format-info">
+      <h4>關於淡入淡出效果</h4>
+      <p>淡入效果讓音訊從靜音逐漸增強到正常音量，淡出則相反。此工具支援多種曲線類型，可自訂淡入淡出時長，實現專業的音頻過渡效果。</p>
+    </div>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">🎵</div>
+      <div class="upload-text">拖放音訊檔案到此處</div>
+      <div class="upload-hint">支援 WAV、MP3、OGG、FLAC 格式</div>
+      <input type="file" id="fileInput" class="file-input" accept=".wav,.mp3,.ogg,.flac,audio/*">
+    </div>
+
+    <div class="file-info" id="fileInfo">
+      <div class="file-name" id="fileName">-</div>
+      <div class="file-details">
+        <span id="fileDuration">時長：-</span>
+        <span id="fileSampleRate">取樣率：-</span>
+        <span id="fileChannels">聲道：-</span>
+      </div>
+    </div>
+
+    <div class="waveform-container" id="waveformContainer">
+      <div class="waveform-title">波形預覽（橙色區域為淡入淡出範圍）</div>
+      <div class="waveform-wrapper">
+        <canvas id="waveformCanvas"></canvas>
+        <div class="fade-overlay fade-in-overlay" id="fadeInOverlay"></div>
+        <div class="fade-overlay fade-out-overlay" id="fadeOutOverlay"></div>
+      </div>
+    </div>
+
+    <div class="settings-panel">
+      <div class="settings-title">淡入淡出設定</div>
+
+      <div class="setting-group">
+        <div class="setting-group-title">淡入效果</div>
+        <div class="setting-row">
+          <span class="setting-label">持續時間</span>
+          <div class="setting-control">
+            <input type="range" id="fadeInDuration" min="0" max="10" step="0.1" value="2">
+            <input type="number" id="fadeInDurationNum" min="0" max="30" step="0.1" value="2">
+            <span>秒</span>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">曲線類型</span>
+          <div class="curve-options" id="fadeInCurve">
+            <button class="curve-btn active" data-curve="linear">線性</button>
+            <button class="curve-btn" data-curve="exponential">指數</button>
+            <button class="curve-btn" data-curve="logarithmic">對數</button>
+            <button class="curve-btn" data-curve="scurve">S曲線</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-group-title">淡出效果</div>
+        <div class="setting-row">
+          <span class="setting-label">持續時間</span>
+          <div class="setting-control">
+            <input type="range" id="fadeOutDuration" min="0" max="10" step="0.1" value="2">
+            <input type="number" id="fadeOutDurationNum" min="0" max="30" step="0.1" value="2">
+            <span>秒</span>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">曲線類型</span>
+          <div class="curve-options" id="fadeOutCurve">
+            <button class="curve-btn active" data-curve="linear">線性</button>
+            <button class="curve-btn" data-curve="exponential">指數</button>
+            <button class="curve-btn" data-curve="logarithmic">對數</button>
+            <button class="curve-btn" data-curve="scurve">S曲線</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-group-title">輸出設定</div>
+        <div class="setting-row">
+          <span class="setting-label">輸出格式</span>
+          <div class="setting-control">
+            <select id="outputFormat">
+              <option value="wav">WAV (無損)</option>
+              <option value="mp3">MP3</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row" id="bitrateRow" style="display: none;">
+          <span class="setting-label">位元率</span>
+          <div class="setting-control">
+            <select id="bitrate">
+              <option value="128">128 kbps</option>
+              <option value="192">192 kbps</option>
+              <option value="256" selected>256 kbps</option>
+              <option value="320">320 kbps</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-container" id="progressContainer">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text" id="progressText">準備中...</div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="processBtn" disabled>
+        <span>🎛️</span>
+        <span>套用淡入淡出</span>
+      </button>
+      <button class="btn btn-success" id="downloadBtn" style="display: none;">
+        <span>⬇️</span>
+        <span id="downloadLabel">下載</span>
+      </button>
+      <button class="btn btn-secondary" id="resetBtn" style="display: none;">
+        <span>🗑️</span>
+        <span>重置</span>
+      </button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">
+        <span>✅</span>
+        <span>處理完成</span>
+      </div>
+      <div class="result-stats">
+        <div class="stat-item">
+          <div class="stat-label">淡入時長</div>
+          <div class="stat-value" id="resultFadeIn">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">淡出時長</div>
+          <div class="stat-value" id="resultFadeOut">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">輸出大小</div>
+          <div class="stat-value" id="outputSize">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">處理時間</div>
+          <div class="stat-value" id="processTime">-</div>
+        </div>
+      </div>
+      <div class="compare-section">
+        <div class="compare-title">處理後音訊</div>
+        <audio id="audioPreview" class="audio-player" controls></audio>
+      </div>
+      <div class="compare-section">
+        <div class="compare-title">原始音訊（對比用）</div>
+        <audio id="originalPreview" class="audio-player" controls></audio>
+      </div>
+    </div>
+
+    <footer>
+      <p>所有音訊處理均在本地完成，檔案不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+  <script src="./fader.js"></script>
+</body>
+</html>

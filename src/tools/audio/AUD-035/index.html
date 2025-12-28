@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-035 聲道合併 - Channel Merger</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .header p {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .upload-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .upload-section {
+      position: relative;
+    }
+
+    .upload-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .upload-label.left {
+      color: #f59e0b;
+    }
+
+    .upload-label.right {
+      color: #06b6d4;
+    }
+
+    .upload-area {
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      padding: 30px 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #f9fafb;
+    }
+
+    .upload-area:hover {
+      border-color: #ec4899;
+      background: #fdf2f8;
+    }
+
+    .upload-area.dragover {
+      border-color: #ec4899;
+      background: #fce7f3;
+    }
+
+    .upload-area.left.loaded {
+      border-color: #f59e0b;
+      background: #fef3c7;
+    }
+
+    .upload-area.right.loaded {
+      border-color: #06b6d4;
+      background: #cffafe;
+    }
+
+    .upload-icon {
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+    }
+
+    .upload-text {
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+
+    .upload-text strong {
+      color: #ec4899;
+    }
+
+    .upload-hint {
+      color: #9ca3af;
+      font-size: 0.8rem;
+      margin-top: 6px;
+    }
+
+    .file-info {
+      margin-top: 12px;
+      padding: 12px;
+      background: rgba(0,0,0,0.05);
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+
+    .file-name {
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 4px;
+      word-break: break-all;
+    }
+
+    .file-details {
+      color: #6b7280;
+    }
+
+    .merge-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 30px;
+      background: linear-gradient(135deg, #fdf2f8, #fce7f3);
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .channel-indicator {
+      padding: 15px 25px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .channel-indicator.left {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      color: #92400e;
+    }
+
+    .channel-indicator.right {
+      background: linear-gradient(135deg, #cffafe, #a5f3fc);
+      color: #0e7490;
+    }
+
+    .merge-arrow {
+      font-size: 2rem;
+    }
+
+    .channel-indicator.stereo {
+      background: linear-gradient(135deg, #ec4899, #db2777);
+      color: white;
+    }
+
+    .output-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .output-row label {
+      flex: 0 0 100px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .output-row select {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .output-row select:focus {
+      border-color: #ec4899;
+    }
+
+    .bitrate-row {
+      display: none;
+    }
+
+    .progress-container {
+      display: none;
+      margin-top: 16px;
+    }
+
+    .progress-container.show {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ec4899, #db2777);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #6b7280;
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ec4899, #db2777);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, #db2777, #be185d);
+      color: white;
+      display: none;
+    }
+
+    .btn-download.show,
+    .btn-reset.show {
+      display: flex;
+    }
+
+    .btn-reset {
+      display: none;
+    }
+
+    .result-panel {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result-panel.show {
+      display: block;
+    }
+
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-item {
+      background: #fdf2f8;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #db2777;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .audio-preview {
+      margin-top: 16px;
+    }
+
+    .audio-preview audio {
+      width: 100%;
+    }
+
+    .preview-label {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .info-box {
+      background: #fdf2f8;
+      border: 1px solid #fbcfe8;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .info-box h4 {
+      color: #be185d;
+      margin-bottom: 8px;
+    }
+
+    .info-box p {
+      color: #4b5563;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .warning-box {
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 16px;
+      font-size: 0.9rem;
+      color: #92400e;
+      display: none;
+    }
+
+    .warning-box.show {
+      display: block;
+    }
+
+    @media (max-width: 640px) {
+      .button-group {
+        flex-direction: column;
+      }
+
+      .output-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .output-row label {
+        margin-bottom: 8px;
+      }
+
+      .upload-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .merge-visual {
+        flex-direction: column;
+      }
+
+      .merge-arrow {
+        transform: rotate(90deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>AUD-035 聲道合併</h1>
+      <p>Channel Merger - 將兩個單聲道合併為立體聲</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>1. 上傳音訊檔案</span>
+      </div>
+
+      <div class="upload-grid">
+        <div class="upload-section">
+          <div class="upload-label left">
+            <span>📢</span> 左聲道 (L)
+          </div>
+          <div class="upload-area left" id="uploadAreaLeft">
+            <div class="upload-icon">🎵</div>
+            <div class="upload-text">
+              <strong>點擊上傳</strong> 左聲道音訊
+            </div>
+            <div class="upload-hint">單聲道或立體聲（將取左聲道）</div>
+          </div>
+          <input type="file" id="fileInputLeft" accept="audio/*" style="display:none">
+          <div class="file-info" id="fileInfoLeft" style="display:none">
+            <div class="file-name" id="fileNameLeft"></div>
+            <div class="file-details" id="fileDetailsLeft"></div>
+          </div>
+        </div>
+
+        <div class="upload-section">
+          <div class="upload-label right">
+            <span>📢</span> 右聲道 (R)
+          </div>
+          <div class="upload-area right" id="uploadAreaRight">
+            <div class="upload-icon">🎵</div>
+            <div class="upload-text">
+              <strong>點擊上傳</strong> 右聲道音訊
+            </div>
+            <div class="upload-hint">單聲道或立體聲（將取右/左聲道）</div>
+          </div>
+          <input type="file" id="fileInputRight" accept="audio/*" style="display:none">
+          <div class="file-info" id="fileInfoRight" style="display:none">
+            <div class="file-name" id="fileNameRight"></div>
+            <div class="file-details" id="fileDetailsRight"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box" id="warningBox">
+        ⚠️ 兩個音訊長度不同，將以較短的為準
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>2. 合併預覽</span>
+      </div>
+
+      <div class="merge-visual">
+        <div class="channel-indicator left">L 左聲道</div>
+        <div class="merge-arrow">➕</div>
+        <div class="channel-indicator right">R 右聲道</div>
+        <div class="merge-arrow">➡️</div>
+        <div class="channel-indicator stereo">🎧 立體聲</div>
+      </div>
+
+      <div class="info-box">
+        <h4>聲道合併說明</h4>
+        <p>
+          將兩個音訊檔案分別作為左右聲道合併成一個立體聲檔案。
+          如果兩個檔案長度不同，輸出將以較短的檔案長度為準。
+          如果上傳的是立體聲檔案，將自動提取對應聲道使用。
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>3. 輸出設定</span>
+      </div>
+      <div class="output-row">
+        <label>輸出格式</label>
+        <select id="outputFormat">
+          <option value="wav">WAV (無損)</option>
+          <option value="mp3">MP3</option>
+        </select>
+      </div>
+      <div class="output-row bitrate-row" id="bitrateRow">
+        <label>位元率</label>
+        <select id="bitrate">
+          <option value="128">128 kbps</option>
+          <option value="192">192 kbps</option>
+          <option value="256">256 kbps</option>
+          <option value="320" selected>320 kbps</option>
+        </select>
+      </div>
+
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">準備中...</div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="processBtn" disabled>合併聲道</button>
+        <button class="btn btn-download" id="downloadBtn">
+          <span id="downloadLabel">下載</span>
+        </button>
+        <button class="btn btn-secondary btn-reset" id="resetBtn">重置</button>
+      </div>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="card">
+        <div class="card-title">處理結果</div>
+        <div class="result-stats">
+          <div class="stat-item">
+            <div class="stat-value" id="resultChannels">1+1 → 2</div>
+            <div class="stat-label">聲道轉換</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="resultDuration">0s</div>
+            <div class="stat-label">輸出長度</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="outputSize">0 KB</div>
+            <div class="stat-label">檔案大小</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="processTime">0s</div>
+            <div class="stat-label">處理時間</div>
+          </div>
+        </div>
+
+        <div class="audio-preview">
+          <div class="preview-label">合併後立體聲：</div>
+          <audio id="audioPreview" controls></audio>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+  <script src="channel-merger.js"></script>
+</body>
+</html>
