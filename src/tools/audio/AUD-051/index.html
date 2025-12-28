@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUD-051 音頻均衡器 - Audio Equalizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #7c2d12 50%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #fb923c, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #f97316;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(249, 115, 22, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #fb923c;
+            background: rgba(249, 115, 22, 0.2);
+        }
+
+        .upload-area.dragover {
+            border-color: #fb923c;
+            background: rgba(249, 115, 22, 0.3);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .info-panel {
+            background: rgba(249, 115, 22, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .info-panel.show {
+            display: block;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+        }
+
+        .eq-panel {
+            background: rgba(124, 45, 18, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .eq-panel.show {
+            display: block;
+        }
+
+        .eq-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .eq-header h3 {
+            color: #fb923c;
+        }
+
+        .preset-select {
+            padding: 8px 16px;
+            border: 2px solid #f97316;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            color: #fb923c;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .eq-sliders {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 24px 16px;
+            border-radius: 12px;
+        }
+
+        .eq-band {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .band-label {
+            color: #94a3b8;
+            font-size: 11px;
+            text-align: center;
+        }
+
+        .band-slider {
+            width: 40px;
+            height: 150px;
+            position: relative;
+            background: linear-gradient(to top,
+                rgba(239, 68, 68, 0.3) 0%,
+                rgba(249, 115, 22, 0.3) 50%,
+                rgba(34, 197, 94, 0.3) 100%
+            );
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .band-slider input[type="range"] {
+            position: absolute;
+            width: 150px;
+            height: 40px;
+            transform: rotate(-90deg);
+            transform-origin: 75px 75px;
+            -webkit-appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .band-slider input[type="range"]::-webkit-slider-track {
+            width: 100%;
+            height: 8px;
+            background: transparent;
+        }
+
+        .band-slider input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            cursor: grab;
+        }
+
+        .band-value {
+            color: #fb923c;
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .zero-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 2px;
+            background: rgba(251, 146, 60, 0.5);
+            pointer-events: none;
+        }
+
+        .eq-controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .eq-btn {
+            padding: 10px 20px;
+            border: 2px solid #f97316;
+            border-radius: 8px;
+            background: transparent;
+            color: #fb923c;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .eq-btn:hover {
+            background: rgba(249, 115, 22, 0.2);
+        }
+
+        .preset-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .preset-btn {
+            padding: 8px 16px;
+            border: 2px solid #f97316;
+            border-radius: 8px;
+            background: transparent;
+            color: #fb923c;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 13px;
+        }
+
+        .preset-btn:hover {
+            background: rgba(249, 115, 22, 0.2);
+        }
+
+        .preset-btn.active {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            border-color: transparent;
+        }
+
+        .visualizer-section {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .visualizer-section.show {
+            display: block;
+        }
+
+        .visualizer-section h3 {
+            color: #fb923c;
+            margin-bottom: 16px;
+        }
+
+        #spectrumCanvas {
+            width: 100%;
+            height: 120px;
+            background: #0f172a;
+            border-radius: 12px;
+        }
+
+        .output-settings {
+            background: rgba(124, 45, 18, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .output-settings.show {
+            display: block;
+        }
+
+        .output-settings h3 {
+            color: #fb923c;
+            margin-bottom: 16px;
+        }
+
+        .format-options {
+            display: flex;
+            gap: 12px;
+        }
+
+        .format-btn {
+            padding: 10px 24px;
+            border: 2px solid #f97316;
+            border-radius: 8px;
+            background: transparent;
+            color: #fb923c;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .format-btn:hover {
+            background: rgba(249, 115, 22, 0.2);
+        }
+
+        .format-btn.active {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            border-color: transparent;
+        }
+
+        .process-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .process-btn.show {
+            display: block;
+        }
+
+        .process-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+        }
+
+        .process-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(249, 115, 22, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .progress-bar.show {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f97316, #fb923c);
+            border-radius: 4px;
+            transition: width 0.2s ease;
+        }
+
+        .result-panel {
+            background: rgba(124, 45, 18, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-panel.show {
+            display: block;
+        }
+
+        .result-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .result-title {
+            color: #fb923c;
+            margin-bottom: 12px;
+            font-size: 1.2rem;
+        }
+
+        .result-info {
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .download-btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .eq-sliders {
+                overflow-x: auto;
+                padding-bottom: 16px;
+            }
+
+            .eq-band {
+                min-width: 50px;
+            }
+
+            .band-slider {
+                height: 120px;
+            }
+
+            .band-slider input[type="range"] {
+                width: 120px;
+                transform: rotate(-90deg);
+                transform-origin: 60px 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎚️ 音頻均衡器</h1>
+        <p class="subtitle">Audio Equalizer - 10 頻段音頻調整</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">🎵</div>
+            <div class="upload-text">點擊或拖放音頻文件到這裡</div>
+            <div class="upload-hint">支援 MP3, WAV, OGG, FLAC, M4A 等格式</div>
+            <input type="file" id="fileInput" accept="audio/*">
+        </div>
+
+        <div class="info-panel" id="infoPanel">
+            <div class="info-row">
+                <span>文件名稱:</span>
+                <span id="fileName">-</span>
+            </div>
+            <div class="info-row">
+                <span>時長:</span>
+                <span id="duration">-</span>
+            </div>
+            <div class="info-row">
+                <span>取樣率:</span>
+                <span id="sampleRate">-</span>
+            </div>
+        </div>
+
+        <div class="eq-panel" id="eqPanel">
+            <div class="eq-header">
+                <h3>🎛️ 均衡器</h3>
+            </div>
+
+            <div class="eq-sliders" id="eqSliders">
+                <!-- Will be generated by JS -->
+            </div>
+
+            <div class="eq-controls">
+                <button class="eq-btn" id="resetBtn">🔄 重置</button>
+                <button class="eq-btn" id="invertBtn">↕️ 反轉</button>
+            </div>
+
+            <div class="preset-btns" id="presetBtns">
+                <button class="preset-btn active" data-preset="flat">平坦</button>
+                <button class="preset-btn" data-preset="bass">低音增強</button>
+                <button class="preset-btn" data-preset="treble">高音增強</button>
+                <button class="preset-btn" data-preset="vocal">人聲優化</button>
+                <button class="preset-btn" data-preset="rock">搖滾</button>
+                <button class="preset-btn" data-preset="pop">流行</button>
+                <button class="preset-btn" data-preset="jazz">爵士</button>
+                <button class="preset-btn" data-preset="classical">古典</button>
+            </div>
+        </div>
+
+        <div class="visualizer-section" id="visualizerSection">
+            <h3>📊 頻譜顯示</h3>
+            <canvas id="spectrumCanvas"></canvas>
+        </div>
+
+        <div class="output-settings" id="outputSettings">
+            <h3>📤 輸出格式</h3>
+            <div class="format-options">
+                <button class="format-btn active" data-format="wav">WAV</button>
+                <button class="format-btn" data-format="mp3">MP3</button>
+            </div>
+        </div>
+
+        <button class="process-btn" id="processBtn">
+            🎚️ 套用均衡器設定
+        </button>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <div class="result-panel" id="resultPanel">
+            <div class="result-icon">✅</div>
+            <div class="result-title">均衡器處理完成</div>
+            <div class="result-info" id="resultInfo">-</div>
+            <button class="download-btn" id="downloadBtn">📥 下載處理後音頻</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+    <script src="equalizer.js"></script>
+</body>
+</html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUD-055 音頻門限器 - Noise Gate</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #4c1d95 50%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #c4b5fd, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #a78bfa;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(167, 139, 250, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #c4b5fd;
+            background: rgba(167, 139, 250, 0.2);
+        }
+
+        .upload-area.dragover {
+            border-color: #c4b5fd;
+            background: rgba(167, 139, 250, 0.3);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .info-panel {
+            background: rgba(167, 139, 250, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .info-panel.show {
+            display: block;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+        }
+
+        .gate-panel {
+            background: rgba(76, 29, 149, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .gate-panel.show {
+            display: block;
+        }
+
+        .gate-panel h3 {
+            color: #c4b5fd;
+            margin-bottom: 20px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .control-group {
+            background: rgba(167, 139, 250, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .control-group label {
+            display: block;
+            color: #c4b5fd;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .control-desc {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .control-row input[type="range"] {
+            flex: 1;
+        }
+
+        .control-value {
+            min-width: 70px;
+            text-align: center;
+            color: #c4b5fd;
+            font-weight: 600;
+        }
+
+        .gate-indicator {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .gate-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .gate-led {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #374151;
+            border: 2px solid #6b7280;
+            transition: all 0.3s ease;
+        }
+
+        .gate-led.open {
+            background: #22c55e;
+            border-color: #4ade80;
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+        }
+
+        .gate-led.closed {
+            background: #ef4444;
+            border-color: #f87171;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+        }
+
+        .gate-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .visualizer-section {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .visualizer-section.show {
+            display: block;
+        }
+
+        .visualizer-section h3 {
+            color: #c4b5fd;
+            margin-bottom: 16px;
+        }
+
+        #gateCanvas {
+            width: 100%;
+            height: 100px;
+            background: #0f172a;
+            border-radius: 12px;
+        }
+
+        .output-settings {
+            background: rgba(76, 29, 149, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .output-settings.show {
+            display: block;
+        }
+
+        .output-settings h3 {
+            color: #c4b5fd;
+            margin-bottom: 16px;
+        }
+
+        .format-options {
+            display: flex;
+            gap: 12px;
+        }
+
+        .format-btn {
+            padding: 10px 24px;
+            border: 2px solid #a78bfa;
+            border-radius: 8px;
+            background: transparent;
+            color: #c4b5fd;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .format-btn:hover {
+            background: rgba(167, 139, 250, 0.2);
+        }
+
+        .format-btn.active {
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+            color: white;
+            border-color: transparent;
+        }
+
+        .process-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+            color: white;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .process-btn.show {
+            display: block;
+        }
+
+        .process-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(167, 139, 250, 0.4);
+        }
+
+        .process-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(167, 139, 250, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .progress-bar.show {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #a78bfa, #c4b5fd);
+            border-radius: 4px;
+            transition: width 0.2s ease;
+        }
+
+        .result-panel {
+            background: rgba(76, 29, 149, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-panel.show {
+            display: block;
+        }
+
+        .result-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .result-title {
+            color: #c4b5fd;
+            margin-bottom: 12px;
+            font-size: 1.2rem;
+        }
+
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .result-stat {
+            background: rgba(167, 139, 250, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .result-label {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+
+        .result-value {
+            color: #c4b5fd;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .download-btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .upload-area {
+                padding: 30px 20px;
+            }
+
+            .result-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚪 音頻門限器</h1>
+        <p class="subtitle">Noise Gate - 自動靜音低電平訊號</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">🔇</div>
+            <div class="upload-text">點擊或拖放音頻文件到這裡</div>
+            <div class="upload-hint">支援 MP3, WAV, OGG, FLAC, M4A 等格式</div>
+            <input type="file" id="fileInput" accept="audio/*">
+        </div>
+
+        <div class="info-panel" id="infoPanel">
+            <div class="info-row">
+                <span>文件名稱:</span>
+                <span id="fileName">-</span>
+            </div>
+            <div class="info-row">
+                <span>時長:</span>
+                <span id="duration">-</span>
+            </div>
+            <div class="info-row">
+                <span>取樣率:</span>
+                <span id="sampleRate">-</span>
+            </div>
+        </div>
+
+        <div class="gate-panel" id="gatePanel">
+            <h3>🎛️ 門限器設定</h3>
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label>閾值 (Threshold)</label>
+                    <div class="control-desc">低於此電平時關閉門限</div>
+                    <div class="control-row">
+                        <input type="range" id="threshold" min="-80" max="-10" value="-40">
+                        <span class="control-value" id="thresholdValue">-40 dB</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>啟動時間 (Attack)</label>
+                    <div class="control-desc">門限開啟的速度</div>
+                    <div class="control-row">
+                        <input type="range" id="attack" min="0" max="50" value="1">
+                        <span class="control-value" id="attackValue">1 ms</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>保持時間 (Hold)</label>
+                    <div class="control-desc">訊號低於閾值後保持開啟的時間</div>
+                    <div class="control-row">
+                        <input type="range" id="hold" min="0" max="500" value="50">
+                        <span class="control-value" id="holdValue">50 ms</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>釋放時間 (Release)</label>
+                    <div class="control-desc">門限關閉的速度</div>
+                    <div class="control-row">
+                        <input type="range" id="release" min="10" max="1000" value="100">
+                        <span class="control-value" id="releaseValue">100 ms</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>衰減深度 (Range)</label>
+                    <div class="control-desc">門限關閉時的衰減量</div>
+                    <div class="control-row">
+                        <input type="range" id="range" min="-80" max="0" value="-80">
+                        <span class="control-value" id="rangeValue">-80 dB</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gate-indicator">
+                <div class="gate-status">
+                    <div class="gate-led open" id="gateLedOpen"></div>
+                    <span class="gate-label">開啟</span>
+                </div>
+                <div class="gate-status">
+                    <div class="gate-led closed" id="gateLedClosed"></div>
+                    <span class="gate-label">關閉</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="visualizer-section" id="visualizerSection">
+            <h3>📊 門限狀態視覺化</h3>
+            <canvas id="gateCanvas"></canvas>
+        </div>
+
+        <div class="output-settings" id="outputSettings">
+            <h3>📤 輸出格式</h3>
+            <div class="format-options">
+                <button class="format-btn active" data-format="wav">WAV</button>
+                <button class="format-btn" data-format="mp3">MP3</button>
+            </div>
+        </div>
+
+        <button class="process-btn" id="processBtn">
+            🚪 套用門限處理
+        </button>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <div class="result-panel" id="resultPanel">
+            <div class="result-icon">✅</div>
+            <div class="result-title">門限處理完成</div>
+            <div class="result-stats">
+                <div class="result-stat">
+                    <div class="result-label">門限開啟比例</div>
+                    <div class="result-value" id="openPercent">-</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-label">門限關閉比例</div>
+                    <div class="result-value" id="closedPercent">-</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-label">處理時長</div>
+                    <div class="result-value" id="processingTime">-</div>
+                </div>
+            </div>
+            <button class="download-btn" id="downloadBtn">📥 下載處理後音頻</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+    <script src="gate.js"></script>
+</body>
+</html>

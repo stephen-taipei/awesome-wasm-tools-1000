@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUD-059 音頻鎡射 - Audio Flanger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #7c2d12 50%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #fed7aa, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #f97316;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(249, 115, 22, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #fb923c;
+            background: rgba(249, 115, 22, 0.2);
+        }
+
+        .upload-area.dragover {
+            border-color: #fb923c;
+            background: rgba(249, 115, 22, 0.3);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .info-panel {
+            background: rgba(249, 115, 22, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .info-panel.show {
+            display: block;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+        }
+
+        .flanger-panel {
+            background: rgba(124, 45, 18, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .flanger-panel.show {
+            display: block;
+        }
+
+        .flanger-panel h3 {
+            color: #fb923c;
+            margin-bottom: 20px;
+        }
+
+        .mode-btns {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            padding: 10px 20px;
+            border: 2px solid #f97316;
+            border-radius: 8px;
+            background: transparent;
+            color: #fb923c;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .mode-btn:hover {
+            background: rgba(249, 115, 22, 0.2);
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            border-color: transparent;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .control-group {
+            background: rgba(249, 115, 22, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .control-group label {
+            display: block;
+            color: #fb923c;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .control-desc {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .control-row input[type="range"] {
+            flex: 1;
+        }
+
+        .control-value {
+            min-width: 70px;
+            text-align: center;
+            color: #fb923c;
+            font-weight: 600;
+        }
+
+        .visualizer-section {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .visualizer-section.show {
+            display: block;
+        }
+
+        .visualizer-section h3 {
+            color: #fb923c;
+            margin-bottom: 16px;
+        }
+
+        #flangerCanvas {
+            width: 100%;
+            height: 100px;
+            background: #0f172a;
+            border-radius: 12px;
+        }
+
+        .output-settings {
+            background: rgba(124, 45, 18, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .output-settings.show {
+            display: block;
+        }
+
+        .output-settings h3 {
+            color: #fb923c;
+            margin-bottom: 16px;
+        }
+
+        .format-options {
+            display: flex;
+            gap: 12px;
+        }
+
+        .format-btn {
+            padding: 10px 24px;
+            border: 2px solid #f97316;
+            border-radius: 8px;
+            background: transparent;
+            color: #fb923c;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .format-btn:hover {
+            background: rgba(249, 115, 22, 0.2);
+        }
+
+        .format-btn.active {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            border-color: transparent;
+        }
+
+        .process-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .process-btn.show {
+            display: block;
+        }
+
+        .process-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+        }
+
+        .process-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(249, 115, 22, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .progress-bar.show {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f97316, #fb923c);
+            border-radius: 4px;
+            transition: width 0.2s ease;
+        }
+
+        .result-panel {
+            background: rgba(124, 45, 18, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-panel.show {
+            display: block;
+        }
+
+        .result-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .result-title {
+            color: #fb923c;
+            margin-bottom: 12px;
+            font-size: 1.2rem;
+        }
+
+        .result-info {
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .download-btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .upload-area {
+                padding: 30px 20px;
+            }
+
+            .mode-btns {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✈️ 音頻鎡射</h1>
+        <p class="subtitle">Audio Flanger - 噴射機掃頻音效</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">🎵</div>
+            <div class="upload-text">點擊或拖放音頻文件到這裡</div>
+            <div class="upload-hint">支援 MP3, WAV, OGG, FLAC, M4A 等格式</div>
+            <input type="file" id="fileInput" accept="audio/*">
+        </div>
+
+        <div class="info-panel" id="infoPanel">
+            <div class="info-row">
+                <span>文件名稱:</span>
+                <span id="fileName">-</span>
+            </div>
+            <div class="info-row">
+                <span>時長:</span>
+                <span id="duration">-</span>
+            </div>
+            <div class="info-row">
+                <span>取樣率:</span>
+                <span id="sampleRate">-</span>
+            </div>
+        </div>
+
+        <div class="flanger-panel" id="flangerPanel">
+            <h3>🎛️ 鎡射設定</h3>
+
+            <div class="mode-btns">
+                <button class="mode-btn" data-mode="subtle">輕微</button>
+                <button class="mode-btn active" data-mode="classic">經典</button>
+                <button class="mode-btn" data-mode="jet">噴射機</button>
+                <button class="mode-btn" data-mode="metallic">金屬</button>
+            </div>
+
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label>掃頻速率 (Rate)</label>
+                    <div class="control-desc">LFO 振盪頻率</div>
+                    <div class="control-row">
+                        <input type="range" id="rate" min="1" max="100" value="25">
+                        <span class="control-value" id="rateValue">0.25 Hz</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>掃頻深度 (Depth)</label>
+                    <div class="control-desc">延遲調變幅度</div>
+                    <div class="control-row">
+                        <input type="range" id="depth" min="1" max="100" value="60">
+                        <span class="control-value" id="depthValue">60%</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>延遲時間 (Delay)</label>
+                    <div class="control-desc">基礎延遲量</div>
+                    <div class="control-row">
+                        <input type="range" id="delay" min="1" max="20" value="5">
+                        <span class="control-value" id="delayValue">5 ms</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>反饋量 (Feedback)</label>
+                    <div class="control-desc">效果共振強度</div>
+                    <div class="control-row">
+                        <input type="range" id="feedback" min="-95" max="95" value="50">
+                        <span class="control-value" id="feedbackValue">50%</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>乾濕比 (Mix)</label>
+                    <div class="control-desc">原聲與效果比例</div>
+                    <div class="control-row">
+                        <input type="range" id="mix" min="0" max="100" value="50">
+                        <span class="control-value" id="mixValue">50%</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>立體聲寬度</label>
+                    <div class="control-desc">左右聲道相位差</div>
+                    <div class="control-row">
+                        <input type="range" id="stereo" min="0" max="180" value="90">
+                        <span class="control-value" id="stereoValue">90°</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="visualizer-section" id="visualizerSection">
+            <h3>📊 掃頻視覺化</h3>
+            <canvas id="flangerCanvas"></canvas>
+        </div>
+
+        <div class="output-settings" id="outputSettings">
+            <h3>📤 輸出格式</h3>
+            <div class="format-options">
+                <button class="format-btn active" data-format="wav">WAV</button>
+                <button class="format-btn" data-format="mp3">MP3</button>
+            </div>
+        </div>
+
+        <button class="process-btn" id="processBtn">
+            ✈️ 套用鎡射效果
+        </button>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <div class="result-panel" id="resultPanel">
+            <div class="result-icon">✅</div>
+            <div class="result-title">鎡射效果處理完成</div>
+            <div class="result-info" id="resultInfo">-</div>
+            <button class="download-btn" id="downloadBtn">📥 下載處理後音頻</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+    <script src="flanger.js"></script>
+</body>
+</html>
