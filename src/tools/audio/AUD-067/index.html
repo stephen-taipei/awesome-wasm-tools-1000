@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUD-067 音頻帶阻濾波 - Audio Notch Filter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #78350f 50%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #fcd34d, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #f59e0b;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(245, 158, 11, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #fbbf24;
+            background: rgba(245, 158, 11, 0.2);
+        }
+
+        .upload-area.dragover {
+            border-color: #fbbf24;
+            background: rgba(245, 158, 11, 0.3);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .info-panel {
+            background: rgba(245, 158, 11, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .info-panel.show {
+            display: block;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+        }
+
+        .filter-panel {
+            background: rgba(120, 53, 15, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .filter-panel.show {
+            display: block;
+        }
+
+        .filter-panel h3 {
+            color: #fbbf24;
+            margin-bottom: 20px;
+        }
+
+        .preset-btns {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .preset-btn {
+            padding: 8px 16px;
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
+            background: transparent;
+            color: #fbbf24;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 13px;
+        }
+
+        .preset-btn:hover {
+            background: rgba(245, 158, 11, 0.2);
+        }
+
+        .preset-btn.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border-color: transparent;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .control-group {
+            background: rgba(245, 158, 11, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .control-group label {
+            display: block;
+            color: #fbbf24;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .control-desc {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .control-row input[type="range"] {
+            flex: 1;
+        }
+
+        .control-value {
+            min-width: 80px;
+            text-align: center;
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .visualizer-section {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .visualizer-section.show {
+            display: block;
+        }
+
+        .visualizer-section h3 {
+            color: #fbbf24;
+            margin-bottom: 16px;
+        }
+
+        #filterCanvas {
+            width: 100%;
+            height: 120px;
+            background: #0f172a;
+            border-radius: 12px;
+        }
+
+        .output-settings {
+            background: rgba(120, 53, 15, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .output-settings.show {
+            display: block;
+        }
+
+        .output-settings h3 {
+            color: #fbbf24;
+            margin-bottom: 16px;
+        }
+
+        .format-options {
+            display: flex;
+            gap: 12px;
+        }
+
+        .format-btn {
+            padding: 10px 24px;
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
+            background: transparent;
+            color: #fbbf24;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .format-btn:hover {
+            background: rgba(245, 158, 11, 0.2);
+        }
+
+        .format-btn.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border-color: transparent;
+        }
+
+        .process-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .process-btn.show {
+            display: block;
+        }
+
+        .process-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .process-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(245, 158, 11, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .progress-bar.show {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+            border-radius: 4px;
+            transition: width 0.2s ease;
+        }
+
+        .result-panel {
+            background: rgba(120, 53, 15, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-panel.show {
+            display: block;
+        }
+
+        .result-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .result-title {
+            color: #fbbf24;
+            margin-bottom: 12px;
+            font-size: 1.2rem;
+        }
+
+        .result-info {
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .download-btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .upload-area {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔇 音頻帶阻濾波</h1>
+        <p class="subtitle">Audio Notch Filter - 削減特定頻率</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">🎵</div>
+            <div class="upload-text">點擊或拖放音頻文件到這裡</div>
+            <div class="upload-hint">支援 MP3, WAV, OGG, FLAC, M4A 等格式</div>
+            <input type="file" id="fileInput" accept="audio/*">
+        </div>
+
+        <div class="info-panel" id="infoPanel">
+            <div class="info-row">
+                <span>文件名稱:</span>
+                <span id="fileName">-</span>
+            </div>
+            <div class="info-row">
+                <span>時長:</span>
+                <span id="duration">-</span>
+            </div>
+            <div class="info-row">
+                <span>取樣率:</span>
+                <span id="sampleRate">-</span>
+            </div>
+        </div>
+
+        <div class="filter-panel" id="filterPanel">
+            <h3>🎛️ 帶阻濾波設定</h3>
+
+            <div class="preset-btns">
+                <button class="preset-btn" data-freq="50">50Hz 電源</button>
+                <button class="preset-btn" data-freq="60">60Hz 電源</button>
+                <button class="preset-btn" data-freq="100">100Hz</button>
+                <button class="preset-btn active" data-freq="1000">1kHz</button>
+                <button class="preset-btn" data-freq="4000">4kHz 齒音</button>
+            </div>
+
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label>陷波頻率 (Notch)</label>
+                    <div class="control-desc">要削減的頻率</div>
+                    <div class="control-row">
+                        <input type="range" id="notchFreq" min="20" max="15000" value="1000">
+                        <span class="control-value" id="notchFreqValue">1000 Hz</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Q 值 (銳利度)</label>
+                    <div class="control-desc">陷波寬度，越高越窄</div>
+                    <div class="control-row">
+                        <input type="range" id="qValue" min="1" max="200" value="50">
+                        <span class="control-value" id="qValueDisplay">5.0</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>衰減深度 (Depth)</label>
+                    <div class="control-desc">陷波削減量</div>
+                    <div class="control-row">
+                        <input type="range" id="depth" min="0" max="100" value="100">
+                        <span class="control-value" id="depthValue">100%</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>乾濕比 (Mix)</label>
+                    <div class="control-desc">原聲與效果比例</div>
+                    <div class="control-row">
+                        <input type="range" id="mix" min="0" max="100" value="100">
+                        <span class="control-value" id="mixValue">100%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="visualizer-section" id="visualizerSection">
+            <h3>📊 頻率響應曲線</h3>
+            <canvas id="filterCanvas"></canvas>
+        </div>
+
+        <div class="output-settings" id="outputSettings">
+            <h3>📤 輸出格式</h3>
+            <div class="format-options">
+                <button class="format-btn active" data-format="wav">WAV</button>
+                <button class="format-btn" data-format="mp3">MP3</button>
+            </div>
+        </div>
+
+        <button class="process-btn" id="processBtn">
+            🔇 套用帶阻濾波
+        </button>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <div class="result-panel" id="resultPanel">
+            <div class="result-icon">✅</div>
+            <div class="result-title">帶阻濾波處理完成</div>
+            <div class="result-info" id="resultInfo">-</div>
+            <button class="download-btn" id="downloadBtn">📥 下載處理後音頻</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+    <script src="notch.js"></script>
+</body>
+</html>
