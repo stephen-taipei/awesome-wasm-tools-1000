@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUD-046 音頻分割 - Audio Splitter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #7c2d12 50%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #fb923c, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #f97316;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(249, 115, 22, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #fb923c;
+            background: rgba(249, 115, 22, 0.2);
+        }
+
+        .upload-area.dragover {
+            border-color: #fb923c;
+            background: rgba(249, 115, 22, 0.3);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .split-settings {
+            background: rgba(124, 45, 18, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .split-settings.show {
+            display: block;
+        }
+
+        .split-settings h3 {
+            color: #fb923c;
+            margin-bottom: 20px;
+        }
+
+        .mode-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .mode-tab {
+            flex: 1;
+            padding: 14px;
+            border: 2px solid #f97316;
+            border-radius: 10px;
+            background: transparent;
+            color: #fb923c;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .mode-tab:hover {
+            background: rgba(249, 115, 22, 0.2);
+        }
+
+        .mode-tab.active {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            border-color: transparent;
+        }
+
+        .mode-content {
+            display: none;
+        }
+
+        .mode-content.active {
+            display: block;
+        }
+
+        .setting-group {
+            background: rgba(249, 115, 22, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .setting-group label {
+            display: block;
+            color: #fb923c;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .setting-row input[type="range"],
+        .setting-row input[type="number"] {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #f97316;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            color: #e2e8f0;
+        }
+
+        .setting-value {
+            min-width: 80px;
+            text-align: center;
+            color: #fdba74;
+            font-weight: 600;
+        }
+
+        .time-inputs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .time-input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .time-input-group input {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #f97316;
+            border-radius: 6px;
+            background: rgba(15, 23, 42, 0.8);
+            color: #e2e8f0;
+            text-align: center;
+        }
+
+        .time-input-group span {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .add-point-btn {
+            padding: 10px 20px;
+            border: 2px dashed #f97316;
+            border-radius: 8px;
+            background: transparent;
+            color: #fb923c;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 12px;
+        }
+
+        .add-point-btn:hover {
+            background: rgba(249, 115, 22, 0.2);
+        }
+
+        .split-points-list {
+            margin-top: 16px;
+        }
+
+        .split-point-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(249, 115, 22, 0.1);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .split-point-item span {
+            color: #fdba74;
+        }
+
+        .remove-point-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(239, 68, 68, 0.8);
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .preview-section {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .preview-section.show {
+            display: block;
+        }
+
+        .preview-section h3 {
+            color: #fb923c;
+            margin-bottom: 16px;
+        }
+
+        #waveformCanvas {
+            width: 100%;
+            height: 100px;
+            background: #0f172a;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            cursor: crosshair;
+        }
+
+        .segments-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .segment-item {
+            background: rgba(249, 115, 22, 0.1);
+            padding: 16px;
+            border-radius: 12px;
+            border-left: 4px solid #f97316;
+        }
+
+        .segment-name {
+            color: #fb923c;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .segment-info {
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        .output-settings {
+            background: rgba(124, 45, 18, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .output-settings.show {
+            display: block;
+        }
+
+        .output-settings h3 {
+            color: #fb923c;
+            margin-bottom: 16px;
+        }
+
+        .format-options {
+            display: flex;
+            gap: 12px;
+        }
+
+        .format-btn {
+            padding: 10px 24px;
+            border: 2px solid #f97316;
+            border-radius: 8px;
+            background: transparent;
+            color: #fb923c;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .format-btn:hover {
+            background: rgba(249, 115, 22, 0.2);
+        }
+
+        .format-btn.active {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            border-color: transparent;
+        }
+
+        .process-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .process-btn.show {
+            display: block;
+        }
+
+        .process-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+        }
+
+        .process-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(249, 115, 22, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .progress-bar.show {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f97316, #fb923c);
+            border-radius: 4px;
+            transition: width 0.2s ease;
+        }
+
+        .result-panel {
+            background: rgba(124, 45, 18, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-panel.show {
+            display: block;
+        }
+
+        .result-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .result-title {
+            color: #fb923c;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        .download-all-btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .download-all-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .download-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .download-item {
+            background: rgba(249, 115, 22, 0.1);
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .download-item-name {
+            color: #fb923c;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .download-item-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #f97316;
+            color: white;
+            cursor: pointer;
+            font-size: 13px;
+            width: 100%;
+        }
+
+        .file-info {
+            background: rgba(249, 115, 22, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .file-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(249, 115, 22, 0.2);
+        }
+
+        .file-info-row:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .upload-area {
+                padding: 30px 20px;
+            }
+
+            .mode-tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✂️ 音頻分割</h1>
+        <p class="subtitle">Audio Splitter - 將音頻切分為多個片段</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">🔪</div>
+            <div class="upload-text">點擊或拖放音頻文件到這裡</div>
+            <div class="upload-hint">支援 MP3, WAV, OGG, FLAC, M4A 等格式</div>
+            <input type="file" id="fileInput" accept="audio/*">
+        </div>
+
+        <div class="file-info" id="fileInfo">
+            <div class="file-info-row">
+                <span>文件名稱:</span>
+                <span id="fileName">-</span>
+            </div>
+            <div class="file-info-row">
+                <span>時長:</span>
+                <span id="fileDuration">-</span>
+            </div>
+            <div class="file-info-row">
+                <span>取樣率:</span>
+                <span id="fileSampleRate">-</span>
+            </div>
+        </div>
+
+        <div class="split-settings" id="splitSettings">
+            <h3>🎛️ 分割設定</h3>
+
+            <div class="mode-tabs">
+                <button class="mode-tab active" data-mode="equal">等分分割</button>
+                <button class="mode-tab" data-mode="duration">按時長分割</button>
+                <button class="mode-tab" data-mode="manual">手動分割點</button>
+            </div>
+
+            <div class="mode-content active" id="equalMode">
+                <div class="setting-group">
+                    <label>分割數量</label>
+                    <div class="setting-row">
+                        <input type="range" id="splitCount" min="2" max="20" value="4">
+                        <span class="setting-value" id="splitCountValue">4 段</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mode-content" id="durationMode">
+                <div class="setting-group">
+                    <label>每段時長 (秒)</label>
+                    <div class="setting-row">
+                        <input type="number" id="segmentDuration" min="1" max="3600" value="60">
+                        <span class="setting-value">秒</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mode-content" id="manualMode">
+                <div class="setting-group">
+                    <label>添加分割點</label>
+                    <div class="time-inputs">
+                        <div class="time-input-group">
+                            <input type="number" id="splitMinutes" min="0" value="0">
+                            <span>分</span>
+                        </div>
+                        <div class="time-input-group">
+                            <input type="number" id="splitSeconds" min="0" max="59" value="0">
+                            <span>秒</span>
+                        </div>
+                    </div>
+                    <button class="add-point-btn" id="addPointBtn">+ 添加分割點</button>
+                    <div class="split-points-list" id="splitPointsList"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-section" id="previewSection">
+            <h3>📊 分割預覽</h3>
+            <canvas id="waveformCanvas"></canvas>
+            <div class="segments-list" id="segmentsList"></div>
+        </div>
+
+        <div class="output-settings" id="outputSettings">
+            <h3>📤 輸出格式</h3>
+            <div class="format-options">
+                <button class="format-btn active" data-format="wav">WAV</button>
+                <button class="format-btn" data-format="mp3">MP3</button>
+            </div>
+        </div>
+
+        <button class="process-btn" id="processBtn">
+            ✂️ 開始分割
+        </button>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <div class="result-panel" id="resultPanel">
+            <div class="result-icon">✅</div>
+            <div class="result-title">音頻分割完成</div>
+            <button class="download-all-btn" id="downloadAllBtn">📥 下載全部 (ZIP)</button>
+            <div class="download-list" id="downloadList"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="splitter.js"></script>
+</body>
+</html>

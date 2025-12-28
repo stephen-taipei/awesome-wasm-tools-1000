@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUD-049 音頻混音 - Audio Mixer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #3b82f6;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(59, 130, 246, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #60a5fa;
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .upload-area.dragover {
+            border-color: #60a5fa;
+            background: rgba(59, 130, 246, 0.3);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .mixer-panel {
+            background: rgba(30, 58, 138, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .mixer-panel.show {
+            display: block;
+        }
+
+        .mixer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .mixer-header h3 {
+            color: #60a5fa;
+        }
+
+        .master-volume {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .master-volume label {
+            color: #93c5fd;
+        }
+
+        .master-volume input[type="range"] {
+            width: 120px;
+        }
+
+        .master-value {
+            color: #60a5fa;
+            font-weight: 600;
+            min-width: 50px;
+        }
+
+        .tracks-container {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 16px;
+        }
+
+        .track-channel {
+            min-width: 140px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .track-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .track-number {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .track-remove {
+            background: rgba(239, 68, 68, 0.2);
+            border: none;
+            color: #f87171;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .track-remove:hover {
+            background: rgba(239, 68, 68, 0.4);
+        }
+
+        .track-name {
+            color: #93c5fd;
+            font-size: 0.85rem;
+            text-align: center;
+            word-break: break-all;
+            max-height: 40px;
+            overflow: hidden;
+        }
+
+        .track-meter {
+            width: 100%;
+            height: 100px;
+            background: #0f172a;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .meter-fill {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            background: linear-gradient(to top, #22c55e, #eab308, #ef4444);
+            border-radius: 4px;
+            transition: height 0.1s ease;
+        }
+
+        .volume-slider {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .volume-slider label {
+            color: #94a3b8;
+            font-size: 0.75rem;
+        }
+
+        .volume-slider input[type="range"] {
+            width: 100%;
+            writing-mode: bt-lr;
+            -webkit-appearance: slider-vertical;
+            appearance: slider-vertical;
+            height: 80px;
+            width: 24px;
+        }
+
+        .volume-value {
+            color: #60a5fa;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .pan-control {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .pan-control label {
+            color: #94a3b8;
+            font-size: 0.75rem;
+        }
+
+        .pan-control input[type="range"] {
+            width: 100%;
+        }
+
+        .pan-value {
+            color: #60a5fa;
+            font-size: 0.85rem;
+        }
+
+        .mute-solo {
+            display: flex;
+            gap: 8px;
+        }
+
+        .mute-btn, .solo-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mute-btn {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .mute-btn.active {
+            background: #ef4444;
+            color: white;
+        }
+
+        .solo-btn {
+            background: rgba(234, 179, 8, 0.2);
+            color: #fbbf24;
+        }
+
+        .solo-btn.active {
+            background: #eab308;
+            color: white;
+        }
+
+        .add-track-btn {
+            min-width: 100px;
+            height: 280px;
+            border: 2px dashed #3b82f6;
+            border-radius: 12px;
+            background: transparent;
+            color: #60a5fa;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .add-track-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .add-track-icon {
+            font-size: 32px;
+        }
+
+        .preview-section {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .preview-section.show {
+            display: block;
+        }
+
+        .preview-section h3 {
+            color: #60a5fa;
+            margin-bottom: 16px;
+        }
+
+        .preview-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .play-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .play-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .time-display {
+            color: #60a5fa;
+            font-family: monospace;
+            font-size: 1.2rem;
+        }
+
+        #mixCanvas {
+            width: 100%;
+            height: 80px;
+            background: #0f172a;
+            border-radius: 12px;
+        }
+
+        .output-settings {
+            background: rgba(30, 58, 138, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .output-settings.show {
+            display: block;
+        }
+
+        .output-settings h3 {
+            color: #60a5fa;
+            margin-bottom: 16px;
+        }
+
+        .format-options {
+            display: flex;
+            gap: 12px;
+        }
+
+        .format-btn {
+            padding: 10px 24px;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            background: transparent;
+            color: #60a5fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .format-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .format-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border-color: transparent;
+        }
+
+        .process-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .process-btn.show {
+            display: block;
+        }
+
+        .process-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .process-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .progress-bar.show {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            border-radius: 4px;
+            transition: width 0.2s ease;
+        }
+
+        .result-panel {
+            background: rgba(30, 58, 138, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-panel.show {
+            display: block;
+        }
+
+        .result-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .result-title {
+            color: #60a5fa;
+            margin-bottom: 12px;
+            font-size: 1.2rem;
+        }
+
+        .result-info {
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .download-btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .upload-area {
+                padding: 30px 20px;
+            }
+
+            .tracks-container {
+                flex-direction: column;
+            }
+
+            .track-channel {
+                min-width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            .volume-slider input[type="range"] {
+                writing-mode: initial;
+                -webkit-appearance: initial;
+                appearance: initial;
+                height: auto;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎚️ 音頻混音</h1>
+        <p class="subtitle">Audio Mixer - 混合多個音頻軌道</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">🎛️</div>
+            <div class="upload-text">點擊或拖放多個音頻文件到這裡</div>
+            <div class="upload-hint">支援 MP3, WAV, OGG, FLAC, M4A 等格式</div>
+            <input type="file" id="fileInput" accept="audio/*" multiple>
+        </div>
+
+        <div class="mixer-panel" id="mixerPanel">
+            <div class="mixer-header">
+                <h3>🎛️ 混音台</h3>
+                <div class="master-volume">
+                    <label>主音量</label>
+                    <input type="range" id="masterVolume" min="0" max="150" value="100">
+                    <span class="master-value" id="masterValue">100%</span>
+                </div>
+            </div>
+            <div class="tracks-container" id="tracksContainer">
+                <button class="add-track-btn" id="addTrackBtn">
+                    <span class="add-track-icon">+</span>
+                    <span>添加音軌</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="preview-section" id="previewSection">
+            <h3>🎵 混音預覽</h3>
+            <div class="preview-controls">
+                <button class="play-btn" id="playBtn">▶ 播放</button>
+                <span class="time-display" id="timeDisplay">0:00 / 0:00</span>
+            </div>
+            <canvas id="mixCanvas"></canvas>
+        </div>
+
+        <div class="output-settings" id="outputSettings">
+            <h3>📤 輸出格式</h3>
+            <div class="format-options">
+                <button class="format-btn active" data-format="wav">WAV</button>
+                <button class="format-btn" data-format="mp3">MP3</button>
+            </div>
+        </div>
+
+        <button class="process-btn" id="processBtn">
+            🎚️ 導出混音
+        </button>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <div class="result-panel" id="resultPanel">
+            <div class="result-icon">✅</div>
+            <div class="result-title">混音導出完成</div>
+            <div class="result-info" id="resultInfo">-</div>
+            <button class="download-btn" id="downloadBtn">📥 下載混音文件</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+    <script src="mixer.js"></script>
+</body>
+</html>
