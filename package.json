@@ -22,9 +22,6 @@
     "vite": "^5.4.0"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "decimal.js": "^10.6.0"
-=======
     "@ffmpeg/core": "^0.12.10",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
@@ -34,6 +31,7 @@
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.23",
     "clsx": "^2.1.1",
+    "decimal.js": "^10.6.0",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",
     "lucide-react": "^0.561.0",
@@ -43,6 +41,5 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3"
->>>>>>> 05e050b (feat(audio): implement AUD-001 MP3 to WAV)
   }
 }
