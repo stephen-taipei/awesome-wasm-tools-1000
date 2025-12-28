@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-010 音量調整工具 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #a0a0a0;
+      font-size: 1rem;
+    }
+
+    .format-info {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .format-info h4 {
+      color: #ef4444;
+      margin-bottom: 10px;
+    }
+
+    .format-info p {
+      font-size: 0.9rem;
+      color: #a0a0a0;
+      line-height: 1.6;
+    }
+
+    .upload-area {
+      border: 2px dashed #4a4a6a;
+      border-radius: 16px;
+      padding: 60px 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.02);
+      margin-bottom: 20px;
+    }
+
+    .upload-area:hover {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+    .upload-area.dragover {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+      transform: scale(1.02);
+    }
+
+    .upload-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    .upload-text {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-hint {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .settings-panel {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+
+    .settings-title {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      color: #ef4444;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .setting-row:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .setting-label {
+      font-weight: 500;
+    }
+
+    .setting-control {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    select, input[type="range"] {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+    }
+
+    select {
+      min-width: 180px;
+    }
+
+    input[type="range"] {
+      width: 200px;
+      cursor: pointer;
+      -webkit-appearance: none;
+      height: 8px;
+      border-radius: 4px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      cursor: pointer;
+      border: 2px solid #fff;
+    }
+
+    .value-display {
+      min-width: 60px;
+      text-align: center;
+      font-weight: 600;
+      color: #ef4444;
+    }
+
+    .file-info {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .file-info.show {
+      display: block;
+    }
+
+    .file-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
+    }
+
+    .detail-item {
+      text-align: center;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+    }
+
+    .detail-label {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 5px;
+    }
+
+    .detail-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #ef4444;
+    }
+
+    .waveform-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .waveform-container.show {
+      display: block;
+    }
+
+    .waveform-title {
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .waveform {
+      width: 100%;
+      height: 80px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+    }
+
+    .progress-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .progress-container.show {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ef4444, #f97316);
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #a0a0a0;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      padding: 15px 35px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .result-panel {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .result-panel.show {
+      display: block;
+    }
+
+    .result-title {
+      color: #10b981;
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 5px;
+    }
+
+    .stat-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #10b981;
+    }
+
+    .audio-player {
+      width: 100%;
+      margin-top: 15px;
+      border-radius: 8px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 600px) {
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .setting-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .setting-control {
+        width: 100%;
+      }
+
+      select, input[type="range"] {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-010 音量調整工具</h1>
+      <p class="subtitle">調整音訊檔案的音量大小</p>
+    </header>
+
+    <div class="format-info">
+      <h4>關於音量調整</h4>
+      <p>此工具可調整音訊檔案的整體音量。支援增益調整（放大或縮小音量）和標準化（自動調整到最佳音量）。處理完成後可選擇輸出格式。</p>
+    </div>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">🔊</div>
+      <div class="upload-text">拖放音訊檔案到此處</div>
+      <div class="upload-hint">支援 WAV、MP3、OGG、FLAC 格式</div>
+      <input type="file" id="fileInput" class="file-input" accept=".wav,.mp3,.ogg,.flac,audio/*">
+    </div>
+
+    <div class="file-info" id="fileInfo">
+      <div class="file-details">
+        <div class="detail-item">
+          <div class="detail-label">檔案名稱</div>
+          <div class="detail-value" id="fileName">-</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">檔案大小</div>
+          <div class="detail-value" id="fileSize">-</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">原始格式</div>
+          <div class="detail-value" id="sourceFormat">-</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">時長</div>
+          <div class="detail-value" id="duration">-</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="waveform-container" id="waveformContainer">
+      <div class="waveform-title">波形預覽</div>
+      <canvas id="waveform" class="waveform"></canvas>
+    </div>
+
+    <div class="settings-panel">
+      <div class="settings-title">音量設定</div>
+      <div class="setting-row">
+        <span class="setting-label">音量增益</span>
+        <div class="setting-control">
+          <input type="range" id="volumeGain" min="-20" max="20" value="0" step="1">
+          <span class="value-display" id="gainValue">0 dB</span>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">標準化</span>
+        <div class="setting-control">
+          <select id="normalize">
+            <option value="none">不標準化</option>
+            <option value="peak">峰值標準化</option>
+            <option value="rms">RMS 標準化</option>
+          </select>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">輸出格式</span>
+        <div class="setting-control">
+          <select id="outputFormat">
+            <option value="wav">WAV (無損)</option>
+            <option value="mp3">MP3</option>
+          </select>
+        </div>
+      </div>
+      <div class="setting-row" id="bitrateRow" style="display: none;">
+        <span class="setting-label">位元率</span>
+        <div class="setting-control">
+          <select id="bitrate">
+            <option value="128">128 kbps</option>
+            <option value="192">192 kbps</option>
+            <option value="256" selected>256 kbps</option>
+            <option value="320">320 kbps</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-container" id="progressContainer">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text" id="progressText">準備中...</div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="processBtn" disabled>
+        <span>🔧</span>
+        <span>調整音量</span>
+      </button>
+      <button class="btn btn-success" id="downloadBtn" style="display: none;">
+        <span>⬇️</span>
+        <span id="downloadLabel">下載</span>
+      </button>
+      <button class="btn btn-secondary" id="resetBtn" style="display: none;">
+        <span>🗑️</span>
+        <span>重置</span>
+      </button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">
+        <span>✅</span>
+        <span>處理完成</span>
+      </div>
+      <div class="result-stats">
+        <div class="stat-item">
+          <div class="stat-label">原始大小</div>
+          <div class="stat-value" id="originalSize">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">輸出大小</div>
+          <div class="stat-value" id="outputSize">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">音量變化</div>
+          <div class="stat-value" id="volumeChange">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">處理時間</div>
+          <div class="stat-value" id="processTime">-</div>
+        </div>
+      </div>
+      <audio id="audioPreview" class="audio-player" controls></audio>
+    </div>
+
+    <footer>
+      <p>所有音訊處理均在本地完成，檔案不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+  <script src="./processor.js"></script>
+</body>
+</html>

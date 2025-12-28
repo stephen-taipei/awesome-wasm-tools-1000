@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-033 立體聲寬度調整 - Stereo Width</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .header p {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .upload-area {
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #f9fafb;
+    }
+
+    .upload-area:hover {
+      border-color: #3b82f6;
+      background: #eff6ff;
+    }
+
+    .upload-area.dragover {
+      border-color: #3b82f6;
+      background: #dbeafe;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      color: #6b7280;
+      font-size: 1rem;
+    }
+
+    .upload-text strong {
+      color: #3b82f6;
+    }
+
+    .upload-hint {
+      color: #9ca3af;
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .file-info {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      background: #eff6ff;
+      border-radius: 8px;
+    }
+
+    .file-info.show {
+      display: block;
+    }
+
+    .file-name {
+      font-weight: 600;
+      color: #1d4ed8;
+      margin-bottom: 8px;
+    }
+
+    .file-details {
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+
+    .file-details span {
+      margin-right: 16px;
+    }
+
+    .stereo-visualizer {
+      width: 100%;
+      height: 100px;
+      background: #1e293b;
+      border-radius: 8px;
+      margin: 16px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stereo-indicator {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .channel-label {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .width-bar {
+      width: 200px;
+      height: 20px;
+      background: #334155;
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .width-fill {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6);
+      border-radius: 10px;
+      transition: width 0.3s;
+    }
+
+    .settings-grid {
+      display: grid;
+      gap: 24px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .setting-row label {
+      flex: 0 0 120px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .setting-row input[type="range"] {
+      flex: 1;
+      height: 8px;
+      -webkit-appearance: none;
+      background: #e5e7eb;
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .setting-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      background: #3b82f6;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .setting-row .value {
+      flex: 0 0 80px;
+      text-align: right;
+      font-weight: 600;
+      color: #3b82f6;
+      font-size: 1.1rem;
+    }
+
+    .width-presets {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .preset-btn {
+      padding: 8px 16px;
+      border: 2px solid #e5e7eb;
+      background: white;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+      color: #4b5563;
+    }
+
+    .preset-btn:hover {
+      border-color: #3b82f6;
+      color: #3b82f6;
+    }
+
+    .preset-btn.active {
+      border-color: #3b82f6;
+      background: #3b82f6;
+      color: white;
+    }
+
+    .output-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .output-row label {
+      flex: 0 0 100px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .output-row select {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .output-row select:focus {
+      border-color: #3b82f6;
+    }
+
+    .bitrate-row {
+      display: none;
+    }
+
+    .progress-container {
+      display: none;
+      margin-top: 16px;
+    }
+
+    .progress-container.show {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #2563eb);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #6b7280;
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      display: none;
+    }
+
+    .btn-download.show,
+    .btn-reset.show {
+      display: flex;
+    }
+
+    .btn-reset {
+      display: none;
+    }
+
+    .result-panel {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result-panel.show {
+      display: block;
+    }
+
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-item {
+      background: #eff6ff;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #2563eb;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .audio-preview {
+      margin-top: 16px;
+    }
+
+    .audio-preview audio {
+      width: 100%;
+    }
+
+    .preview-label {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .info-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .info-box h4 {
+      color: #1d4ed8;
+      margin-bottom: 8px;
+    }
+
+    .info-box p {
+      color: #4b5563;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 640px) {
+      .setting-row {
+        flex-wrap: wrap;
+      }
+
+      .setting-row label {
+        flex: 0 0 100%;
+      }
+
+      .setting-row .value {
+        flex: 0 0 60px;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .output-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .output-row label {
+        margin-bottom: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>AUD-033 立體聲寬度調整</h1>
+      <p>Stereo Width - 調整音訊的立體聲空間感</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>1. 上傳音訊</span>
+      </div>
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">🎵</div>
+        <div class="upload-text">
+          <strong>點擊上傳</strong> 或拖放音訊檔案到這裡
+        </div>
+        <div class="upload-hint">支援 MP3, WAV, OGG, AAC, FLAC 等格式（需立體聲音訊）</div>
+      </div>
+      <input type="file" id="fileInput" accept="audio/*">
+      <div class="file-info" id="fileInfo">
+        <div class="file-name" id="fileName"></div>
+        <div class="file-details">
+          <span id="fileDuration"></span>
+          <span id="fileSampleRate"></span>
+          <span id="fileChannels"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>2. 寬度設定</span>
+      </div>
+
+      <div class="stereo-visualizer">
+        <div class="stereo-indicator">
+          <span class="channel-label">L</span>
+          <div class="width-bar">
+            <div class="width-fill" id="widthFill" style="width: 100%;"></div>
+          </div>
+          <span class="channel-label">R</span>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+        <div class="setting-row">
+          <label>立體聲寬度</label>
+          <input type="range" id="width" min="0" max="200" value="100">
+          <span class="value" id="widthValue">100%</span>
+        </div>
+        <div class="setting-row">
+          <label>中央增益</label>
+          <input type="range" id="centerGain" min="-12" max="12" step="0.5" value="0">
+          <span class="value" id="centerGainValue">0 dB</span>
+        </div>
+        <div class="setting-row">
+          <label>側邊增益</label>
+          <input type="range" id="sideGain" min="-12" max="12" step="0.5" value="0">
+          <span class="value" id="sideGainValue">0 dB</span>
+        </div>
+      </div>
+
+      <div class="width-presets" id="presetButtons">
+        <button class="preset-btn" data-preset="mono">單聲道</button>
+        <button class="preset-btn" data-preset="narrow">窄</button>
+        <button class="preset-btn active" data-preset="normal">正常</button>
+        <button class="preset-btn" data-preset="wide">寬</button>
+        <button class="preset-btn" data-preset="ultrawide">超寬</button>
+      </div>
+
+      <div class="info-box">
+        <h4>立體聲寬度說明</h4>
+        <p>
+          立體聲寬度調整使用 Mid/Side 處理技術，可以擴展或收窄立體聲音場。
+          0% 會將立體聲壓縮成單聲道，100% 是原始寬度，超過 100% 則增強立體感。
+          中央增益控制人聲、主旋律等中間定位的元素，側邊增益控制環境聲和左右分離的元素。
+          這是母帶處理和混音中常用的技術。
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>3. 輸出設定</span>
+      </div>
+      <div class="output-row">
+        <label>輸出格式</label>
+        <select id="outputFormat">
+          <option value="wav">WAV (無損)</option>
+          <option value="mp3">MP3</option>
+        </select>
+      </div>
+      <div class="output-row bitrate-row" id="bitrateRow">
+        <label>位元率</label>
+        <select id="bitrate">
+          <option value="128">128 kbps</option>
+          <option value="192">192 kbps</option>
+          <option value="256">256 kbps</option>
+          <option value="320" selected>320 kbps</option>
+        </select>
+      </div>
+
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">準備中...</div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="processBtn" disabled>調整寬度</button>
+        <button class="btn btn-download" id="downloadBtn">
+          <span id="downloadLabel">下載</span>
+        </button>
+        <button class="btn btn-secondary btn-reset" id="resetBtn">重置</button>
+      </div>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="card">
+        <div class="card-title">處理結果</div>
+        <div class="result-stats">
+          <div class="stat-item">
+            <div class="stat-value" id="resultWidth">100%</div>
+            <div class="stat-label">立體聲寬度</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="resultCenter">0 dB</div>
+            <div class="stat-label">中央增益</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="resultSide">0 dB</div>
+            <div class="stat-label">側邊增益</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="outputSize">0 KB</div>
+            <div class="stat-label">檔案大小</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="processTime">0s</div>
+            <div class="stat-label">處理時間</div>
+          </div>
+        </div>
+
+        <div class="audio-preview">
+          <div class="preview-label">原始音訊：</div>
+          <audio id="originalPreview" controls></audio>
+        </div>
+        <div class="audio-preview">
+          <div class="preview-label">調整後音訊：</div>
+          <audio id="audioPreview" controls></audio>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+  <script src="stereo-width.js"></script>
+</body>
+</html>

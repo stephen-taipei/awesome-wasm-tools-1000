@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUD-042 音頻波形顯示 - Audio Waveform Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #134e4a 50%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #14b8a6;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(20, 184, 166, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #2dd4bf;
+            background: rgba(20, 184, 166, 0.2);
+        }
+
+        .upload-area.dragover {
+            border-color: #2dd4bf;
+            background: rgba(20, 184, 166, 0.3);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .controls-panel {
+            background: rgba(19, 78, 74, 0.5);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .controls-panel.show {
+            display: block;
+        }
+
+        .controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group label {
+            color: #5eead4;
+            font-size: 0.9rem;
+        }
+
+        .control-group select,
+        .control-group input[type="range"] {
+            padding: 8px 12px;
+            border: 1px solid #14b8a6;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(20, 184, 166, 0.2);
+            color: #14b8a6;
+            border: 1px solid #14b8a6;
+        }
+
+        .control-btn:hover {
+            background: rgba(20, 184, 166, 0.3);
+        }
+
+        .control-btn.active {
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            color: white;
+        }
+
+        .zoom-value {
+            color: #5eead4;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .waveform-container {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+            overflow: hidden;
+        }
+
+        .waveform-container.show {
+            display: block;
+        }
+
+        .waveform-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .waveform-header h3 {
+            color: #14b8a6;
+        }
+
+        .channel-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .channel-tab {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(20, 184, 166, 0.2);
+            color: #5eead4;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .channel-tab.active {
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            color: white;
+        }
+
+        .waveform-scroll {
+            overflow-x: auto;
+            overflow-y: hidden;
+            position: relative;
+        }
+
+        #waveformCanvas {
+            background: #0f172a;
+            border-radius: 12px;
+            cursor: crosshair;
+        }
+
+        .time-ruler {
+            height: 30px;
+            background: rgba(20, 184, 166, 0.1);
+            border-radius: 0 0 12px 12px;
+            margin-top: -4px;
+            overflow: hidden;
+        }
+
+        #rulerCanvas {
+            width: 100%;
+            height: 30px;
+        }
+
+        .info-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .info-item {
+            background: rgba(20, 184, 166, 0.1);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .info-label {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            color: #14b8a6;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .cursor-info {
+            background: rgba(19, 78, 74, 0.5);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .cursor-info.show {
+            display: block;
+        }
+
+        .cursor-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+        }
+
+        .cursor-info-label {
+            color: #94a3b8;
+        }
+
+        .cursor-info-value {
+            color: #5eead4;
+            font-weight: 500;
+        }
+
+        .export-section {
+            background: rgba(19, 78, 74, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .export-section.show {
+            display: block;
+        }
+
+        .export-section h3 {
+            color: #14b8a6;
+            margin-bottom: 16px;
+        }
+
+        .export-options {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            color: white;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);
+        }
+
+        .file-info {
+            background: rgba(20, 184, 166, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .file-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(20, 184, 166, 0.2);
+        }
+
+        .file-info-row:last-child {
+            border-bottom: none;
+        }
+
+        .color-options {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .color-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .color-dot:hover {
+            transform: scale(1.1);
+        }
+
+        .color-dot.active {
+            border-color: white;
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .upload-area {
+                padding: 30px 20px;
+            }
+
+            .controls-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .control-group {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 音頻波形顯示</h1>
+        <p class="subtitle">Audio Waveform Viewer - 互動式波形視覺化</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">🌊</div>
+            <div class="upload-text">點擊或拖放音頻文件到這裡</div>
+            <div class="upload-hint">支援 MP3, WAV, OGG, FLAC, M4A 等格式</div>
+            <input type="file" id="fileInput" accept="audio/*">
+        </div>
+
+        <div class="file-info" id="fileInfo">
+            <div class="file-info-row">
+                <span>文件名稱:</span>
+                <span id="fileName">-</span>
+            </div>
+            <div class="file-info-row">
+                <span>時長:</span>
+                <span id="fileDuration">-</span>
+            </div>
+            <div class="file-info-row">
+                <span>取樣率:</span>
+                <span id="fileSampleRate">-</span>
+            </div>
+            <div class="file-info-row">
+                <span>聲道數:</span>
+                <span id="fileChannels">-</span>
+            </div>
+        </div>
+
+        <div class="controls-panel" id="controlsPanel">
+            <div class="controls-row">
+                <div class="control-group">
+                    <label>縮放:</label>
+                    <input type="range" id="zoomSlider" min="1" max="100" value="1">
+                    <span class="zoom-value" id="zoomValue">1x</span>
+                </div>
+                <div class="control-group">
+                    <label>顯示模式:</label>
+                    <select id="displayMode">
+                        <option value="normal">標準波形</option>
+                        <option value="mirror">鏡像波形</option>
+                        <option value="bars">條狀顯示</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>波形顏色:</label>
+                    <div class="color-options">
+                        <div class="color-dot active" data-color="#14b8a6" style="background: #14b8a6"></div>
+                        <div class="color-dot" data-color="#8b5cf6" style="background: #8b5cf6"></div>
+                        <div class="color-dot" data-color="#ef4444" style="background: #ef4444"></div>
+                        <div class="color-dot" data-color="#f59e0b" style="background: #f59e0b"></div>
+                        <div class="color-dot" data-color="#22c55e" style="background: #22c55e"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="waveform-container" id="waveformContainer">
+            <div class="waveform-header">
+                <h3>🎵 波形視圖</h3>
+                <div class="channel-tabs" id="channelTabs">
+                    <button class="channel-tab active" data-channel="stereo">立體聲</button>
+                    <button class="channel-tab" data-channel="left">左聲道</button>
+                    <button class="channel-tab" data-channel="right">右聲道</button>
+                </div>
+            </div>
+            <div class="waveform-scroll" id="waveformScroll">
+                <canvas id="waveformCanvas"></canvas>
+            </div>
+            <div class="time-ruler">
+                <canvas id="rulerCanvas"></canvas>
+            </div>
+            <div class="info-panel">
+                <div class="info-item">
+                    <div class="info-label">峰值振幅</div>
+                    <div class="info-value" id="peakAmplitude">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">RMS 電平</div>
+                    <div class="info-value" id="rmsLevel">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">動態範圍</div>
+                    <div class="info-value" id="dynamicRange">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">零交叉率</div>
+                    <div class="info-value" id="zeroCrossing">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cursor-info" id="cursorInfo">
+            <div class="cursor-info-row">
+                <span class="cursor-info-label">時間位置:</span>
+                <span class="cursor-info-value" id="cursorTime">-</span>
+            </div>
+            <div class="cursor-info-row">
+                <span class="cursor-info-label">振幅值:</span>
+                <span class="cursor-info-value" id="cursorAmplitude">-</span>
+            </div>
+            <div class="cursor-info-row">
+                <span class="cursor-info-label">樣本索引:</span>
+                <span class="cursor-info-value" id="cursorSample">-</span>
+            </div>
+        </div>
+
+        <div class="export-section" id="exportSection">
+            <h3>📥 導出波形圖片</h3>
+            <div class="export-options">
+                <button class="export-btn" id="exportPng">導出 PNG</button>
+                <button class="export-btn" id="exportSvg">導出 SVG</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="waveform.js"></script>
+</body>
+</html>

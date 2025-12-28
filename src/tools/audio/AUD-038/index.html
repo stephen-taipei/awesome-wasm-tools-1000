@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-038 聲場定位 - Audio Panning</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .header p {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .upload-area {
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #f9fafb;
+    }
+
+    .upload-area:hover {
+      border-color: #f59e0b;
+      background: #fffbeb;
+    }
+
+    .upload-area.dragover {
+      border-color: #f59e0b;
+      background: #fef3c7;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      color: #6b7280;
+      font-size: 1rem;
+    }
+
+    .upload-text strong {
+      color: #f59e0b;
+    }
+
+    .upload-hint {
+      color: #9ca3af;
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .file-info {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      background: #fffbeb;
+      border-radius: 8px;
+    }
+
+    .file-info.show {
+      display: block;
+    }
+
+    .file-name {
+      font-weight: 600;
+      color: #b45309;
+      margin-bottom: 8px;
+    }
+
+    .file-details {
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+
+    .file-details span {
+      margin-right: 16px;
+    }
+
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .option-item {
+      padding: 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .option-item:hover {
+      border-color: #f59e0b;
+    }
+
+    .option-item.active {
+      border-color: #f59e0b;
+      background: #fffbeb;
+    }
+
+    .option-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .option-title {
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 4px;
+    }
+
+    .option-desc {
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
+    .settings-group {
+      margin-top: 20px;
+      padding: 20px;
+      background: #fffbeb;
+      border-radius: 12px;
+    }
+
+    .settings-title {
+      font-weight: 600;
+      color: #b45309;
+      margin-bottom: 16px;
+    }
+
+    .param-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .param-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .param-row label {
+      flex: 0 0 120px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .param-row input[type="range"] {
+      flex: 1;
+      height: 8px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: #e5e7eb;
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .param-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #f59e0b;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .param-row select {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .param-value {
+      flex: 0 0 60px;
+      text-align: right;
+      font-weight: 500;
+      color: #b45309;
+    }
+
+    .pan-visual {
+      position: relative;
+      height: 100px;
+      background: linear-gradient(to right, #f59e0b, #fbbf24, #f59e0b);
+      border-radius: 12px;
+      margin: 20px 0;
+      overflow: hidden;
+    }
+
+    .pan-indicator {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 30px;
+      height: 30px;
+      background: white;
+      border: 3px solid #b45309;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      transition: left 0.1s;
+    }
+
+    .pan-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
+    .output-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .output-row label {
+      flex: 0 0 100px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .output-row select {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .output-row select:focus {
+      border-color: #f59e0b;
+    }
+
+    .bitrate-row {
+      display: none;
+    }
+
+    .progress-container {
+      display: none;
+      margin-top: 16px;
+    }
+
+    .progress-container.show {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #6b7280;
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, #d97706, #b45309);
+      color: white;
+      display: none;
+    }
+
+    .btn-download.show,
+    .btn-reset.show {
+      display: flex;
+    }
+
+    .btn-reset {
+      display: none;
+    }
+
+    .result-panel {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result-panel.show {
+      display: block;
+    }
+
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-item {
+      background: #fffbeb;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #d97706;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .audio-preview {
+      margin-top: 16px;
+    }
+
+    .audio-preview audio {
+      width: 100%;
+    }
+
+    .preview-label {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .info-box {
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .info-box h4 {
+      color: #b45309;
+      margin-bottom: 8px;
+    }
+
+    .info-box p {
+      color: #4b5563;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 640px) {
+      .button-group {
+        flex-direction: column;
+      }
+
+      .output-row, .param-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .output-row label, .param-row label {
+        margin-bottom: 8px;
+      }
+
+      .param-value {
+        text-align: left;
+        margin-top: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>AUD-038 聲場定位</h1>
+      <p>Audio Panning - 控制音訊在立體聲場中的位置</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>1. 上傳音訊</span>
+      </div>
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">🔊</div>
+        <div class="upload-text">
+          <strong>點擊上傳</strong> 或拖放音訊檔案到這裡
+        </div>
+        <div class="upload-hint">支援 MP3, WAV, OGG, AAC, FLAC 等格式</div>
+      </div>
+      <input type="file" id="fileInput" accept="audio/*">
+      <div class="file-info" id="fileInfo">
+        <div class="file-name" id="fileName"></div>
+        <div class="file-details">
+          <span id="fileDuration"></span>
+          <span id="fileSampleRate"></span>
+          <span id="fileChannels"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>2. 定位模式</span>
+      </div>
+
+      <div class="option-grid" id="optionGrid">
+        <div class="option-item active" data-mode="static">
+          <div class="option-icon">📍</div>
+          <div class="option-title">固定位置</div>
+          <div class="option-desc">將音訊固定在指定位置</div>
+        </div>
+        <div class="option-item" data-mode="auto">
+          <div class="option-icon">🔄</div>
+          <div class="option-title">自動擺盪</div>
+          <div class="option-desc">LFO 自動左右擺動</div>
+        </div>
+        <div class="option-item" data-mode="linear">
+          <div class="option-icon">➡️</div>
+          <div class="option-title">線性移動</div>
+          <div class="option-desc">從一側移動到另一側</div>
+        </div>
+        <div class="option-item" data-mode="bounce">
+          <div class="option-icon">↔️</div>
+          <div class="option-title">來回彈跳</div>
+          <div class="option-desc">在左右兩側來回彈跳</div>
+        </div>
+      </div>
+
+      <div class="pan-visual">
+        <div class="pan-indicator" id="panIndicator" style="left: 50%"></div>
+      </div>
+      <div class="pan-labels">
+        <span>◀ 左</span>
+        <span>中心</span>
+        <span>右 ▶</span>
+      </div>
+
+      <!-- 固定位置設定 -->
+      <div class="settings-group" id="staticSettings">
+        <div class="settings-title">固定位置設定</div>
+        <div class="param-row">
+          <label>位置</label>
+          <input type="range" id="staticPosition" min="-100" max="100" value="0">
+          <span class="param-value" id="staticPositionValue">中心</span>
+        </div>
+      </div>
+
+      <!-- 自動擺盪設定 -->
+      <div class="settings-group" id="autoSettings" style="display:none">
+        <div class="settings-title">自動擺盪設定</div>
+        <div class="param-row">
+          <label>擺動速度</label>
+          <input type="range" id="autoRate" min="0.1" max="10" step="0.1" value="1">
+          <span class="param-value" id="autoRateValue">1 Hz</span>
+        </div>
+        <div class="param-row">
+          <label>擺動幅度</label>
+          <input type="range" id="autoDepth" min="0" max="100" value="100">
+          <span class="param-value" id="autoDepthValue">100%</span>
+        </div>
+        <div class="param-row">
+          <label>波形</label>
+          <select id="autoWaveform">
+            <option value="sine">正弦波</option>
+            <option value="triangle">三角波</option>
+            <option value="square">方波</option>
+            <option value="sawtooth">鋸齒波</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 線性移動設定 -->
+      <div class="settings-group" id="linearSettings" style="display:none">
+        <div class="settings-title">線性移動設定</div>
+        <div class="param-row">
+          <label>起始位置</label>
+          <input type="range" id="linearStart" min="-100" max="100" value="-100">
+          <span class="param-value" id="linearStartValue">左 100</span>
+        </div>
+        <div class="param-row">
+          <label>結束位置</label>
+          <input type="range" id="linearEnd" min="-100" max="100" value="100">
+          <span class="param-value" id="linearEndValue">右 100</span>
+        </div>
+      </div>
+
+      <!-- 來回彈跳設定 -->
+      <div class="settings-group" id="bounceSettings" style="display:none">
+        <div class="settings-title">來回彈跳設定</div>
+        <div class="param-row">
+          <label>彈跳次數</label>
+          <input type="range" id="bounceCount" min="1" max="20" value="4">
+          <span class="param-value" id="bounceCountValue">4 次</span>
+        </div>
+        <div class="param-row">
+          <label>擺動範圍</label>
+          <input type="range" id="bounceWidth" min="10" max="100" value="100">
+          <span class="param-value" id="bounceWidthValue">100%</span>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <h4>聲場定位說明</h4>
+        <p>
+          聲場定位（Panning）控制音訊在立體聲場中的水平位置。
+          固定位置可將聲音放置在特定位置，自動擺盪創造動態效果，
+          線性移動適合製作移動音效，來回彈跳則可創造有趣的節奏效果。
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>3. 輸出設定</span>
+      </div>
+      <div class="output-row">
+        <label>輸出格式</label>
+        <select id="outputFormat">
+          <option value="wav">WAV (無損)</option>
+          <option value="mp3">MP3</option>
+        </select>
+      </div>
+      <div class="output-row bitrate-row" id="bitrateRow">
+        <label>位元率</label>
+        <select id="bitrate">
+          <option value="128">128 kbps</option>
+          <option value="192">192 kbps</option>
+          <option value="256">256 kbps</option>
+          <option value="320" selected>320 kbps</option>
+        </select>
+      </div>
+
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">準備中...</div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="processBtn" disabled>套用定位</button>
+        <button class="btn btn-download" id="downloadBtn">
+          <span id="downloadLabel">下載</span>
+        </button>
+        <button class="btn btn-secondary btn-reset" id="resetBtn">重置</button>
+      </div>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="card">
+        <div class="card-title">處理結果</div>
+        <div class="result-stats">
+          <div class="stat-item">
+            <div class="stat-value" id="resultMode">固定位置</div>
+            <div class="stat-label">定位模式</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="resultDuration">0s</div>
+            <div class="stat-label">輸出長度</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="outputSize">0 KB</div>
+            <div class="stat-label">檔案大小</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="processTime">0s</div>
+            <div class="stat-label">處理時間</div>
+          </div>
+        </div>
+
+        <div class="audio-preview">
+          <div class="preview-label">原始音訊：</div>
+          <audio id="originalPreview" controls></audio>
+        </div>
+        <div class="audio-preview">
+          <div class="preview-label">定位後音訊：</div>
+          <audio id="audioPreview" controls></audio>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+  <script src="panning.js"></script>
+</body>
+</html>

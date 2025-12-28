@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-036 立體聲轉單聲道 - Stereo to Mono</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .header p {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .upload-area {
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #f9fafb;
+    }
+
+    .upload-area:hover {
+      border-color: #0ea5e9;
+      background: #f0f9ff;
+    }
+
+    .upload-area.dragover {
+      border-color: #0ea5e9;
+      background: #e0f2fe;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      color: #6b7280;
+      font-size: 1rem;
+    }
+
+    .upload-text strong {
+      color: #0ea5e9;
+    }
+
+    .upload-hint {
+      color: #9ca3af;
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .file-info {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      background: #f0f9ff;
+      border-radius: 8px;
+    }
+
+    .file-info.show {
+      display: block;
+    }
+
+    .file-name {
+      font-weight: 600;
+      color: #0369a1;
+      margin-bottom: 8px;
+    }
+
+    .file-details {
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+
+    .file-details span {
+      margin-right: 16px;
+    }
+
+    .convert-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 30px;
+      background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .channel-indicator {
+      padding: 20px 30px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .channel-indicator.stereo {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      color: white;
+    }
+
+    .channel-indicator.mono {
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: white;
+    }
+
+    .convert-arrow {
+      font-size: 2rem;
+      color: #0284c7;
+    }
+
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .option-item {
+      padding: 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .option-item:hover {
+      border-color: #0ea5e9;
+    }
+
+    .option-item.active {
+      border-color: #0ea5e9;
+      background: #f0f9ff;
+    }
+
+    .option-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .option-title {
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 4px;
+    }
+
+    .option-desc {
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
+    .output-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .output-row label {
+      flex: 0 0 100px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .output-row select {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .output-row select:focus {
+      border-color: #0ea5e9;
+    }
+
+    .bitrate-row {
+      display: none;
+    }
+
+    .progress-container {
+      display: none;
+      margin-top: 16px;
+    }
+
+    .progress-container.show {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #0ea5e9, #0284c7);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #6b7280;
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: white;
+      display: none;
+    }
+
+    .btn-download.show,
+    .btn-reset.show {
+      display: flex;
+    }
+
+    .btn-reset {
+      display: none;
+    }
+
+    .result-panel {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result-panel.show {
+      display: block;
+    }
+
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-item {
+      background: #f0f9ff;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #0284c7;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .audio-preview {
+      margin-top: 16px;
+    }
+
+    .audio-preview audio {
+      width: 100%;
+    }
+
+    .preview-label {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .info-box {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .info-box h4 {
+      color: #0369a1;
+      margin-bottom: 8px;
+    }
+
+    .info-box p {
+      color: #4b5563;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 640px) {
+      .button-group {
+        flex-direction: column;
+      }
+
+      .output-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .output-row label {
+        margin-bottom: 8px;
+      }
+
+      .convert-visual {
+        flex-direction: column;
+      }
+
+      .convert-arrow {
+        transform: rotate(90deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>AUD-036 立體聲轉單聲道</h1>
+      <p>Stereo to Mono - 將立體聲音訊轉換為單聲道</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>1. 上傳音訊</span>
+      </div>
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">🎧</div>
+        <div class="upload-text">
+          <strong>點擊上傳</strong> 或拖放音訊檔案到這裡
+        </div>
+        <div class="upload-hint">支援 MP3, WAV, OGG, AAC, FLAC 等格式</div>
+      </div>
+      <input type="file" id="fileInput" accept="audio/*">
+      <div class="file-info" id="fileInfo">
+        <div class="file-name" id="fileName"></div>
+        <div class="file-details">
+          <span id="fileDuration"></span>
+          <span id="fileSampleRate"></span>
+          <span id="fileChannels"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>2. 轉換模式</span>
+      </div>
+
+      <div class="convert-visual">
+        <div class="channel-indicator stereo">🎧 立體聲 (2ch)</div>
+        <div class="convert-arrow">➡️</div>
+        <div class="channel-indicator mono">📢 單聲道 (1ch)</div>
+      </div>
+
+      <div class="option-grid" id="optionGrid">
+        <div class="option-item active" data-mode="average">
+          <div class="option-icon">⚖️</div>
+          <div class="option-title">平均混合</div>
+          <div class="option-desc">左右聲道等比混合</div>
+        </div>
+        <div class="option-item" data-mode="left">
+          <div class="option-icon">◀️</div>
+          <div class="option-title">僅左聲道</div>
+          <div class="option-desc">只保留左聲道內容</div>
+        </div>
+        <div class="option-item" data-mode="right">
+          <div class="option-icon">▶️</div>
+          <div class="option-title">僅右聲道</div>
+          <div class="option-desc">只保留右聲道內容</div>
+        </div>
+        <div class="option-item" data-mode="max">
+          <div class="option-icon">📈</div>
+          <div class="option-title">最大值</div>
+          <div class="option-desc">取兩聲道較大值</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <h4>單聲道轉換說明</h4>
+        <p>
+          將立體聲轉為單聲道可減少檔案大小約50%，適合語音、播客等不需要立體聲效果的內容。
+          平均混合保留最完整的音訊資訊，僅左/右聲道適合源檔案本身有聲道問題時使用，
+          最大值模式則可保留更多動態細節。
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>3. 輸出設定</span>
+      </div>
+      <div class="output-row">
+        <label>輸出格式</label>
+        <select id="outputFormat">
+          <option value="wav">WAV (無損)</option>
+          <option value="mp3">MP3</option>
+        </select>
+      </div>
+      <div class="output-row bitrate-row" id="bitrateRow">
+        <label>位元率</label>
+        <select id="bitrate">
+          <option value="64">64 kbps</option>
+          <option value="96">96 kbps</option>
+          <option value="128" selected>128 kbps</option>
+          <option value="192">192 kbps</option>
+        </select>
+      </div>
+
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">準備中...</div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="processBtn" disabled>轉換為單聲道</button>
+        <button class="btn btn-download" id="downloadBtn">
+          <span id="downloadLabel">下載</span>
+        </button>
+        <button class="btn btn-secondary btn-reset" id="resetBtn">重置</button>
+      </div>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="card">
+        <div class="card-title">處理結果</div>
+        <div class="result-stats">
+          <div class="stat-item">
+            <div class="stat-value" id="resultMode">平均混合</div>
+            <div class="stat-label">轉換模式</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="resultChannels">2 → 1</div>
+            <div class="stat-label">聲道變化</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="outputSize">0 KB</div>
+            <div class="stat-label">檔案大小</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="processTime">0s</div>
+            <div class="stat-label">處理時間</div>
+          </div>
+        </div>
+
+        <div class="audio-preview">
+          <div class="preview-label">原始音訊（立體聲）：</div>
+          <audio id="originalPreview" controls></audio>
+        </div>
+        <div class="audio-preview">
+          <div class="preview-label">轉換後（單聲道）：</div>
+          <audio id="audioPreview" controls></audio>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+  <script src="stereo-to-mono.js"></script>
+</body>
+</html>

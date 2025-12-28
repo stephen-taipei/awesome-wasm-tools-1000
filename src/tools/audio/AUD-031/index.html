@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-031 音頻自動切片 - Auto Slicer</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .header p {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .upload-area {
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #f9fafb;
+    }
+
+    .upload-area:hover {
+      border-color: #14b8a6;
+      background: #f0fdfa;
+    }
+
+    .upload-area.dragover {
+      border-color: #14b8a6;
+      background: #ccfbf1;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      color: #6b7280;
+      font-size: 1rem;
+    }
+
+    .upload-text strong {
+      color: #14b8a6;
+    }
+
+    .upload-hint {
+      color: #9ca3af;
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .file-info {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      background: #f0fdfa;
+      border-radius: 8px;
+    }
+
+    .file-info.show {
+      display: block;
+    }
+
+    .file-name {
+      font-weight: 600;
+      color: #0f766e;
+      margin-bottom: 8px;
+    }
+
+    .file-details {
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+
+    .file-details span {
+      margin-right: 16px;
+    }
+
+    .waveform-container {
+      width: 100%;
+      height: 120px;
+      background: #1e293b;
+      border-radius: 8px;
+      margin: 16px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .waveform-canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    .slice-markers {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .settings-grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .setting-row label {
+      flex: 0 0 120px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .setting-row input[type="range"] {
+      flex: 1;
+      height: 8px;
+      -webkit-appearance: none;
+      background: #e5e7eb;
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .setting-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #14b8a6;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .setting-row .value {
+      flex: 0 0 80px;
+      text-align: right;
+      font-weight: 600;
+      color: #14b8a6;
+    }
+
+    .mode-selector {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .mode-btn {
+      padding: 10px 20px;
+      border: 2px solid #e5e7eb;
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.95rem;
+      color: #4b5563;
+    }
+
+    .mode-btn:hover {
+      border-color: #14b8a6;
+      color: #14b8a6;
+    }
+
+    .mode-btn.active {
+      border-color: #14b8a6;
+      background: #14b8a6;
+      color: white;
+    }
+
+    .transient-settings {
+      display: block;
+    }
+
+    .transient-settings.hide {
+      display: none;
+    }
+
+    .beat-settings {
+      display: none;
+    }
+
+    .beat-settings.show {
+      display: block;
+    }
+
+    .slice-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+
+    .slice-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      gap: 12px;
+    }
+
+    .slice-item:last-child {
+      border-bottom: none;
+    }
+
+    .slice-number {
+      width: 30px;
+      height: 30px;
+      background: #14b8a6;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .slice-info {
+      flex: 1;
+    }
+
+    .slice-time {
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .slice-duration {
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
+    .slice-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .slice-btn {
+      padding: 6px 12px;
+      border: 1px solid #e5e7eb;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: #4b5563;
+      transition: all 0.2s;
+    }
+
+    .slice-btn:hover {
+      border-color: #14b8a6;
+      color: #14b8a6;
+    }
+
+    .slice-btn.download {
+      background: #14b8a6;
+      border-color: #14b8a6;
+      color: white;
+    }
+
+    .progress-container {
+      display: none;
+      margin-top: 16px;
+    }
+
+    .progress-container.show {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #14b8a6, #0d9488);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #6b7280;
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #14b8a6, #0d9488);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .btn-download-all {
+      background: linear-gradient(135deg, #0d9488, #0f766e);
+      color: white;
+      display: none;
+    }
+
+    .btn-download-all.show {
+      display: flex;
+    }
+
+    .result-panel {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result-panel.show {
+      display: block;
+    }
+
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-item {
+      background: #f0fdfa;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #0d9488;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .info-box {
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .info-box h4 {
+      color: #0f766e;
+      margin-bottom: 8px;
+    }
+
+    .info-box p {
+      color: #4b5563;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 640px) {
+      .setting-row {
+        flex-wrap: wrap;
+      }
+
+      .setting-row label {
+        flex: 0 0 100%;
+      }
+
+      .setting-row .value {
+        flex: 0 0 60px;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .mode-selector {
+        justify-content: center;
+      }
+
+      .slice-item {
+        flex-wrap: wrap;
+      }
+
+      .slice-actions {
+        width: 100%;
+        margin-top: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>AUD-031 音頻自動切片</h1>
+      <p>Auto Slicer - 自動偵測並切割音訊片段</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>1. 上傳音訊</span>
+      </div>
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">🎵</div>
+        <div class="upload-text">
+          <strong>點擊上傳</strong> 或拖放音訊檔案到這裡
+        </div>
+        <div class="upload-hint">支援 MP3, WAV, OGG, AAC, FLAC 等格式</div>
+      </div>
+      <input type="file" id="fileInput" accept="audio/*">
+      <div class="file-info" id="fileInfo">
+        <div class="file-name" id="fileName"></div>
+        <div class="file-details">
+          <span id="fileDuration"></span>
+          <span id="fileSampleRate"></span>
+          <span id="fileChannels"></span>
+        </div>
+      </div>
+
+      <div class="waveform-container" id="waveformContainer" style="display: none;">
+        <canvas id="waveformCanvas" class="waveform-canvas"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>2. 切片設定</span>
+      </div>
+
+      <div class="mode-selector" id="modeSelector">
+        <button class="mode-btn active" data-mode="transient">瞬態偵測</button>
+        <button class="mode-btn" data-mode="silence">靜音偵測</button>
+        <button class="mode-btn" data-mode="beat">節拍切片</button>
+      </div>
+
+      <div class="settings-grid">
+        <div class="transient-settings" id="transientSettings">
+          <div class="setting-row">
+            <label>靈敏度</label>
+            <input type="range" id="sensitivity" min="1" max="100" value="50">
+            <span class="value" id="sensitivityValue">50%</span>
+          </div>
+          <div class="setting-row">
+            <label>最小間隔</label>
+            <input type="range" id="minInterval" min="50" max="1000" step="10" value="100">
+            <span class="value" id="minIntervalValue">100 ms</span>
+          </div>
+        </div>
+
+        <div class="silence-settings" id="silenceSettings" style="display: none;">
+          <div class="setting-row">
+            <label>靜音門檻</label>
+            <input type="range" id="silenceThreshold" min="-60" max="-20" value="-40">
+            <span class="value" id="silenceThresholdValue">-40 dB</span>
+          </div>
+          <div class="setting-row">
+            <label>最小靜音長度</label>
+            <input type="range" id="minSilence" min="100" max="2000" step="50" value="300">
+            <span class="value" id="minSilenceValue">300 ms</span>
+          </div>
+        </div>
+
+        <div class="beat-settings" id="beatSettings">
+          <div class="setting-row">
+            <label>每拍切片</label>
+            <input type="range" id="beatsPerSlice" min="1" max="8" value="4">
+            <span class="value" id="beatsPerSliceValue">4 拍</span>
+          </div>
+          <div class="setting-row">
+            <label>BPM</label>
+            <input type="range" id="bpm" min="60" max="200" value="120">
+            <span class="value" id="bpmValue">120</span>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <label>淡入淡出</label>
+          <input type="range" id="fadeTime" min="0" max="50" value="5">
+          <span class="value" id="fadeTimeValue">5 ms</span>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <h4>自動切片說明</h4>
+        <p>
+          瞬態偵測模式會自動找出音訊中的起音點（如鼓點、彈撥聲），適合處理節奏樂器。
+          靜音偵測模式根據音量低於門檻的區段進行分割，適合人聲或獨立片段。
+          節拍切片則按固定節拍長度切割，適合製作循環素材。
+          切片後可單獨下載各片段或打包下載全部。
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>3. 切片與輸出</span>
+      </div>
+
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">準備中...</div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="analyzeBtn" disabled>分析並切片</button>
+        <button class="btn btn-download-all" id="downloadAllBtn">下載全部 (ZIP)</button>
+        <button class="btn btn-secondary" id="resetBtn">重置</button>
+      </div>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="card">
+        <div class="card-title">切片結果</div>
+        <div class="result-stats">
+          <div class="stat-item">
+            <div class="stat-value" id="sliceCount">0</div>
+            <div class="stat-label">切片數量</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="avgDuration">0s</div>
+            <div class="stat-label">平均長度</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="processTime">0s</div>
+            <div class="stat-label">處理時間</div>
+          </div>
+        </div>
+
+        <div class="slice-list" id="sliceList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+  <script src="slicer.js"></script>
+</body>
+</html>
