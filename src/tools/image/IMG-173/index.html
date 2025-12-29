@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-173 圖片裁切工具 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; color: #888; text-decoration: none; margin-bottom: 20px; transition: color 0.3s; }
+    .back-link:hover { color: #a855f7; }
+    h1 { font-size: 2rem; background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; }
+    .subtitle { color: #888; font-size: 1rem; }
+    .tool-container { background: rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 30px; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .upload-zone { border: 2px dashed rgba(168, 85, 247, 0.5); border-radius: 15px; padding: 40px 30px; text-align: center; cursor: pointer; transition: all 0.3s ease; margin-bottom: 25px; }
+    .upload-zone:hover, .upload-zone.dragover { border-color: #a855f7; background: rgba(168, 85, 247, 0.1); }
+    .upload-icon { font-size: 3rem; margin-bottom: 15px; }
+    .upload-text { font-size: 1rem; margin-bottom: 8px; }
+    .upload-hint { color: #888; font-size: 0.85rem; }
+    .hidden-input { display: none; }
+    .editor-section { display: none; margin-bottom: 25px; }
+    .editor-section.active { display: block; }
+    .editor-layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+    .preview-area { background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px; border-radius: 15px; min-height: 400px; display: flex; align-items: center; justify-content: center; padding: 20px; overflow: auto; position: relative; }
+    .canvas-wrapper { position: relative; display: inline-block; }
+    .preview-canvas { max-width: 100%; max-height: 500px; cursor: crosshair; }
+    .crop-overlay { position: absolute; top: 0; left: 0; pointer-events: none; }
+    .settings-panel { background: rgba(0, 0, 0, 0.2); border-radius: 15px; padding: 20px; }
+    .settings-title { font-size: 1rem; color: #a855f7; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+    .setting-group { margin-bottom: 20px; }
+    .setting-label { font-size: 0.85rem; color: #888; margin-bottom: 8px; display: block; }
+    .info-box { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 12px; font-size: 0.8rem; color: #60a5fa; margin-bottom: 15px; }
+    .ratio-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+    .ratio-btn { padding: 8px 12px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #888; cursor: pointer; transition: all 0.3s; font-size: 0.8rem; }
+    .ratio-btn:hover, .ratio-btn.active { background: rgba(168, 85, 247, 0.2); border-color: #a855f7; color: #a855f7; }
+    .crop-info { font-size: 0.85rem; color: #888; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-top: 10px; }
+    .button-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+    .btn { flex: 1; min-width: 100px; padding: 12px 20px; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-primary { background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); color: white; }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(168, 85, 247, 0.4); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.1); color: #e0e0e0; }
+    .btn-secondary:hover:not(:disabled) { background: rgba(255, 255, 255, 0.2); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    @media (max-width: 768px) { .editor-layout { grid-template-columns: 1fr; } .settings-panel { order: -1; } .button-group { flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-173 圖片裁切工具</h1>
+      <p class="subtitle">自由選取區域裁切圖片</p>
+    </header>
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">✂️</div>
+        <div class="upload-text">點擊或拖曳圖片到此處</div>
+        <div class="upload-hint">支援 JPG、PNG、WebP 等格式</div>
+      </div>
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+      <div class="editor-section" id="editorSection">
+        <div class="editor-layout">
+          <div class="preview-area">
+            <div class="canvas-wrapper">
+              <canvas id="previewCanvas" class="preview-canvas"></canvas>
+              <canvas id="cropOverlay" class="crop-overlay"></canvas>
+            </div>
+          </div>
+          <div class="settings-panel">
+            <h3 class="settings-title">裁切設定</h3>
+            <div class="info-box">在圖片上拖曳選取裁切區域</div>
+            <div class="setting-group">
+              <label class="setting-label">比例預設</label>
+              <div class="ratio-btns">
+                <button class="ratio-btn active" data-ratio="free">自由</button>
+                <button class="ratio-btn" data-ratio="1:1">1:1</button>
+                <button class="ratio-btn" data-ratio="4:3">4:3</button>
+                <button class="ratio-btn" data-ratio="16:9">16:9</button>
+                <button class="ratio-btn" data-ratio="3:2">3:2</button>
+              </div>
+            </div>
+            <div class="crop-info" id="cropInfo">尚未選取區域</div>
+            <div class="button-group">
+              <button class="btn btn-primary" id="cropBtn" disabled><span>✂️</span> 裁切</button>
+              <button class="btn btn-secondary" id="clearBtn"><span>✕</span> 清除選取</button>
+            </div>
+            <div class="button-group">
+              <button class="btn btn-primary" id="downloadBtn"><span>💾</span> 下載圖片</button>
+              <button class="btn btn-secondary" id="resetBtn"><span>🔄</span> 重新開始</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="crop.js"></script>
+</body>
+</html>

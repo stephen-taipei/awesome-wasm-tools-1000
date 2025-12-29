@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-311 鏡像翻轉工具 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; color: #888; text-decoration: none; margin-bottom: 20px; transition: color 0.3s; }
+    .back-link:hover { color: #a855f7; }
+    h1 { font-size: 2rem; background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; }
+    .subtitle { color: #888; font-size: 1rem; }
+    .tool-container { background: rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 30px; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .upload-zone { border: 2px dashed rgba(168, 85, 247, 0.5); border-radius: 15px; padding: 40px 30px; text-align: center; cursor: pointer; transition: all 0.3s ease; margin-bottom: 25px; }
+    .upload-zone:hover, .upload-zone.dragover { border-color: #a855f7; background: rgba(168, 85, 247, 0.1); }
+    .upload-icon { font-size: 3rem; margin-bottom: 15px; }
+    .upload-text { font-size: 1rem; margin-bottom: 8px; }
+    .upload-hint { color: #888; font-size: 0.85rem; }
+    .hidden-input { display: none; }
+    .editor-section { display: none; margin-bottom: 25px; }
+    .editor-section.active { display: block; }
+    .editor-layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+    .preview-area { background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px; border-radius: 15px; min-height: 400px; display: flex; align-items: center; justify-content: center; padding: 20px; overflow: auto; }
+    .preview-canvas { max-width: 100%; max-height: 500px; }
+    .settings-panel { background: rgba(0, 0, 0, 0.2); border-radius: 15px; padding: 20px; }
+    .settings-title { font-size: 1rem; color: #a855f7; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+    .action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+    .action-btn { padding: 20px 15px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: #e0e0e0; font-size: 0.85rem; cursor: pointer; transition: all 0.3s; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .action-btn:hover { background: rgba(168, 85, 247, 0.3); border-color: #a855f7; }
+    .action-btn .icon { font-size: 1.5rem; }
+    .divider { height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0; }
+    .info-box { background: rgba(255,255,255,0.05); border-radius: 10px; padding: 15px; margin-bottom: 20px; }
+    .info-label { font-size: 0.75rem; color: #888; margin-bottom: 5px; }
+    .info-value { font-size: 0.9rem; color: #a855f7; }
+    .button-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+    .btn { flex: 1; min-width: 100px; padding: 12px 20px; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-primary { background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); color: white; }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(168, 85, 247, 0.4); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.1); color: #e0e0e0; }
+    .btn-secondary:hover:not(:disabled) { background: rgba(255, 255, 255, 0.2); }
+    @media (max-width: 768px) { .editor-layout { grid-template-columns: 1fr; } .settings-panel { order: -1; } .button-group { flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-311 鏡像翻轉工具</h1>
+      <p class="subtitle">水平垂直翻轉與鏡像效果</p>
+    </header>
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">🪞</div>
+        <div class="upload-text">點擊或拖曳圖片到此處</div>
+        <div class="upload-hint">支援 JPG、PNG、WebP 等格式</div>
+      </div>
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+      <div class="editor-section" id="editorSection">
+        <div class="editor-layout">
+          <div class="preview-area">
+            <canvas id="previewCanvas" class="preview-canvas"></canvas>
+          </div>
+          <div class="settings-panel">
+            <h3 class="settings-title">翻轉操作</h3>
+            <div class="action-grid">
+              <button class="action-btn" id="flipH"><span class="icon">↔️</span>水平翻轉</button>
+              <button class="action-btn" id="flipV"><span class="icon">↕️</span>垂直翻轉</button>
+              <button class="action-btn" id="rotate90"><span class="icon">↩️</span>左旋90°</button>
+              <button class="action-btn" id="rotate270"><span class="icon">↪️</span>右旋90°</button>
+            </div>
+            <div class="divider"></div>
+            <h3 class="settings-title">鏡像效果</h3>
+            <div class="action-grid">
+              <button class="action-btn" id="mirrorLeft"><span class="icon">◀️▶️</span>左半鏡像</button>
+              <button class="action-btn" id="mirrorRight"><span class="icon">▶️◀️</span>右半鏡像</button>
+              <button class="action-btn" id="mirrorTop"><span class="icon">🔼🔽</span>上半鏡像</button>
+              <button class="action-btn" id="mirrorBottom"><span class="icon">🔽🔼</span>下半鏡像</button>
+            </div>
+            <div class="info-box">
+              <div class="info-label">目前尺寸</div>
+              <div class="info-value" id="sizeInfo">-</div>
+            </div>
+            <div class="button-group">
+              <button class="btn btn-primary" id="downloadBtn"><span>💾</span> 下載圖片</button>
+              <button class="btn btn-secondary" id="resetBtn"><span>🔄</span> 重新開始</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="mirror.js"></script>
+</body>
+</html>

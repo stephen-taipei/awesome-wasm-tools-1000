@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-266 圖片疊加工具 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; color: #888; text-decoration: none; margin-bottom: 20px; transition: color 0.3s; }
+    .back-link:hover { color: #a855f7; }
+    h1 { font-size: 2rem; background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; }
+    .subtitle { color: #888; font-size: 1rem; }
+    .tool-container { background: rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 30px; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .upload-zone { border: 2px dashed rgba(168, 85, 247, 0.5); border-radius: 15px; padding: 40px 30px; text-align: center; cursor: pointer; transition: all 0.3s ease; margin-bottom: 25px; }
+    .upload-zone:hover, .upload-zone.dragover { border-color: #a855f7; background: rgba(168, 85, 247, 0.1); }
+    .upload-icon { font-size: 3rem; margin-bottom: 15px; }
+    .upload-text { font-size: 1rem; margin-bottom: 8px; }
+    .upload-hint { color: #888; font-size: 0.85rem; }
+    .hidden-input { display: none; }
+    .editor-section { display: none; margin-bottom: 25px; }
+    .editor-section.active { display: block; }
+    .editor-layout { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+    .preview-area { background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px; border-radius: 15px; min-height: 400px; display: flex; align-items: center; justify-content: center; padding: 20px; overflow: auto; }
+    .preview-canvas { max-width: 100%; max-height: 500px; }
+    .settings-panel { background: rgba(0, 0, 0, 0.2); border-radius: 15px; padding: 20px; }
+    .settings-title { font-size: 1rem; color: #a855f7; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+    .layer-section { margin-bottom: 20px; }
+    .layer-title { font-size: 0.85rem; color: #888; margin-bottom: 10px; }
+    .layer-upload { padding: 15px; border: 1px dashed rgba(168, 85, 247, 0.5); border-radius: 8px; text-align: center; cursor: pointer; font-size: 0.8rem; color: #888; transition: all 0.3s; }
+    .layer-upload:hover { border-color: #a855f7; background: rgba(168, 85, 247, 0.1); }
+    .layer-upload.loaded { border-style: solid; border-color: #a855f7; }
+    .setting-group { margin-bottom: 20px; }
+    .setting-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .setting-label { font-size: 0.85rem; color: #888; }
+    .setting-value { font-size: 0.85rem; color: #a855f7; }
+    .slider-input { width: 100%; -webkit-appearance: none; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; outline: none; }
+    .slider-input::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: #a855f7; border-radius: 50%; cursor: pointer; }
+    .blend-select { width: 100%; padding: 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #e0e0e0; font-size: 0.85rem; margin-bottom: 15px; }
+    .blend-select option { background: #1a1a2e; }
+    .position-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 15px; }
+    .position-btn { padding: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 5px; color: #888; font-size: 0.7rem; cursor: pointer; }
+    .position-btn:hover, .position-btn.active { background: rgba(168, 85, 247, 0.3); border-color: #a855f7; color: #e0e0e0; }
+    .button-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+    .btn { flex: 1; min-width: 100px; padding: 12px 20px; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-primary { background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); color: white; }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(168, 85, 247, 0.4); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.1); color: #e0e0e0; }
+    .btn-secondary:hover:not(:disabled) { background: rgba(255, 255, 255, 0.2); }
+    @media (max-width: 768px) { .editor-layout { grid-template-columns: 1fr; } .settings-panel { order: -1; } .button-group { flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-266 圖片疊加工具</h1>
+      <p class="subtitle">將多張圖片疊加合成</p>
+    </header>
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">📚</div>
+        <div class="upload-text">點擊或拖曳底圖到此處</div>
+        <div class="upload-hint">支援 JPG、PNG、WebP 等格式</div>
+      </div>
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+      <input type="file" id="overlayInput" class="hidden-input" accept="image/*">
+      <div class="editor-section" id="editorSection">
+        <div class="editor-layout">
+          <div class="preview-area">
+            <canvas id="previewCanvas" class="preview-canvas"></canvas>
+          </div>
+          <div class="settings-panel">
+            <h3 class="settings-title">圖片疊加</h3>
+            <div class="layer-section">
+              <div class="layer-title">疊加圖層</div>
+              <div class="layer-upload" id="overlayUpload">點擊添加疊加圖片</div>
+            </div>
+            <div class="setting-group">
+              <div class="setting-label" style="margin-bottom: 8px;">混合模式</div>
+              <select class="blend-select" id="blendMode">
+                <option value="source-over">正常</option>
+                <option value="multiply">正片疊底</option>
+                <option value="screen">濾色</option>
+                <option value="overlay">疊加</option>
+                <option value="darken">變暗</option>
+                <option value="lighten">變亮</option>
+                <option value="difference">差異</option>
+              </select>
+            </div>
+            <div class="setting-group">
+              <div class="setting-header">
+                <span class="setting-label">疊加不透明度</span>
+                <span class="setting-value" id="opacityValue">100%</span>
+              </div>
+              <input type="range" class="slider-input" id="opacity" min="0" max="100" value="100">
+            </div>
+            <div class="setting-group">
+              <div class="setting-header">
+                <span class="setting-label">疊加縮放</span>
+                <span class="setting-value" id="scaleValue">100%</span>
+              </div>
+              <input type="range" class="slider-input" id="scale" min="10" max="200" value="100">
+            </div>
+            <div class="layer-title">疊加位置</div>
+            <div class="position-grid">
+              <button class="position-btn" data-pos="tl">左上</button>
+              <button class="position-btn" data-pos="tc">上中</button>
+              <button class="position-btn" data-pos="tr">右上</button>
+              <button class="position-btn" data-pos="ml">左中</button>
+              <button class="position-btn active" data-pos="mc">中央</button>
+              <button class="position-btn" data-pos="mr">右中</button>
+              <button class="position-btn" data-pos="bl">左下</button>
+              <button class="position-btn" data-pos="bc">下中</button>
+              <button class="position-btn" data-pos="br">右下</button>
+            </div>
+            <div class="button-group">
+              <button class="btn btn-primary" id="downloadBtn"><span>💾</span> 下載圖片</button>
+              <button class="btn btn-secondary" id="resetBtn"><span>🔄</span> 重新開始</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="image-overlay.js"></script>
+</body>
+</html>
