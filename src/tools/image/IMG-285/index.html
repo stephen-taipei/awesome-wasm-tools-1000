@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-285 色彩通道混合器 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; color: #888; text-decoration: none; margin-bottom: 20px; transition: color 0.3s; }
+    .back-link:hover { color: #a855f7; }
+    h1 { font-size: 2rem; background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; }
+    .subtitle { color: #888; font-size: 1rem; }
+    .tool-container { background: rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 30px; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .upload-zone { border: 2px dashed rgba(168, 85, 247, 0.5); border-radius: 15px; padding: 40px 30px; text-align: center; cursor: pointer; transition: all 0.3s ease; margin-bottom: 25px; }
+    .upload-zone:hover, .upload-zone.dragover { border-color: #a855f7; background: rgba(168, 85, 247, 0.1); }
+    .upload-icon { font-size: 3rem; margin-bottom: 15px; }
+    .upload-text { font-size: 1rem; margin-bottom: 8px; }
+    .upload-hint { color: #888; font-size: 0.85rem; }
+    .hidden-input { display: none; }
+    .editor-section { display: none; margin-bottom: 25px; }
+    .editor-section.active { display: block; }
+    .editor-layout { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+    .preview-area { background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px; border-radius: 15px; min-height: 400px; display: flex; align-items: center; justify-content: center; padding: 20px; overflow: auto; }
+    .preview-canvas { max-width: 100%; max-height: 500px; }
+    .settings-panel { background: rgba(0, 0, 0, 0.2); border-radius: 15px; padding: 20px; }
+    .settings-title { font-size: 1rem; color: #a855f7; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+    .channel-section { margin-bottom: 20px; padding: 15px; background: rgba(0, 0, 0, 0.2); border-radius: 10px; }
+    .channel-header { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; }
+    .channel-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .channel-dot.red { background: #ff4444; }
+    .channel-dot.green { background: #44ff44; }
+    .channel-dot.blue { background: #4444ff; }
+    .channel-name { font-size: 0.9rem; color: #e0e0e0; }
+    .mixer-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .mixer-label { width: 50px; font-size: 0.8rem; color: #888; }
+    .mixer-slider { flex: 1; -webkit-appearance: none; height: 5px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; outline: none; }
+    .mixer-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: #a855f7; border-radius: 50%; cursor: pointer; }
+    .mixer-value { width: 50px; font-size: 0.8rem; color: #a855f7; text-align: right; }
+    .preset-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+    .preset-btn { padding: 10px 5px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #e0e0e0; font-size: 0.7rem; cursor: pointer; transition: all 0.3s; text-align: center; }
+    .preset-btn:hover, .preset-btn.active { background: rgba(168, 85, 247, 0.3); border-color: #a855f7; }
+    .monochrome-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; cursor: pointer; }
+    .monochrome-toggle input { display: none; }
+    .toggle-switch { width: 40px; height: 22px; background: rgba(255, 255, 255, 0.2); border-radius: 11px; position: relative; transition: all 0.3s; }
+    .toggle-switch::after { content: ''; position: absolute; width: 18px; height: 18px; background: #e0e0e0; border-radius: 50%; top: 2px; left: 2px; transition: all 0.3s; }
+    .monochrome-toggle input:checked + .toggle-switch { background: #a855f7; }
+    .monochrome-toggle input:checked + .toggle-switch::after { left: 20px; }
+    .toggle-label { font-size: 0.85rem; color: #888; }
+    .button-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+    .btn { flex: 1; min-width: 100px; padding: 12px 20px; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-primary { background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); color: white; }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(168, 85, 247, 0.4); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.1); color: #e0e0e0; }
+    .btn-secondary:hover:not(:disabled) { background: rgba(255, 255, 255, 0.2); }
+    @media (max-width: 768px) { .editor-layout { grid-template-columns: 1fr; } .settings-panel { order: -1; } .button-group { flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-285 色彩通道混合器</h1>
+      <p class="subtitle">混合 RGB 通道創造獨特色彩效果</p>
+    </header>
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">🎨</div>
+        <div class="upload-text">點擊或拖曳圖片到此處</div>
+        <div class="upload-hint">支援 JPG、PNG、WebP 等格式</div>
+      </div>
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+      <div class="editor-section" id="editorSection">
+        <div class="editor-layout">
+          <div class="preview-area">
+            <canvas id="previewCanvas" class="preview-canvas"></canvas>
+          </div>
+          <div class="settings-panel">
+            <h3 class="settings-title">通道混合器</h3>
+            <label class="monochrome-toggle">
+              <input type="checkbox" id="monochromeToggle">
+              <span class="toggle-switch"></span>
+              <span class="toggle-label">單色模式</span>
+            </label>
+            <div class="preset-grid">
+              <button class="preset-btn" data-preset="swap-rb">紅藍交換</button>
+              <button class="preset-btn" data-preset="swap-rg">紅綠交換</button>
+              <button class="preset-btn" data-preset="swap-gb">綠藍交換</button>
+              <button class="preset-btn" data-preset="sepia">復古懷舊</button>
+              <button class="preset-btn" data-preset="infrared">紅外線</button>
+              <button class="preset-btn" data-preset="reset">重置</button>
+            </div>
+            <div class="channel-section" id="redSection">
+              <div class="channel-header">
+                <span class="channel-dot red"></span>
+                <span class="channel-name">紅色輸出通道</span>
+              </div>
+              <div class="mixer-row">
+                <span class="mixer-label">紅色</span>
+                <input type="range" class="mixer-slider" id="redRed" min="-200" max="200" value="100">
+                <span class="mixer-value" id="redRedValue">100%</span>
+              </div>
+              <div class="mixer-row">
+                <span class="mixer-label">綠色</span>
+                <input type="range" class="mixer-slider" id="redGreen" min="-200" max="200" value="0">
+                <span class="mixer-value" id="redGreenValue">0%</span>
+              </div>
+              <div class="mixer-row">
+                <span class="mixer-label">藍色</span>
+                <input type="range" class="mixer-slider" id="redBlue" min="-200" max="200" value="0">
+                <span class="mixer-value" id="redBlueValue">0%</span>
+              </div>
+            </div>
+            <div class="channel-section" id="greenSection">
+              <div class="channel-header">
+                <span class="channel-dot green"></span>
+                <span class="channel-name">綠色輸出通道</span>
+              </div>
+              <div class="mixer-row">
+                <span class="mixer-label">紅色</span>
+                <input type="range" class="mixer-slider" id="greenRed" min="-200" max="200" value="0">
+                <span class="mixer-value" id="greenRedValue">0%</span>
+              </div>
+              <div class="mixer-row">
+                <span class="mixer-label">綠色</span>
+                <input type="range" class="mixer-slider" id="greenGreen" min="-200" max="200" value="100">
+                <span class="mixer-value" id="greenGreenValue">100%</span>
+              </div>
+              <div class="mixer-row">
+                <span class="mixer-label">藍色</span>
+                <input type="range" class="mixer-slider" id="greenBlue" min="-200" max="200" value="0">
+                <span class="mixer-value" id="greenBlueValue">0%</span>
+              </div>
+            </div>
+            <div class="channel-section" id="blueSection">
+              <div class="channel-header">
+                <span class="channel-dot blue"></span>
+                <span class="channel-name">藍色輸出通道</span>
+              </div>
+              <div class="mixer-row">
+                <span class="mixer-label">紅色</span>
+                <input type="range" class="mixer-slider" id="blueRed" min="-200" max="200" value="0">
+                <span class="mixer-value" id="blueRedValue">0%</span>
+              </div>
+              <div class="mixer-row">
+                <span class="mixer-label">綠色</span>
+                <input type="range" class="mixer-slider" id="blueGreen" min="-200" max="200" value="0">
+                <span class="mixer-value" id="blueGreenValue">0%</span>
+              </div>
+              <div class="mixer-row">
+                <span class="mixer-label">藍色</span>
+                <input type="range" class="mixer-slider" id="blueBlue" min="-200" max="200" value="100">
+                <span class="mixer-value" id="blueBlueValue">100%</span>
+              </div>
+            </div>
+            <div class="button-group">
+              <button class="btn btn-primary" id="downloadBtn"><span>💾</span> 下載圖片</button>
+              <button class="btn btn-secondary" id="resetBtn"><span>🔄</span> 重新開始</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="channel-mixer.js"></script>
+</body>
+</html>
