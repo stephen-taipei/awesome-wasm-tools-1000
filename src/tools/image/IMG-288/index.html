@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMG-288 色彩查找表工具 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; }
+    .back-link { display: inline-flex; align-items: center; gap: 8px; color: #888; text-decoration: none; margin-bottom: 20px; transition: color 0.3s; }
+    .back-link:hover { color: #a855f7; }
+    h1 { font-size: 2rem; background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; }
+    .subtitle { color: #888; font-size: 1rem; }
+    .tool-container { background: rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 30px; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .upload-zone { border: 2px dashed rgba(168, 85, 247, 0.5); border-radius: 15px; padding: 40px 30px; text-align: center; cursor: pointer; transition: all 0.3s ease; margin-bottom: 25px; }
+    .upload-zone:hover, .upload-zone.dragover { border-color: #a855f7; background: rgba(168, 85, 247, 0.1); }
+    .upload-icon { font-size: 3rem; margin-bottom: 15px; }
+    .upload-text { font-size: 1rem; margin-bottom: 8px; }
+    .upload-hint { color: #888; font-size: 0.85rem; }
+    .hidden-input { display: none; }
+    .editor-section { display: none; margin-bottom: 25px; }
+    .editor-section.active { display: block; }
+    .editor-layout { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+    .preview-area { background: repeating-conic-gradient(#333 0% 25%, #444 0% 50%) 50% / 16px 16px; border-radius: 15px; min-height: 400px; display: flex; align-items: center; justify-content: center; padding: 20px; overflow: auto; }
+    .preview-canvas { max-width: 100%; max-height: 500px; }
+    .settings-panel { background: rgba(0, 0, 0, 0.2); border-radius: 15px; padding: 20px; }
+    .settings-title { font-size: 1rem; color: #a855f7; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+    .lut-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+    .lut-card { padding: 15px 10px; background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 10px; cursor: pointer; transition: all 0.3s; text-align: center; }
+    .lut-card:hover { background: rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.5); }
+    .lut-card.active { border-color: #a855f7; background: rgba(168, 85, 247, 0.3); }
+    .lut-preview { width: 100%; height: 40px; border-radius: 5px; margin-bottom: 8px; }
+    .lut-name { font-size: 0.75rem; color: #e0e0e0; }
+    .slider-group { margin-bottom: 20px; }
+    .slider-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .slider-label { font-size: 0.85rem; color: #888; }
+    .slider-value { font-size: 0.85rem; color: #a855f7; }
+    .slider-input { width: 100%; -webkit-appearance: none; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; outline: none; }
+    .slider-input::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: #a855f7; border-radius: 50%; cursor: pointer; }
+    .button-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+    .btn { flex: 1; min-width: 100px; padding: 12px 20px; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-primary { background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); color: white; }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(168, 85, 247, 0.4); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.1); color: #e0e0e0; }
+    .btn-secondary:hover:not(:disabled) { background: rgba(255, 255, 255, 0.2); }
+    @media (max-width: 768px) { .editor-layout { grid-template-columns: 1fr; } .settings-panel { order: -1; } .button-group { flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <a href="/" class="back-link">← 返回工具列表</a>
+      <h1>IMG-288 色彩查找表工具</h1>
+      <p class="subtitle">套用專業色彩調色預設</p>
+    </header>
+    <div class="tool-container">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">🎬</div>
+        <div class="upload-text">點擊或拖曳圖片到此處</div>
+        <div class="upload-hint">支援 JPG、PNG、WebP 等格式</div>
+      </div>
+      <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+      <div class="editor-section" id="editorSection">
+        <div class="editor-layout">
+          <div class="preview-area">
+            <canvas id="previewCanvas" class="preview-canvas"></canvas>
+          </div>
+          <div class="settings-panel">
+            <h3 class="settings-title">色彩查找表 (LUT)</h3>
+            <div class="lut-grid" id="lutGrid">
+              <div class="lut-card active" data-lut="none">
+                <div class="lut-preview" style="background: linear-gradient(to right, #333, #666, #999, #ccc, #fff);"></div>
+                <div class="lut-name">原始</div>
+              </div>
+              <div class="lut-card" data-lut="cinematic">
+                <div class="lut-preview" style="background: linear-gradient(to right, #1a1a2e, #2d4a7c, #7b68ee, #deb887, #ffd700);"></div>
+                <div class="lut-name">電影感</div>
+              </div>
+              <div class="lut-card" data-lut="vintage">
+                <div class="lut-preview" style="background: linear-gradient(to right, #2c1810, #8b4513, #d2691e, #f4a460, #faebd7);"></div>
+                <div class="lut-name">復古</div>
+              </div>
+              <div class="lut-card" data-lut="teal-orange">
+                <div class="lut-preview" style="background: linear-gradient(to right, #008080, #20b2aa, #808080, #ff8c00, #ffa500);"></div>
+                <div class="lut-name">青橙</div>
+              </div>
+              <div class="lut-card" data-lut="noir">
+                <div class="lut-preview" style="background: linear-gradient(to right, #000, #1a1a1a, #333, #4d4d4d, #808080);"></div>
+                <div class="lut-name">黑白電影</div>
+              </div>
+              <div class="lut-card" data-lut="bleach">
+                <div class="lut-preview" style="background: linear-gradient(to right, #2f2f2f, #5a5a5a, #a0a0a0, #d0d0d0, #f5f5f5);"></div>
+                <div class="lut-name">漂白</div>
+              </div>
+              <div class="lut-card" data-lut="cross-process">
+                <div class="lut-preview" style="background: linear-gradient(to right, #1a0a30, #2e8b57, #90ee90, #ffd700, #ff6347);"></div>
+                <div class="lut-name">交叉沖印</div>
+              </div>
+              <div class="lut-card" data-lut="warm">
+                <div class="lut-preview" style="background: linear-gradient(to right, #3d2314, #8b4513, #cd853f, #ffa07a, #ffe4b5);"></div>
+                <div class="lut-name">暖調</div>
+              </div>
+              <div class="lut-card" data-lut="cool">
+                <div class="lut-preview" style="background: linear-gradient(to right, #0a1a2e, #1e3a5f, #4682b4, #87ceeb, #e0ffff);"></div>
+                <div class="lut-name">冷調</div>
+              </div>
+              <div class="lut-card" data-lut="matte">
+                <div class="lut-preview" style="background: linear-gradient(to right, #2d2d2d, #4a4a4a, #7a7a7a, #a8a8a8, #d4d4d4);"></div>
+                <div class="lut-name">霧面</div>
+              </div>
+            </div>
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">強度</span>
+                <span class="slider-value" id="intensityValue">100%</span>
+              </div>
+              <input type="range" class="slider-input" id="intensity" min="0" max="100" value="100">
+            </div>
+            <div class="button-group">
+              <button class="btn btn-primary" id="downloadBtn"><span>💾</span> 下載圖片</button>
+              <button class="btn btn-secondary" id="resetBtn"><span>🔄</span> 重新開始</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="color-lut.js"></script>
+</body>
+</html>
