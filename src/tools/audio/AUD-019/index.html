@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-019 音頻等化器 - WASM Tools</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1rem;
+    }
+
+    .format-info {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .format-info h4 {
+      color: #fed7aa;
+      margin-bottom: 10px;
+    }
+
+    .format-info p {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.6;
+    }
+
+    .upload-area {
+      border: 2px dashed rgba(255, 255, 255, 0.4);
+      border-radius: 16px;
+      padding: 60px 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: rgba(0, 0, 0, 0.2);
+      margin-bottom: 20px;
+    }
+
+    .upload-area:hover {
+      border-color: #fff;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .upload-area.dragover {
+      border-color: #fed7aa;
+      background: rgba(254, 215, 170, 0.1);
+      transform: scale(1.02);
+    }
+
+    .upload-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    .upload-text {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+
+    .upload-hint {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .file-info {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .file-info.show {
+      display: block;
+    }
+
+    .file-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+      color: #fed7aa;
+    }
+
+    .file-details {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.9rem;
+    }
+
+    .equalizer-panel {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+
+    .equalizer-title {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      color: #fed7aa;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .eq-bands {
+      display: flex;
+      justify-content: space-around;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .eq-band {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      max-width: 80px;
+    }
+
+    .eq-slider-container {
+      height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    .eq-slider {
+      writing-mode: vertical-lr;
+      direction: rtl;
+      width: 150px;
+      height: 30px;
+      accent-color: #f97316;
+    }
+
+    .eq-value {
+      font-size: 0.85rem;
+      color: #fed7aa;
+      font-weight: 600;
+      min-height: 20px;
+    }
+
+    .eq-freq {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.6);
+      text-align: center;
+    }
+
+    .preset-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .preset-btn {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.85rem;
+    }
+
+    .preset-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .preset-btn.active {
+      background: #f97316;
+      border-color: #f97316;
+    }
+
+    .settings-panel {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+
+    .settings-title {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      color: #fed7aa;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .setting-row:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .setting-label {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .setting-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    select {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #fff;
+      font-size: 0.95rem;
+      min-width: 150px;
+    }
+
+    select option {
+      background: #1a1a2e;
+      color: #fff;
+    }
+
+    .progress-container {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .progress-container.show {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #fed7aa, #f97316);
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      padding: 15px 35px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-primary {
+      background: rgba(0, 0, 0, 0.4);
+      color: white;
+      border: 2px solid #fed7aa;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #fed7aa;
+      color: #1a1a2e;
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .result-panel {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .result-panel.show {
+      display: block;
+    }
+
+    .result-title {
+      color: #10b981;
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 5px;
+    }
+
+    .stat-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #10b981;
+    }
+
+    .audio-player {
+      width: 100%;
+      margin-top: 15px;
+      border-radius: 8px;
+    }
+
+    .compare-section {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .compare-title {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 10px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 700px) {
+      .eq-bands {
+        flex-wrap: wrap;
+      }
+
+      .eq-band {
+        width: calc(20% - 8px);
+        max-width: none;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .setting-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-019 音頻等化器</h1>
+      <p class="subtitle">調整不同頻段的音量，塑造您的聲音</p>
+    </header>
+
+    <div class="format-info">
+      <h4>關於等化器</h4>
+      <p>等化器 (Equalizer) 可以調整不同頻率範圍的音量。低頻控制低音，高頻控制高音。透過調整各頻段，您可以增強或減弱特定音色。</p>
+    </div>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">🎚️</div>
+      <div class="upload-text">拖放音訊檔案到此處</div>
+      <div class="upload-hint">支援 WAV、MP3、OGG、FLAC 格式</div>
+      <input type="file" id="fileInput" class="file-input" accept=".wav,.mp3,.ogg,.flac,audio/*">
+    </div>
+
+    <div class="file-info" id="fileInfo">
+      <div class="file-name" id="fileName">-</div>
+      <div class="file-details">
+        <span id="fileDuration">時長：-</span>
+        <span id="fileSampleRate">取樣率：-</span>
+        <span id="fileChannels">聲道：-</span>
+      </div>
+    </div>
+
+    <div class="equalizer-panel">
+      <div class="equalizer-title">
+        <span>10 段等化器</span>
+        <button class="preset-btn" id="resetEqBtn">重置</button>
+      </div>
+
+      <div class="eq-bands" id="eqBands">
+        <div class="eq-band">
+          <div class="eq-slider-container">
+            <input type="range" class="eq-slider" data-freq="32" min="-12" max="12" step="1" value="0">
+          </div>
+          <div class="eq-value" data-freq="32">0 dB</div>
+          <div class="eq-freq">32 Hz</div>
+        </div>
+        <div class="eq-band">
+          <div class="eq-slider-container">
+            <input type="range" class="eq-slider" data-freq="64" min="-12" max="12" step="1" value="0">
+          </div>
+          <div class="eq-value" data-freq="64">0 dB</div>
+          <div class="eq-freq">64 Hz</div>
+        </div>
+        <div class="eq-band">
+          <div class="eq-slider-container">
+            <input type="range" class="eq-slider" data-freq="125" min="-12" max="12" step="1" value="0">
+          </div>
+          <div class="eq-value" data-freq="125">0 dB</div>
+          <div class="eq-freq">125 Hz</div>
+        </div>
+        <div class="eq-band">
+          <div class="eq-slider-container">
+            <input type="range" class="eq-slider" data-freq="250" min="-12" max="12" step="1" value="0">
+          </div>
+          <div class="eq-value" data-freq="250">0 dB</div>
+          <div class="eq-freq">250 Hz</div>
+        </div>
+        <div class="eq-band">
+          <div class="eq-slider-container">
+            <input type="range" class="eq-slider" data-freq="500" min="-12" max="12" step="1" value="0">
+          </div>
+          <div class="eq-value" data-freq="500">0 dB</div>
+          <div class="eq-freq">500 Hz</div>
+        </div>
+        <div class="eq-band">
+          <div class="eq-slider-container">
+            <input type="range" class="eq-slider" data-freq="1000" min="-12" max="12" step="1" value="0">
+          </div>
+          <div class="eq-value" data-freq="1000">0 dB</div>
+          <div class="eq-freq">1 kHz</div>
+        </div>
+        <div class="eq-band">
+          <div class="eq-slider-container">
+            <input type="range" class="eq-slider" data-freq="2000" min="-12" max="12" step="1" value="0">
+          </div>
+          <div class="eq-value" data-freq="2000">0 dB</div>
+          <div class="eq-freq">2 kHz</div>
+        </div>
+        <div class="eq-band">
+          <div class="eq-slider-container">
+            <input type="range" class="eq-slider" data-freq="4000" min="-12" max="12" step="1" value="0">
+          </div>
+          <div class="eq-value" data-freq="4000">0 dB</div>
+          <div class="eq-freq">4 kHz</div>
+        </div>
+        <div class="eq-band">
+          <div class="eq-slider-container">
+            <input type="range" class="eq-slider" data-freq="8000" min="-12" max="12" step="1" value="0">
+          </div>
+          <div class="eq-value" data-freq="8000">0 dB</div>
+          <div class="eq-freq">8 kHz</div>
+        </div>
+        <div class="eq-band">
+          <div class="eq-slider-container">
+            <input type="range" class="eq-slider" data-freq="16000" min="-12" max="12" step="1" value="0">
+          </div>
+          <div class="eq-value" data-freq="16000">0 dB</div>
+          <div class="eq-freq">16 kHz</div>
+        </div>
+      </div>
+
+      <div class="preset-row" id="presetRow">
+        <button class="preset-btn active" data-preset="flat">平坦</button>
+        <button class="preset-btn" data-preset="bass">低音增強</button>
+        <button class="preset-btn" data-preset="treble">高音增強</button>
+        <button class="preset-btn" data-preset="vocal">人聲突出</button>
+        <button class="preset-btn" data-preset="rock">搖滾</button>
+        <button class="preset-btn" data-preset="pop">流行</button>
+        <button class="preset-btn" data-preset="jazz">爵士</button>
+        <button class="preset-btn" data-preset="classical">古典</button>
+      </div>
+    </div>
+
+    <div class="settings-panel">
+      <div class="settings-title">輸出設定</div>
+      <div class="setting-row">
+        <span class="setting-label">輸出格式</span>
+        <div class="setting-control">
+          <select id="outputFormat">
+            <option value="wav">WAV (無損)</option>
+            <option value="mp3">MP3</option>
+          </select>
+        </div>
+      </div>
+      <div class="setting-row" id="bitrateRow" style="display: none;">
+        <span class="setting-label">位元率</span>
+        <div class="setting-control">
+          <select id="bitrate">
+            <option value="128">128 kbps</option>
+            <option value="192">192 kbps</option>
+            <option value="256" selected>256 kbps</option>
+            <option value="320">320 kbps</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-container" id="progressContainer">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text" id="progressText">準備中...</div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="processBtn" disabled>
+        <span>🎚️</span>
+        <span>套用等化器</span>
+      </button>
+      <button class="btn btn-success" id="downloadBtn" style="display: none;">
+        <span>⬇️</span>
+        <span id="downloadLabel">下載</span>
+      </button>
+      <button class="btn btn-secondary" id="resetBtn" style="display: none;">
+        <span>🗑️</span>
+        <span>重置</span>
+      </button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">
+        <span>✅</span>
+        <span>處理完成</span>
+      </div>
+      <div class="result-stats">
+        <div class="stat-item">
+          <div class="stat-label">音訊時長</div>
+          <div class="stat-value" id="resultDuration">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">頻段調整</div>
+          <div class="stat-value" id="resultBands">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">輸出大小</div>
+          <div class="stat-value" id="outputSize">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">處理時間</div>
+          <div class="stat-value" id="processTime">-</div>
+        </div>
+      </div>
+      <div class="compare-section">
+        <div class="compare-title">處理後音訊</div>
+        <audio id="audioPreview" class="audio-player" controls></audio>
+      </div>
+      <div class="compare-section">
+        <div class="compare-title">原始音訊（對比用）</div>
+        <audio id="originalPreview" class="audio-player" controls></audio>
+      </div>
+    </div>
+
+    <footer>
+      <p>所有音訊處理均在本地完成，檔案不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+  <script src="./equalizer.js"></script>
+</body>
+</html>

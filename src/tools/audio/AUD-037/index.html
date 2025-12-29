@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-037 立體聲平衡 - Stereo Balance</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .header p {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .upload-area {
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #f9fafb;
+    }
+
+    .upload-area:hover {
+      border-color: #10b981;
+      background: #ecfdf5;
+    }
+
+    .upload-area.dragover {
+      border-color: #10b981;
+      background: #d1fae5;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      color: #6b7280;
+      font-size: 1rem;
+    }
+
+    .upload-text strong {
+      color: #10b981;
+    }
+
+    .upload-hint {
+      color: #9ca3af;
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .file-info {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      background: #ecfdf5;
+      border-radius: 8px;
+    }
+
+    .file-info.show {
+      display: block;
+    }
+
+    .file-name {
+      font-weight: 600;
+      color: #047857;
+      margin-bottom: 8px;
+    }
+
+    .file-details {
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+
+    .file-details span {
+      margin-right: 16px;
+    }
+
+    .balance-control {
+      padding: 30px;
+      background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .balance-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .balance-header .left {
+      color: #f59e0b;
+    }
+
+    .balance-header .center {
+      color: #10b981;
+    }
+
+    .balance-header .right {
+      color: #06b6d4;
+    }
+
+    .balance-slider-container {
+      position: relative;
+      padding: 20px 0;
+    }
+
+    .balance-slider {
+      width: 100%;
+      height: 12px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: linear-gradient(to right, #f59e0b 0%, #10b981 50%, #06b6d4 100%);
+      border-radius: 6px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .balance-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 28px;
+      height: 28px;
+      background: white;
+      border: 3px solid #10b981;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .balance-slider::-moz-range-thumb {
+      width: 28px;
+      height: 28px;
+      background: white;
+      border: 3px solid #10b981;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .balance-marks {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+
+    .balance-value {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #059669;
+      margin-top: 16px;
+    }
+
+    .balance-presets {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .preset-btn {
+      padding: 8px 16px;
+      border: 2px solid #d1d5db;
+      border-radius: 20px;
+      background: white;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .preset-btn:hover {
+      border-color: #10b981;
+      background: #ecfdf5;
+    }
+
+    .preset-btn.active {
+      border-color: #10b981;
+      background: #10b981;
+      color: white;
+    }
+
+    .channel-meters {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .meter {
+      text-align: center;
+    }
+
+    .meter-label {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .meter-bar {
+      width: 60px;
+      height: 150px;
+      background: #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .meter-fill {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      transition: height 0.1s;
+    }
+
+    .meter-fill.left {
+      background: linear-gradient(to top, #f59e0b, #fbbf24);
+    }
+
+    .meter-fill.right {
+      background: linear-gradient(to top, #06b6d4, #22d3ee);
+    }
+
+    .meter-value {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .output-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .output-row label {
+      flex: 0 0 100px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .output-row select {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .output-row select:focus {
+      border-color: #10b981;
+    }
+
+    .bitrate-row {
+      display: none;
+    }
+
+    .progress-container {
+      display: none;
+      margin-top: 16px;
+    }
+
+    .progress-container.show {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #059669);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #6b7280;
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, #059669, #047857);
+      color: white;
+      display: none;
+    }
+
+    .btn-download.show,
+    .btn-reset.show {
+      display: flex;
+    }
+
+    .btn-reset {
+      display: none;
+    }
+
+    .result-panel {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .result-panel.show {
+      display: block;
+    }
+
+    .result-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-item {
+      background: #ecfdf5;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #059669;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .audio-preview {
+      margin-top: 16px;
+    }
+
+    .audio-preview audio {
+      width: 100%;
+    }
+
+    .preview-label {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .info-box {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .info-box h4 {
+      color: #047857;
+      margin-bottom: 8px;
+    }
+
+    .info-box p {
+      color: #4b5563;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 640px) {
+      .button-group {
+        flex-direction: column;
+      }
+
+      .output-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .output-row label {
+        margin-bottom: 8px;
+      }
+
+      .balance-presets {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>AUD-037 立體聲平衡</h1>
+      <p>Stereo Balance - 調整左右聲道平衡</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>1. 上傳音訊</span>
+      </div>
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">🎧</div>
+        <div class="upload-text">
+          <strong>點擊上傳</strong> 或拖放音訊檔案到這裡
+        </div>
+        <div class="upload-hint">支援 MP3, WAV, OGG, AAC, FLAC 等格式</div>
+      </div>
+      <input type="file" id="fileInput" accept="audio/*">
+      <div class="file-info" id="fileInfo">
+        <div class="file-name" id="fileName"></div>
+        <div class="file-details">
+          <span id="fileDuration"></span>
+          <span id="fileSampleRate"></span>
+          <span id="fileChannels"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>2. 調整平衡</span>
+      </div>
+
+      <div class="balance-control">
+        <div class="balance-header">
+          <span class="left">◀ 左聲道</span>
+          <span class="center">置中</span>
+          <span class="right">右聲道 ▶</span>
+        </div>
+
+        <div class="balance-slider-container">
+          <input type="range" class="balance-slider" id="balanceSlider" min="-100" max="100" value="0">
+          <div class="balance-marks">
+            <span>L 100%</span>
+            <span>L 50%</span>
+            <span>中心</span>
+            <span>R 50%</span>
+            <span>R 100%</span>
+          </div>
+        </div>
+
+        <div class="balance-value" id="balanceValue">中心 (0)</div>
+
+        <div class="balance-presets">
+          <button class="preset-btn" data-value="-100">全左</button>
+          <button class="preset-btn" data-value="-50">偏左</button>
+          <button class="preset-btn active" data-value="0">置中</button>
+          <button class="preset-btn" data-value="50">偏右</button>
+          <button class="preset-btn" data-value="100">全右</button>
+        </div>
+
+        <div class="channel-meters">
+          <div class="meter">
+            <div class="meter-label">左聲道</div>
+            <div class="meter-bar">
+              <div class="meter-fill left" id="leftMeter" style="height: 100%"></div>
+            </div>
+            <div class="meter-value" id="leftValue">100%</div>
+          </div>
+          <div class="meter">
+            <div class="meter-label">右聲道</div>
+            <div class="meter-bar">
+              <div class="meter-fill right" id="rightMeter" style="height: 100%"></div>
+            </div>
+            <div class="meter-value" id="rightValue">100%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <h4>立體聲平衡說明</h4>
+        <p>
+          立體聲平衡控制讓您調整左右聲道的相對音量。
+          向左移動會增強左聲道並減弱右聲道，反之亦然。
+          這對於校正錄音時的聲道不平衡或創造特殊的空間效果很有用。
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>3. 輸出設定</span>
+      </div>
+      <div class="output-row">
+        <label>輸出格式</label>
+        <select id="outputFormat">
+          <option value="wav">WAV (無損)</option>
+          <option value="mp3">MP3</option>
+        </select>
+      </div>
+      <div class="output-row bitrate-row" id="bitrateRow">
+        <label>位元率</label>
+        <select id="bitrate">
+          <option value="128">128 kbps</option>
+          <option value="192">192 kbps</option>
+          <option value="256">256 kbps</option>
+          <option value="320" selected>320 kbps</option>
+        </select>
+      </div>
+
+      <div class="progress-container" id="progressContainer">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">準備中...</div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" id="processBtn" disabled>套用平衡</button>
+        <button class="btn btn-download" id="downloadBtn">
+          <span id="downloadLabel">下載</span>
+        </button>
+        <button class="btn btn-secondary btn-reset" id="resetBtn">重置</button>
+      </div>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="card">
+        <div class="card-title">處理結果</div>
+        <div class="result-stats">
+          <div class="stat-item">
+            <div class="stat-value" id="resultBalance">0</div>
+            <div class="stat-label">平衡值</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="resultDuration">0s</div>
+            <div class="stat-label">輸出長度</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="outputSize">0 KB</div>
+            <div class="stat-label">檔案大小</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="processTime">0s</div>
+            <div class="stat-label">處理時間</div>
+          </div>
+        </div>
+
+        <div class="audio-preview">
+          <div class="preview-label">原始音訊：</div>
+          <audio id="originalPreview" controls></audio>
+        </div>
+        <div class="audio-preview">
+          <div class="preview-label">調整後音訊：</div>
+          <audio id="audioPreview" controls></audio>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+  <script src="stereo-balance.js"></script>
+</body>
+</html>

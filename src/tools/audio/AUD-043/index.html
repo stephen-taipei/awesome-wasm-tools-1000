@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUD-043 音頻音量正常化 - Audio Normalizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #0ea5e9;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(14, 165, 233, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #38bdf8;
+            background: rgba(14, 165, 233, 0.2);
+        }
+
+        .upload-area.dragover {
+            border-color: #38bdf8;
+            background: rgba(14, 165, 233, 0.3);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .settings-panel {
+            background: rgba(30, 58, 95, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .settings-panel.show {
+            display: block;
+        }
+
+        .settings-title {
+            color: #38bdf8;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .mode-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .mode-option {
+            background: rgba(14, 165, 233, 0.1);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-option:hover {
+            background: rgba(14, 165, 233, 0.2);
+        }
+
+        .mode-option.active {
+            border-color: #0ea5e9;
+            background: rgba(14, 165, 233, 0.2);
+        }
+
+        .mode-option input {
+            display: none;
+        }
+
+        .mode-name {
+            font-weight: 600;
+            color: #38bdf8;
+            margin-bottom: 4px;
+        }
+
+        .mode-desc {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .target-setting {
+            background: rgba(14, 165, 233, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .target-setting label {
+            display: block;
+            color: #38bdf8;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .target-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .target-row input[type="range"] {
+            flex: 1;
+        }
+
+        .target-value {
+            min-width: 80px;
+            text-align: center;
+            color: #7dd3fc;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .output-format {
+            background: rgba(14, 165, 233, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .output-format label {
+            display: block;
+            color: #38bdf8;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .format-options {
+            display: flex;
+            gap: 12px;
+        }
+
+        .format-btn {
+            padding: 10px 24px;
+            border: 2px solid #0ea5e9;
+            border-radius: 8px;
+            background: transparent;
+            color: #38bdf8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .format-btn:hover {
+            background: rgba(14, 165, 233, 0.2);
+        }
+
+        .format-btn.active {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+            border-color: transparent;
+        }
+
+        .analysis-panel {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .analysis-panel.show {
+            display: block;
+        }
+
+        .analysis-title {
+            color: #38bdf8;
+            margin-bottom: 20px;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .analysis-item {
+            background: rgba(14, 165, 233, 0.1);
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .analysis-label {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .analysis-values {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .analysis-before,
+        .analysis-after {
+            text-align: center;
+        }
+
+        .analysis-before .value,
+        .analysis-after .value {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .analysis-before .value {
+            color: #94a3b8;
+        }
+
+        .analysis-after .value {
+            color: #38bdf8;
+        }
+
+        .analysis-before .label,
+        .analysis-after .label {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .arrow {
+            color: #0ea5e9;
+            font-size: 1.5rem;
+            align-self: center;
+        }
+
+        .meter-container {
+            margin-top: 20px;
+        }
+
+        .meter-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        .meter-track {
+            height: 20px;
+            background: rgba(14, 165, 233, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .meter-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .meter-fill.before {
+            background: linear-gradient(90deg, #64748b, #94a3b8);
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .meter-fill.after {
+            background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .process-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .process-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
+        }
+
+        .process-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(14, 165, 233, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .progress-bar.show {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+            border-radius: 4px;
+            transition: width 0.2s ease;
+        }
+
+        .result-panel {
+            background: rgba(30, 58, 95, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-panel.show {
+            display: block;
+        }
+
+        .result-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .result-title {
+            color: #38bdf8;
+            margin-bottom: 16px;
+            font-size: 1.2rem;
+        }
+
+        .download-btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .file-info {
+            background: rgba(14, 165, 233, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .file-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+        }
+
+        .file-info-row:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .upload-area {
+                padding: 30px 20px;
+            }
+
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔊 音頻音量正常化</h1>
+        <p class="subtitle">Audio Normalizer - 統一音量電平</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📢</div>
+            <div class="upload-text">點擊或拖放音頻文件到這裡</div>
+            <div class="upload-hint">支援 MP3, WAV, OGG, FLAC, M4A 等格式</div>
+            <input type="file" id="fileInput" accept="audio/*">
+        </div>
+
+        <div class="file-info" id="fileInfo">
+            <div class="file-info-row">
+                <span>文件名稱:</span>
+                <span id="fileName">-</span>
+            </div>
+            <div class="file-info-row">
+                <span>時長:</span>
+                <span id="fileDuration">-</span>
+            </div>
+            <div class="file-info-row">
+                <span>取樣率:</span>
+                <span id="fileSampleRate">-</span>
+            </div>
+        </div>
+
+        <div class="settings-panel" id="settingsPanel">
+            <div class="settings-title">🎛️ 正常化設定</div>
+
+            <div class="mode-selector">
+                <label class="mode-option active" data-mode="peak">
+                    <input type="radio" name="mode" value="peak" checked>
+                    <div class="mode-name">峰值正常化</div>
+                    <div class="mode-desc">將最大峰值調整至目標電平</div>
+                </label>
+                <label class="mode-option" data-mode="rms">
+                    <input type="radio" name="mode" value="rms">
+                    <div class="mode-name">RMS 正常化</div>
+                    <div class="mode-desc">根據平均響度調整音量</div>
+                </label>
+                <label class="mode-option" data-mode="lufs">
+                    <input type="radio" name="mode" value="lufs">
+                    <div class="mode-name">LUFS 正常化</div>
+                    <div class="mode-desc">符合廣播標準的響度調整</div>
+                </label>
+            </div>
+
+            <div class="target-setting">
+                <label>目標電平</label>
+                <div class="target-row">
+                    <input type="range" id="targetLevel" min="-24" max="0" value="-1" step="0.1">
+                    <span class="target-value" id="targetValue">-1.0 dB</span>
+                </div>
+            </div>
+
+            <div class="output-format">
+                <label>輸出格式</label>
+                <div class="format-options">
+                    <button class="format-btn active" data-format="wav">WAV</button>
+                    <button class="format-btn" data-format="mp3">MP3</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="analysis-panel" id="analysisPanel">
+            <h3 class="analysis-title">📊 音量分析</h3>
+            <div class="analysis-grid">
+                <div class="analysis-item">
+                    <div class="analysis-label">峰值電平 (Peak)</div>
+                    <div class="analysis-values">
+                        <div class="analysis-before">
+                            <div class="value" id="peakBefore">-</div>
+                            <div class="label">原始</div>
+                        </div>
+                        <div class="arrow">→</div>
+                        <div class="analysis-after">
+                            <div class="value" id="peakAfter">-</div>
+                            <div class="label">處理後</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="analysis-item">
+                    <div class="analysis-label">RMS 電平</div>
+                    <div class="analysis-values">
+                        <div class="analysis-before">
+                            <div class="value" id="rmsBefore">-</div>
+                            <div class="label">原始</div>
+                        </div>
+                        <div class="arrow">→</div>
+                        <div class="analysis-after">
+                            <div class="value" id="rmsAfter">-</div>
+                            <div class="label">處理後</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="analysis-item">
+                    <div class="analysis-label">增益調整</div>
+                    <div class="analysis-values">
+                        <div class="analysis-after" style="width: 100%;">
+                            <div class="value" id="gainApplied">-</div>
+                            <div class="label">應用增益</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="analysis-item">
+                    <div class="analysis-label">動態範圍</div>
+                    <div class="analysis-values">
+                        <div class="analysis-after" style="width: 100%;">
+                            <div class="value" id="dynamicRange">-</div>
+                            <div class="label">保持不變</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="meter-container">
+                <div class="meter-label">
+                    <span>音量電平變化</span>
+                    <span>0 dB</span>
+                </div>
+                <div class="meter-track">
+                    <div class="meter-fill before" id="meterBefore" style="width: 0%"></div>
+                    <div class="meter-fill after" id="meterAfter" style="width: 0%; opacity: 0.7;"></div>
+                </div>
+            </div>
+        </div>
+
+        <button class="process-btn" id="processBtn" style="display: none;">
+            🎚️ 開始正常化處理
+        </button>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <div class="result-panel" id="resultPanel">
+            <div class="result-icon">✅</div>
+            <div class="result-title">音量正常化完成</div>
+            <button class="download-btn" id="downloadBtn">📥 下載處理後音頻</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+    <script src="normalizer.js"></script>
+</body>
+</html>

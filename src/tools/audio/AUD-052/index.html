@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUD-052 音頻壓縮器 - Audio Compressor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e40af 50%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #3b82f6;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(59, 130, 246, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #60a5fa;
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .upload-area.dragover {
+            border-color: #60a5fa;
+            background: rgba(59, 130, 246, 0.3);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+        }
+
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .info-panel {
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .info-panel.show {
+            display: block;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+        }
+
+        .compressor-panel {
+            background: rgba(30, 64, 175, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .compressor-panel.show {
+            display: block;
+        }
+
+        .compressor-panel h3 {
+            color: #60a5fa;
+            margin-bottom: 20px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .control-group {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .control-group label {
+            display: block;
+            color: #60a5fa;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .control-desc {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .control-row input[type="range"] {
+            flex: 1;
+        }
+
+        .control-value {
+            min-width: 70px;
+            text-align: center;
+            color: #93c5fd;
+            font-weight: 600;
+        }
+
+        .meter-section {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .meter-section.show {
+            display: block;
+        }
+
+        .meter-section h3 {
+            color: #60a5fa;
+            margin-bottom: 16px;
+        }
+
+        .meters {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .meter {
+            text-align: center;
+        }
+
+        .meter-label {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .meter-bar {
+            width: 40px;
+            height: 120px;
+            background: #0f172a;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .meter-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, #22c55e, #eab308, #ef4444);
+            border-radius: 0 0 6px 6px;
+            transition: height 0.1s ease;
+        }
+
+        .gain-reduction-meter {
+            width: 200px;
+            height: 30px;
+            background: #0f172a;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            margin: 20px auto 0;
+        }
+
+        .gain-reduction-fill {
+            position: absolute;
+            right: 50%;
+            top: 0;
+            bottom: 0;
+            background: linear-gradient(to left, #ef4444, #f97316);
+            transition: width 0.1s ease;
+        }
+
+        .gain-reduction-center {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #60a5fa;
+        }
+
+        .gain-reduction-label {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .preset-section {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .preset-section h4 {
+            color: #60a5fa;
+            margin-bottom: 12px;
+        }
+
+        .preset-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .preset-btn {
+            padding: 8px 16px;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            background: transparent;
+            color: #60a5fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 13px;
+        }
+
+        .preset-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .preset-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border-color: transparent;
+        }
+
+        .output-settings {
+            background: rgba(30, 64, 175, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .output-settings.show {
+            display: block;
+        }
+
+        .output-settings h3 {
+            color: #60a5fa;
+            margin-bottom: 16px;
+        }
+
+        .format-options {
+            display: flex;
+            gap: 12px;
+        }
+
+        .format-btn {
+            padding: 10px 24px;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            background: transparent;
+            color: #60a5fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .format-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .format-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border-color: transparent;
+        }
+
+        .process-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .process-btn.show {
+            display: block;
+        }
+
+        .process-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .process-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .progress-bar.show {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            border-radius: 4px;
+            transition: width 0.2s ease;
+        }
+
+        .result-panel {
+            background: rgba(30, 64, 175, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-panel.show {
+            display: block;
+        }
+
+        .result-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .result-title {
+            color: #60a5fa;
+            margin-bottom: 12px;
+            font-size: 1.2rem;
+        }
+
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            color: #60a5fa;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .download-btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .upload-area {
+                padding: 30px 20px;
+            }
+
+            .result-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 音頻壓縮器</h1>
+        <p class="subtitle">Audio Compressor - 動態範圍壓縮</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">🎚️</div>
+            <div class="upload-text">點擊或拖放音頻文件到這裡</div>
+            <div class="upload-hint">支援 MP3, WAV, OGG, FLAC, M4A 等格式</div>
+            <input type="file" id="fileInput" accept="audio/*">
+        </div>
+
+        <div class="info-panel" id="infoPanel">
+            <div class="info-row">
+                <span>文件名稱:</span>
+                <span id="fileName">-</span>
+            </div>
+            <div class="info-row">
+                <span>時長:</span>
+                <span id="duration">-</span>
+            </div>
+            <div class="info-row">
+                <span>取樣率:</span>
+                <span id="sampleRate">-</span>
+            </div>
+        </div>
+
+        <div class="compressor-panel" id="compressorPanel">
+            <h3>🎛️ 壓縮器設定</h3>
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label>閾值 (Threshold)</label>
+                    <div class="control-desc">開始壓縮的音量閾值</div>
+                    <div class="control-row">
+                        <input type="range" id="threshold" min="-60" max="0" value="-24">
+                        <span class="control-value" id="thresholdValue">-24 dB</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>壓縮比 (Ratio)</label>
+                    <div class="control-desc">超過閾值的壓縮比例</div>
+                    <div class="control-row">
+                        <input type="range" id="ratio" min="1" max="20" value="4">
+                        <span class="control-value" id="ratioValue">4:1</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>啟動時間 (Attack)</label>
+                    <div class="control-desc">壓縮器開始作用的速度</div>
+                    <div class="control-row">
+                        <input type="range" id="attack" min="0" max="200" value="10">
+                        <span class="control-value" id="attackValue">10 ms</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>釋放時間 (Release)</label>
+                    <div class="control-desc">壓縮器停止作用的速度</div>
+                    <div class="control-row">
+                        <input type="range" id="release" min="10" max="1000" value="100">
+                        <span class="control-value" id="releaseValue">100 ms</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>拐點 (Knee)</label>
+                    <div class="control-desc">壓縮曲線的平滑程度</div>
+                    <div class="control-row">
+                        <input type="range" id="knee" min="0" max="40" value="10">
+                        <span class="control-value" id="kneeValue">10 dB</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>補償增益 (Makeup)</label>
+                    <div class="control-desc">補償壓縮後的音量損失</div>
+                    <div class="control-row">
+                        <input type="range" id="makeup" min="0" max="24" value="0">
+                        <span class="control-value" id="makeupValue">0 dB</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="preset-section">
+                <h4>預設模式</h4>
+                <div class="preset-btns">
+                    <button class="preset-btn" data-preset="gentle">輕柔</button>
+                    <button class="preset-btn active" data-preset="standard">標準</button>
+                    <button class="preset-btn" data-preset="punch">衝擊力</button>
+                    <button class="preset-btn" data-preset="vocal">人聲</button>
+                    <button class="preset-btn" data-preset="broadcast">廣播</button>
+                    <button class="preset-btn" data-preset="mastering">母帶</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="meter-section" id="meterSection">
+            <h3>📈 動態分析</h3>
+            <div class="meters">
+                <div class="meter">
+                    <div class="meter-label">原始峰值</div>
+                    <div class="meter-bar">
+                        <div class="meter-fill" id="originalMeter" style="height: 0%"></div>
+                    </div>
+                </div>
+                <div class="meter">
+                    <div class="meter-label">壓縮後峰值</div>
+                    <div class="meter-bar">
+                        <div class="meter-fill" id="compressedMeter" style="height: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="gain-reduction-meter">
+                <div class="gain-reduction-fill" id="grMeter" style="width: 0%"></div>
+                <div class="gain-reduction-center"></div>
+            </div>
+            <div class="gain-reduction-label">增益減少: <span id="grValue">0 dB</span></div>
+        </div>
+
+        <div class="output-settings" id="outputSettings">
+            <h3>📤 輸出格式</h3>
+            <div class="format-options">
+                <button class="format-btn active" data-format="wav">WAV</button>
+                <button class="format-btn" data-format="mp3">MP3</button>
+            </div>
+        </div>
+
+        <button class="process-btn" id="processBtn">
+            📊 套用壓縮處理
+        </button>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <div class="result-panel" id="resultPanel">
+            <div class="result-icon">✅</div>
+            <div class="result-title">壓縮處理完成</div>
+            <div class="result-stats">
+                <div class="stat-item">
+                    <div class="stat-label">原始動態範圍</div>
+                    <div class="stat-value" id="originalDR">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">壓縮後動態範圍</div>
+                    <div class="stat-value" id="compressedDR">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">平均增益減少</div>
+                    <div class="stat-value" id="avgGR">-</div>
+                </div>
+            </div>
+            <button class="download-btn" id="downloadBtn">📥 下載壓縮後音頻</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+    <script src="compressor.js"></script>
+</body>
+</html>
