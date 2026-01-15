@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMP-058 壓縮檔加入檔案 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="將檔案加入現有的 ZIP 壓縮檔">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CMP-058 <span data-i18n="cmp058_name">壓縮檔加入檔案</span></h1>
+        <p data-i18n="cmp058_desc">將檔案加入現有的 ZIP 壓縮檔</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📦</div>
+        <h3>步驟 1: 選擇 ZIP 壓縮檔</h3>
+        <p>拖放或點擊選擇現有的 ZIP 檔案</p>
+        <input type="file" id="zipInput" class="file-input" accept=".zip">
+      </div>
+
+      <div id="zipInfo" class="settings-panel" style="display: none;">
+        <h3>📦 目前壓縮檔</h3>
+        <div class="setting-row">
+          <label>檔案名稱</label>
+          <span id="zipName">-</span>
+        </div>
+        <div class="setting-row">
+          <label>檔案大小</label>
+          <span id="zipSize">-</span>
+        </div>
+        <div class="setting-row">
+          <label>內含檔案數</label>
+          <span id="fileCount">-</span>
+        </div>
+      </div>
+
+      <div id="existingFiles" class="settings-panel" style="display: none;">
+        <h3>📁 現有檔案列表</h3>
+        <div id="existingFileList" class="file-tree"></div>
+      </div>
+
+      <div id="addFilesArea" class="upload-area secondary" style="display: none;">
+        <div class="icon">➕</div>
+        <h3>步驟 2: 選擇要加入的檔案</h3>
+        <p>拖放或點擊選擇要加入的檔案（可多選）</p>
+        <input type="file" id="addFilesInput" class="file-input" multiple>
+      </div>
+
+      <div id="newFilesList" class="settings-panel" style="display: none;">
+        <h3>📄 要加入的檔案</h3>
+        <ul id="newFiles"></ul>
+        <p id="newFilesSize" class="total-size"></p>
+      </div>
+
+      <div class="settings-panel" style="display: none;" id="optionsPanel">
+        <h3 data-i18n="settings">選項</h3>
+        <div class="setting-row">
+          <label>重複檔案處理</label>
+          <select id="duplicateHandling">
+            <option value="replace">覆蓋</option>
+            <option value="skip">跳過</option>
+            <option value="rename">重新命名</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>目標資料夾</label>
+          <input type="text" id="targetFolder" placeholder="留空為根目錄">
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">準備中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="addBtn" class="btn btn-primary" style="display: none;">
+          <span>➕</span>
+          <span>加入檔案</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span data-i18n="download">下載</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./add-files.js"></script>
+</body>
+</html>

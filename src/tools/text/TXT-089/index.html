@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-089 文字截斷 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="將文字截斷到指定長度">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-089 <span data-i18n="txt089_name">文字截斷</span></h1>
+        <p data-i18n="txt089_desc">將文字截斷到指定長度</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="6" placeholder="在此輸入文字..."></textarea>
+      </div>
+
+      <div class="options-section">
+        <h3 data-i18n="options">截斷選項</h3>
+        <div class="option-row">
+          <label>最大長度:</label>
+          <input type="number" id="maxLength" class="number-input" value="100" min="1">
+        </div>
+        <div class="option-row">
+          <label>截斷方式:</label>
+          <select id="truncateMode" class="select-input">
+            <option value="chars">按字元數</option>
+            <option value="words">按單詞數</option>
+            <option value="sentences">按句子數</option>
+          </select>
+        </div>
+        <div class="option-row">
+          <label>省略符號:</label>
+          <input type="text" id="ellipsis" class="text-input" value="..." style="width: 100px;">
+        </div>
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="preserveWords" checked>
+            <span>保留完整單詞 (不在單詞中間截斷)</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="truncateBtn" class="btn btn-primary">
+          <span>✂️</span>
+          <span data-i18n="truncate">截斷</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">截斷結果</h3>
+        <textarea id="outputText" class="text-input" rows="6" readonly></textarea>
+        <div class="stats-row">
+          <span>原始長度: <span id="originalLength">0</span></span>
+          <span>截斷後: <span id="truncatedLength">0</span></span>
+        </div>
+        <button id="copyBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span data-i18n="copy">複製</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./text-truncator.js"></script>
+</body>
+</html>

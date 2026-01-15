@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMP-055 VHD 映像檔處理 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="處理 Microsoft VHD 虛擬硬碟映像檔">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CMP-055 <span data-i18n="cmp055_name">VHD 映像檔處理</span></h1>
+        <p data-i18n="cmp055_desc">處理 Microsoft VHD 虛擬硬碟映像檔</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">💾</div>
+        <h3 data-i18n="upload_title">拖放 VHD 檔案到此處</h3>
+        <p data-i18n="upload_subtitle">或點擊選擇 VHD 映像檔</p>
+        <p class="upload-formats" data-i18n="upload_formats">支援 .vhd, .vhdx 格式</p>
+        <input type="file" id="fileInput" class="file-input" accept=".vhd,.vhdx">
+      </div>
+
+      <div id="vhdInfo" class="settings-panel" style="display: none;">
+        <h3>💾 VHD 資訊</h3>
+        <div class="setting-row">
+          <label>檔案大小</label>
+          <span id="vhdSize">-</span>
+        </div>
+        <div class="setting-row">
+          <label>VHD 類型</label>
+          <span id="vhdType">-</span>
+        </div>
+        <div class="setting-row">
+          <label>虛擬大小</label>
+          <span id="virtualSize">-</span>
+        </div>
+        <div class="setting-row">
+          <label>建立時間</label>
+          <span id="createTime">-</span>
+        </div>
+        <div class="setting-row">
+          <label>唯一識別碼</label>
+          <span id="uniqueId">-</span>
+        </div>
+      </div>
+
+      <div id="geometryInfo" class="settings-panel" style="display: none;">
+        <h3>📐 磁碟幾何</h3>
+        <div class="setting-row">
+          <label>磁柱數</label>
+          <span id="cylinders">-</span>
+        </div>
+        <div class="setting-row">
+          <label>磁頭數</label>
+          <span id="heads">-</span>
+        </div>
+        <div class="setting-row">
+          <label>磁區/磁軌</label>
+          <span id="sectors">-</span>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">準備中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="analyzeBtn" class="btn btn-primary" style="display: none;">
+          <span>🔍</span>
+          <span>詳細分析</span>
+        </button>
+        <button id="convertBtn" class="btn btn-success" style="display: none;">
+          <span>🔄</span>
+          <span>轉換為 RAW</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./vhd-handler.js"></script>
+</body>
+</html>

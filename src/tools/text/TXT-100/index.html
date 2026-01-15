@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-100 特殊字元輸入 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="方便輸入各種特殊字元和符號">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-100 <span data-i18n="txt100_name">特殊字元輸入</span></h1>
+        <p data-i18n="txt100_desc">方便輸入各種特殊字元和符號</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="options-section">
+        <h3 data-i18n="category">字元分類</h3>
+        <div id="categoryButtons" class="category-buttons">
+          <button class="btn btn-secondary category-btn active" data-category="punctuation">標點符號</button>
+          <button class="btn btn-secondary category-btn" data-category="currency">貨幣符號</button>
+          <button class="btn btn-secondary category-btn" data-category="math">數學符號</button>
+          <button class="btn btn-secondary category-btn" data-category="arrows">箭頭符號</button>
+          <button class="btn btn-secondary category-btn" data-category="greek">希臘字母</button>
+          <button class="btn btn-secondary category-btn" data-category="boxes">框線符號</button>
+          <button class="btn btn-secondary category-btn" data-category="shapes">幾何形狀</button>
+          <button class="btn btn-secondary category-btn" data-category="misc">其他符號</button>
+        </div>
+      </div>
+
+      <div class="char-grid-section">
+        <div id="charGrid" class="char-grid"></div>
+      </div>
+
+      <div class="input-section">
+        <h3 data-i18n="composed_text">組合文字</h3>
+        <textarea id="outputText" class="text-input" rows="4" placeholder="點擊上方符號加入此處..."></textarea>
+        <div class="action-buttons">
+          <button id="copyBtn" class="btn btn-primary">
+            <span>📋</span>
+            <span data-i18n="copy">複製</span>
+          </button>
+          <button id="clearBtn" class="btn btn-secondary">
+            <span>🗑️</span>
+            <span data-i18n="clear">清除</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="char-info" id="charInfo" style="display: none;">
+        <h3>字元資訊</h3>
+        <div class="info-display">
+          <div class="info-char" id="infoChar"></div>
+          <div class="info-details">
+            <p><strong>Unicode:</strong> <span id="infoUnicode"></span></p>
+            <p><strong>HTML:</strong> <span id="infoHtml"></span></p>
+            <p><strong>名稱:</strong> <span id="infoName"></span></p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <style>
+    .category-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .category-btn.active {
+      background: var(--primary-color, #007bff);
+      color: white;
+    }
+    .char-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+      gap: 4px;
+      padding: 16px;
+      background: var(--card-bg, #f5f5f5);
+      border-radius: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .char-item {
+      font-size: 1.5rem;
+      text-align: center;
+      padding: 12px 8px;
+      cursor: pointer;
+      border-radius: 4px;
+      background: var(--input-bg, white);
+      transition: all 0.2s;
+    }
+    .char-item:hover {
+      background: var(--primary-color, #007bff);
+      color: white;
+      transform: scale(1.1);
+    }
+    .char-info {
+      margin-top: 24px;
+      padding: 16px;
+      background: var(--card-bg, #f5f5f5);
+      border-radius: 8px;
+    }
+    .info-display {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+    .info-char {
+      font-size: 4rem;
+      padding: 16px;
+      background: var(--input-bg, white);
+      border-radius: 8px;
+    }
+    .info-details p {
+      margin: 4px 0;
+    }
+  </style>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./special-chars.js"></script>
+</body>
+</html>

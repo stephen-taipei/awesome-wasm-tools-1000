@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-051 自簽憑證生成 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="生成自簽 X.509 憑證，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-051 <span data-i18n="cry051_name">自簽憑證生成</span></h1>
+        <p data-i18n="cry051_desc">生成自簽 X.509 憑證</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3>金鑰設定</h3>
+        <div class="setting-row">
+          <label for="keyType">金鑰類型</label>
+          <select id="keyType">
+            <option value="RSA" selected>RSA</option>
+            <option value="EC">ECDSA</option>
+          </select>
+        </div>
+        <div class="setting-row" id="rsaKeyOptions">
+          <label for="rsaKeySize">RSA 金鑰長度</label>
+          <select id="rsaKeySize">
+            <option value="2048">2048 位元</option>
+            <option value="4096" selected>4096 位元</option>
+          </select>
+        </div>
+        <div class="setting-row" id="ecKeyOptions" style="display: none;">
+          <label for="ecCurve">EC 曲線</label>
+          <select id="ecCurve">
+            <option value="P-256" selected>P-256</option>
+            <option value="P-384">P-384</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="validityDays">有效期（天）</label>
+          <input type="number" id="validityDays" value="365" min="1" max="3650">
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <h3>憑證資訊</h3>
+        <div class="input-group">
+          <label for="commonName">通用名稱（CN）*</label>
+          <input type="text" id="commonName" placeholder="localhost">
+        </div>
+        <div class="input-group">
+          <label for="organization">組織（O）</label>
+          <input type="text" id="organization" placeholder="My Organization">
+        </div>
+        <div class="input-group">
+          <label for="country">國家代碼（C）</label>
+          <input type="text" id="country" placeholder="TW" maxlength="2">
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <h3>用途擴展</h3>
+        <div class="setting-row">
+          <label>
+            <input type="checkbox" id="isCA"> CA 憑證
+          </label>
+        </div>
+        <div class="setting-row">
+          <label>
+            <input type="checkbox" id="serverAuth" checked> 伺服器驗證
+          </label>
+        </div>
+        <div class="setting-row">
+          <label>
+            <input type="checkbox" id="clientAuth"> 客戶端驗證
+          </label>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="generateBtn" class="btn btn-primary">
+          <span>🔐</span>
+          <span>生成憑證</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div id="certResult" class="settings-panel" style="display: none;">
+        <h3>憑證</h3>
+        <textarea id="certOutput" rows="10" readonly class="mono"></textarea>
+        <div style="margin-top: 0.5rem;">
+          <button id="copyCertBtn" class="btn btn-small btn-success">複製憑證</button>
+          <button id="downloadCertBtn" class="btn btn-small btn-secondary">下載憑證</button>
+        </div>
+
+        <h3 style="margin-top: 1rem;">私鑰</h3>
+        <textarea id="keyOutput" rows="8" readonly class="mono"></textarea>
+        <div style="margin-top: 0.5rem;">
+          <button id="copyKeyBtn" class="btn btn-small btn-success">複製私鑰</button>
+          <button id="downloadKeyBtn" class="btn btn-small btn-secondary">下載私鑰</button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./self-signed-cert.js"></script>
+</body>
+</html>

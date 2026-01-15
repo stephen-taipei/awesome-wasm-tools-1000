@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMP-061 壓縮檔搜尋 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="搜尋壓縮檔內的檔案">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CMP-061 <span data-i18n="cmp061_name">壓縮檔搜尋</span></h1>
+        <p data-i18n="cmp061_desc">搜尋壓縮檔內的檔案</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">🔍</div>
+        <h3 data-i18n="upload_title">拖放壓縮檔到此處</h3>
+        <p data-i18n="upload_subtitle">或點擊選擇壓縮檔</p>
+        <p class="upload-formats">支援 .zip 格式</p>
+        <input type="file" id="fileInput" class="file-input" accept=".zip">
+      </div>
+
+      <div id="searchPanel" class="settings-panel" style="display: none;">
+        <h3>🔍 搜尋設定</h3>
+        <div class="setting-row">
+          <label>搜尋關鍵字</label>
+          <input type="text" id="searchQuery" placeholder="輸入檔案名稱或關鍵字">
+        </div>
+        <div class="setting-row">
+          <label>搜尋範圍</label>
+          <select id="searchScope">
+            <option value="filename">檔案名稱</option>
+            <option value="path">完整路徑</option>
+            <option value="extension">副檔名</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>搜尋模式</label>
+          <select id="searchMode">
+            <option value="contains">包含</option>
+            <option value="startsWith">開頭為</option>
+            <option value="endsWith">結尾為</option>
+            <option value="exact">完全符合</option>
+            <option value="regex">正規表達式</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>
+            <input type="checkbox" id="caseSensitive">
+            區分大小寫
+          </label>
+        </div>
+        <button id="searchBtn" class="btn btn-primary">
+          <span>🔍</span>
+          <span>搜尋</span>
+        </button>
+      </div>
+
+      <div id="archiveInfo" class="settings-panel" style="display: none;">
+        <h3>📦 壓縮檔資訊</h3>
+        <div class="setting-row">
+          <label>總檔案數</label>
+          <span id="totalFiles">-</span>
+        </div>
+        <div class="setting-row">
+          <label>搜尋結果</label>
+          <span id="matchCount">-</span>
+        </div>
+      </div>
+
+      <div id="searchResults" class="settings-panel" style="display: none;">
+        <h3>📋 搜尋結果</h3>
+        <div id="resultsList" class="file-tree"></div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="extractSelectedBtn" class="btn btn-success" style="display: none;">
+          <span>📂</span>
+          <span>提取選擇的檔案</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./archive-search.js"></script>
+</body>
+</html>

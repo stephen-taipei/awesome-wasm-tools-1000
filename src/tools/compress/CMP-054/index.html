@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMP-054 IMG 映像檔處理 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="處理 IMG 磁碟映像檔格式">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CMP-054 <span data-i18n="cmp054_name">IMG 映像檔處理</span></h1>
+        <p data-i18n="cmp054_desc">處理 IMG 磁碟映像檔格式</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">💽</div>
+        <h3 data-i18n="upload_title">拖放 IMG 檔案到此處</h3>
+        <p data-i18n="upload_subtitle">或點擊選擇 IMG 映像檔</p>
+        <p class="upload-formats" data-i18n="upload_formats">支援 .img, .ima, .bin 格式</p>
+        <input type="file" id="fileInput" class="file-input" accept=".img,.ima,.bin">
+      </div>
+
+      <div id="imgInfo" class="settings-panel" style="display: none;">
+        <h3>💽 IMG 資訊</h3>
+        <div class="setting-row">
+          <label>檔案大小</label>
+          <span id="imgSize">-</span>
+        </div>
+        <div class="setting-row">
+          <label>映像類型</label>
+          <span id="imgType">-</span>
+        </div>
+        <div class="setting-row">
+          <label>檔案系統</label>
+          <span id="fileSystem">-</span>
+        </div>
+        <div class="setting-row">
+          <label>磁區大小</label>
+          <span id="sectorSize">-</span>
+        </div>
+      </div>
+
+      <div id="partitionInfo" class="settings-panel" style="display: none;">
+        <h3>📊 分區資訊</h3>
+        <div id="partitionList"></div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">準備中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="analyzeBtn" class="btn btn-primary" style="display: none;">
+          <span>🔍</span>
+          <span>深度分析</span>
+        </button>
+        <button id="extractBtn" class="btn btn-success" style="display: none;">
+          <span>📂</span>
+          <span>提取資料</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./img-handler.js"></script>
+</body>
+</html>

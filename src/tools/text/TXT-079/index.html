@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-079 引用格式化 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="格式化文字引用為各種引用格式">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-079 <span data-i18n="txt079_name">引用格式化</span></h1>
+        <p data-i18n="txt079_desc">格式化文字引用為各種引用格式</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="quote_text">引用文字</h3>
+        <textarea id="quoteText" class="text-input" rows="4" placeholder="輸入要引用的文字..."></textarea>
+      </div>
+
+      <div class="input-section">
+        <h3 data-i18n="source_info">來源資訊</h3>
+        <div class="form-grid">
+          <input type="text" id="author" class="text-input" placeholder="作者">
+          <input type="text" id="title" class="text-input" placeholder="標題/書名">
+          <input type="text" id="year" class="text-input" placeholder="年份">
+          <input type="text" id="page" class="text-input" placeholder="頁碼">
+          <input type="text" id="url" class="text-input" placeholder="網址 (選填)">
+        </div>
+      </div>
+
+      <div class="options-section">
+        <h3 data-i18n="quote_style">引用風格</h3>
+        <select id="styleSelect" class="select-input">
+          <option value="block">區塊引用</option>
+          <option value="inline">行內引用</option>
+          <option value="markdown">Markdown</option>
+          <option value="html">HTML</option>
+          <option value="latex">LaTeX</option>
+        </select>
+      </div>
+
+      <div class="action-buttons">
+        <button id="formatBtn" class="btn btn-primary">
+          <span>📝</span>
+          <span data-i18n="format">格式化</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">格式化結果</h3>
+        <textarea id="outputText" class="text-input code-output" rows="6" readonly></textarea>
+        <button id="copyBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span data-i18n="copy">複製</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./quote-formatter.js"></script>
+</body>
+</html>

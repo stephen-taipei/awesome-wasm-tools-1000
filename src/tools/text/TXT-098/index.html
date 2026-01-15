@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-098 Emoji 統計 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="統計文字中的 Emoji 使用情況">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-098 <span data-i18n="txt098_name">Emoji 統計</span></h1>
+        <p data-i18n="txt098_desc">統計文字中的 Emoji 使用情況</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="8" placeholder="輸入包含 Emoji 的文字..."></textarea>
+      </div>
+
+      <div class="action-buttons">
+        <button id="analyzeBtn" class="btn btn-primary">
+          <span>📊</span>
+          <span data-i18n="analyze">分析</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <div class="stats-summary">
+          <div class="stat-item">
+            <span class="stat-label">總 Emoji 數量:</span>
+            <span id="totalCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">不同 Emoji 種類:</span>
+            <span id="uniqueCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Emoji 密度:</span>
+            <span id="density" class="stat-value">0%</span>
+          </div>
+        </div>
+
+        <h3 data-i18n="result">Emoji 排行</h3>
+        <div id="emojiRanking" class="emoji-ranking"></div>
+
+        <h3>提取的 Emoji</h3>
+        <div id="extractedEmojis" class="extracted-emojis"></div>
+        <button id="copyBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span data-i18n="copy">複製所有 Emoji</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <style>
+    .stats-summary {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      padding: 16px;
+      background: var(--card-bg, #f5f5f5);
+      border-radius: 8px;
+    }
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .stat-label {
+      font-size: 0.9rem;
+      color: var(--text-secondary, #666);
+    }
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--primary-color, #007bff);
+    }
+    .emoji-ranking {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .rank-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      background: var(--card-bg, #f5f5f5);
+      border-radius: 8px;
+    }
+    .rank-position {
+      font-weight: bold;
+      color: var(--text-secondary, #666);
+      min-width: 30px;
+    }
+    .rank-emoji {
+      font-size: 1.5rem;
+    }
+    .rank-bar {
+      flex: 1;
+      height: 20px;
+      background: var(--primary-color, #007bff);
+      border-radius: 4px;
+      opacity: 0.7;
+    }
+    .rank-count {
+      min-width: 40px;
+      text-align: right;
+      font-weight: bold;
+    }
+    .extracted-emojis {
+      font-size: 2rem;
+      padding: 16px;
+      background: var(--input-bg, #f5f5f5);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      word-break: break-all;
+    }
+  </style>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./emoji-stats.js"></script>
+</body>
+</html>

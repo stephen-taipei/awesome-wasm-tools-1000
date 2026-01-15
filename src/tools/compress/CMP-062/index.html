@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMP-062 壓縮檔比較 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="比較兩個壓縮檔的內容差異">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CMP-062 <span data-i18n="cmp062_name">壓縮檔比較</span></h1>
+        <p data-i18n="cmp062_desc">比較兩個壓縮檔的內容差異</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="compare-container">
+        <div id="uploadArea1" class="upload-area half">
+          <div class="icon">📦</div>
+          <h3>壓縮檔 A</h3>
+          <p>拖放或點擊選擇</p>
+          <input type="file" id="fileInput1" class="file-input" accept=".zip">
+          <p id="file1Name" class="file-name-display"></p>
+        </div>
+
+        <div id="uploadArea2" class="upload-area half">
+          <div class="icon">📦</div>
+          <h3>壓縮檔 B</h3>
+          <p>拖放或點擊選擇</p>
+          <input type="file" id="fileInput2" class="file-input" accept=".zip">
+          <p id="file2Name" class="file-name-display"></p>
+        </div>
+      </div>
+
+      <div id="compareResults" class="settings-panel" style="display: none;">
+        <h3>📊 比較結果</h3>
+        <div class="compare-summary">
+          <div class="summary-item">
+            <span class="summary-label">僅在 A 中</span>
+            <span id="onlyInA" class="summary-value">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">僅在 B 中</span>
+            <span id="onlyInB" class="summary-value">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">相同檔案</span>
+            <span id="identical" class="summary-value">0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">內容不同</span>
+            <span id="different" class="summary-value">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="detailResults" class="settings-panel" style="display: none;">
+        <h3>📋 詳細列表</h3>
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="onlyA">僅在 A</button>
+          <button class="tab-btn" data-tab="onlyB">僅在 B</button>
+          <button class="tab-btn" data-tab="same">相同</button>
+          <button class="tab-btn" data-tab="diff">不同</button>
+        </div>
+        <div id="tabContent" class="tab-content"></div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="compareBtn" class="btn btn-primary" disabled>
+          <span>🔍</span>
+          <span>開始比較</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./archive-compare.js"></script>
+</body>
+</html>

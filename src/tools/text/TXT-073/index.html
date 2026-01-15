@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-073 文字相似度計算 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="計算兩段文字之間的相似度">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-073 <span data-i18n="txt073_name">文字相似度計算</span></h1>
+        <p data-i18n="txt073_desc">計算兩段文字之間的相似度</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="text_1">文字 1</h3>
+        <textarea id="text1" class="text-input" rows="4" placeholder="輸入第一段文字..."></textarea>
+      </div>
+
+      <div class="input-section">
+        <h3 data-i18n="text_2">文字 2</h3>
+        <textarea id="text2" class="text-input" rows="4" placeholder="輸入第二段文字..."></textarea>
+      </div>
+
+      <div class="action-buttons">
+        <button id="compareBtn" class="btn btn-primary">
+          <span>📊</span>
+          <span data-i18n="compare">比較</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">相似度結果</h3>
+        <div class="similarity-display">
+          <div class="similarity-circle">
+            <span id="similarityPercent">0%</span>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-label">Levenshtein 距離</span>
+            <span id="levenshtein" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Jaccard 相似度</span>
+            <span id="jaccard" class="stat-value">0%</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">餘弦相似度</span>
+            <span id="cosine" class="stat-value">0%</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">最長公共子序列</span>
+            <span id="lcs" class="stat-value">0</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./text-similarity.js"></script>
+</body>
+</html>

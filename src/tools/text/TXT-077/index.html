@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-077 可讀性分析 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="分析文字的可讀性等級和複雜度">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-077 <span data-i18n="txt077_name">可讀性分析</span></h1>
+        <p data-i18n="txt077_desc">分析文字的可讀性等級和複雜度</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="10" placeholder="輸入要分析可讀性的文字..."></textarea>
+      </div>
+
+      <div class="action-buttons">
+        <button id="analyzeBtn" class="btn btn-primary">
+          <span>📊</span>
+          <span data-i18n="analyze">分析</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">可讀性分析結果</h3>
+
+        <div class="score-display">
+          <div class="score-item">
+            <span class="score-label">Flesch-Kincaid 等級</span>
+            <span id="fkGrade" class="score-value">-</span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">Flesch 閱讀易度</span>
+            <span id="fkEase" class="score-value">-</span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">閱讀等級</span>
+            <span id="readLevel" class="score-value">-</span>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-label">單詞數</span>
+            <span id="wordCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">句子數</span>
+            <span id="sentenceCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">音節數</span>
+            <span id="syllableCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">平均單詞長度</span>
+            <span id="avgWordLength" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">平均句子長度</span>
+            <span id="avgSentenceLength" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">複雜單詞比例</span>
+            <span id="complexWordRatio" class="stat-value">0%</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./readability.js"></script>
+</body>
+</html>

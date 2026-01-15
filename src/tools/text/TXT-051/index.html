@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-051 Unicode 字元查詢 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="查詢 Unicode 字元的詳細資訊，包括碼點、名稱、區塊等">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-051 <span data-i18n="txt051_name">Unicode 字元查詢</span></h1>
+        <p data-i18n="txt051_desc">查詢 Unicode 字元的詳細資訊，包括碼點、名稱、區塊等</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_char">輸入字元或碼點</h3>
+        <div class="input-group">
+          <input type="text" id="inputChar" class="text-input" placeholder="輸入單一字元或 U+XXXX 格式碼點">
+          <button id="searchBtn" class="btn btn-primary">
+            <span>🔍</span>
+            <span data-i18n="search">查詢</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="char_info">字元資訊</h3>
+        <div class="char-display">
+          <span id="charDisplay" class="large-char"></span>
+        </div>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label" data-i18n="codepoint">碼點</span>
+            <span id="codepoint" class="info-value"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="decimal">十進制</span>
+            <span id="decimal" class="info-value"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="utf8">UTF-8</span>
+            <span id="utf8" class="info-value"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="utf16">UTF-16</span>
+            <span id="utf16" class="info-value"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="html_entity">HTML 實體</span>
+            <span id="htmlEntity" class="info-value"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="css_escape">CSS 跳脫</span>
+            <span id="cssEscape" class="info-value"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="block">區塊</span>
+            <span id="block" class="info-value"></span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" data-i18n="category">類別</span>
+            <span id="category" class="info-value"></span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./unicode-lookup.js"></script>
+</body>
+</html>

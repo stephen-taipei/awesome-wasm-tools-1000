@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-091 文字對齊 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="將文字對齊為左對齊、右對齊、置中或兩端對齊">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-091 <span data-i18n="txt091_name">文字對齊</span></h1>
+        <p data-i18n="txt091_desc">將文字對齊為左對齊、右對齊、置中或兩端對齊</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="8" placeholder="在此輸入文字..."></textarea>
+      </div>
+
+      <div class="options-section">
+        <div class="option-row">
+          <label>行寬:</label>
+          <input type="number" id="lineWidth" class="number-input" value="60" min="20" max="200">
+        </div>
+        <div class="option-row">
+          <label>對齊方式:</label>
+          <select id="alignType" class="select-input">
+            <option value="left">左對齊</option>
+            <option value="right">右對齊</option>
+            <option value="center">置中</option>
+            <option value="justify">兩端對齊</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="alignBtn" class="btn btn-primary">
+          <span>📐</span>
+          <span data-i18n="align">對齊</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">對齊結果</h3>
+        <pre id="outputText" class="text-output monospace"></pre>
+        <button id="copyBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span data-i18n="copy">複製</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./text-aligner.js"></script>
+</body>
+</html>

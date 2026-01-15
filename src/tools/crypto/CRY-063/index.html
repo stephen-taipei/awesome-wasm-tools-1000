@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-063 HOTP 驗證 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="驗證基於計數器的一次性密碼 (HOTP)，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-063 <span data-i18n="cry063_name">HOTP 驗證</span></h1>
+        <p data-i18n="cry063_desc">驗證基於計數器的一次性密碼 (HOTP)</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-group">
+        <label for="secret">密鑰（Base32 編碼）</label>
+        <input type="text" id="secret" placeholder="輸入 Base32 密鑰" class="mono">
+      </div>
+
+      <div class="input-group">
+        <label for="token">驗證碼</label>
+        <input type="text" id="token" placeholder="輸入 HOTP 驗證碼" class="mono" maxlength="8">
+      </div>
+
+      <div class="input-group">
+        <label for="counter">預期計數器值</label>
+        <input type="number" id="counter" value="0" min="0" class="mono">
+      </div>
+
+      <div class="settings-panel">
+        <h3>驗證設定</h3>
+        <div class="setting-row">
+          <label for="digits">位數</label>
+          <select id="digits">
+            <option value="6" selected>6 位數</option>
+            <option value="8">8 位數</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="lookAhead">前瞻窗口</label>
+          <select id="lookAhead">
+            <option value="0">無前瞻</option>
+            <option value="5" selected>5 個計數</option>
+            <option value="10">10 個計數</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="verifyBtn" class="btn btn-primary">
+          <span>✅</span>
+          <span>驗證</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div id="verifyResult" class="settings-panel" style="display: none;">
+        <h3>驗證結果</h3>
+        <div id="resultDisplay" style="text-align: center; padding: 2rem; border-radius: 0.5rem;"></div>
+        <div id="matchedCounter" class="setting-row" style="display: none;">
+          <label>匹配的計數器值</label>
+          <span id="matchedValue" class="mono">-</span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./hotp-verify.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-049 X.509 憑證驗證 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="驗證 X.509 憑證的有效性，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-049 <span data-i18n="cry049_name">X.509 憑證驗證</span></h1>
+        <p data-i18n="cry049_desc">驗證 X.509 憑證的有效性</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-group">
+        <label for="certificate">待驗證憑證</label>
+        <textarea id="certificate" rows="8" placeholder="貼上 X.509 憑證（PEM 格式）..."></textarea>
+        <input type="file" id="certificateFile" accept=".pem,.crt,.cer" style="margin-top: 0.5rem;">
+      </div>
+
+      <div class="input-group">
+        <label for="issuerCertificate">發行者憑證（可選）</label>
+        <textarea id="issuerCertificate" rows="6" placeholder="貼上發行者 CA 憑證（PEM 格式）以驗證簽章..."></textarea>
+        <input type="file" id="issuerCertificateFile" accept=".pem,.crt,.cer" style="margin-top: 0.5rem;">
+      </div>
+
+      <div class="action-buttons">
+        <button id="verifyBtn" class="btn btn-primary">
+          <span>✅</span>
+          <span>驗證憑證</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div id="verificationResult" class="settings-panel" style="display: none;">
+        <h3>驗證結果</h3>
+        <div id="overallResult" style="text-align: center; padding: 1rem; margin-bottom: 1rem; border-radius: 0.5rem;"></div>
+
+        <h4>詳細檢查</h4>
+        <div id="checkResults"></div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./x509-verify.js"></script>
+</body>
+</html>

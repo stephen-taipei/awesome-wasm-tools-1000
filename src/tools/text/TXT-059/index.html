@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-059 ASCII 藝術生成 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="將文字轉換為 ASCII 藝術字">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-059 <span data-i18n="txt059_name">ASCII 藝術生成</span></h1>
+        <p data-i18n="txt059_desc">將文字轉換為 ASCII 藝術字</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <input type="text" id="inputText" class="text-input" placeholder="輸入要轉換的文字 (支援英文字母和數字)">
+      </div>
+
+      <div class="options-section">
+        <h3 data-i18n="font_style">字型風格</h3>
+        <select id="fontSelect" class="select-input">
+          <option value="standard">Standard</option>
+          <option value="banner">Banner</option>
+          <option value="block">Block</option>
+          <option value="bubble">Bubble</option>
+          <option value="digital">Digital</option>
+          <option value="mini">Mini</option>
+        </select>
+      </div>
+
+      <div class="action-buttons">
+        <button id="generateBtn" class="btn btn-primary">
+          <span>🎨</span>
+          <span data-i18n="generate">生成</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">ASCII 藝術</h3>
+        <pre id="outputText" class="ascii-output"></pre>
+        <button id="copyBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span data-i18n="copy">複製</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./ascii-art-generator.js"></script>
+</body>
+</html>

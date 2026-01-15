@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-094 文字樹狀圖 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="將縮排文字轉換為樹狀結構圖">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-094 <span data-i18n="txt094_name">文字樹狀圖</span></h1>
+        <p data-i18n="txt094_desc">將縮排文字轉換為樹狀結構圖</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入縮排文字 (用空格或 Tab 表示層級)</h3>
+        <textarea id="inputText" class="text-input" rows="10" placeholder="專案
+  src
+    components
+      Header.js
+      Footer.js
+    utils
+      helpers.js
+  public
+    index.html
+  package.json"></textarea>
+      </div>
+
+      <div class="options-section">
+        <div class="option-row">
+          <label>樹狀圖樣式:</label>
+          <select id="treeStyle" class="select-input">
+            <option value="ascii">ASCII 樣式</option>
+            <option value="unicode">Unicode 樣式</option>
+            <option value="simple">簡單樣式</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="generateBtn" class="btn btn-primary">
+          <span>🌳</span>
+          <span data-i18n="generate">生成</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">樹狀圖結果</h3>
+        <pre id="outputText" class="text-output monospace"></pre>
+        <button id="copyBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span data-i18n="copy">複製</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./text-tree.js"></script>
+</body>
+</html>

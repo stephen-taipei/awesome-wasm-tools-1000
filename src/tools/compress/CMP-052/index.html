@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMP-052 ISO 映像檔提取 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="從 ISO 映像檔中提取檔案">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CMP-052 <span data-i18n="cmp052_name">ISO 映像檔提取</span></h1>
+        <p data-i18n="cmp052_desc">從 ISO 映像檔中提取檔案</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">💿</div>
+        <h3 data-i18n="upload_title">拖放 ISO 檔案到此處</h3>
+        <p data-i18n="upload_subtitle">或點擊選擇 ISO 映像檔</p>
+        <p class="upload-formats" data-i18n="upload_formats">支援 .iso 格式</p>
+        <input type="file" id="fileInput" class="file-input" accept=".iso">
+      </div>
+
+      <div id="isoInfo" class="settings-panel" style="display: none;">
+        <h3>💿 ISO 資訊</h3>
+        <div class="setting-row">
+          <label>卷標名稱</label>
+          <span id="volumeName">-</span>
+        </div>
+        <div class="setting-row">
+          <label>ISO 大小</label>
+          <span id="isoSize">-</span>
+        </div>
+        <div class="setting-row">
+          <label>檔案數量</label>
+          <span id="fileCount">-</span>
+        </div>
+      </div>
+
+      <div id="fileList" class="settings-panel" style="display: none;">
+        <h3>📁 檔案列表</h3>
+        <div id="fileTree"></div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">準備中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="extractAllBtn" class="btn btn-primary" style="display: none;">
+          <span>📂</span>
+          <span>提取全部為 ZIP</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./iso-extract.js"></script>
+</body>
+</html>

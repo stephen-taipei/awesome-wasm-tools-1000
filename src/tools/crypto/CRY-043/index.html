@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-043 PGP 金鑰生成 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="生成 PGP 公鑰和私鑰對，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-043 <span data-i18n="cry043_name">PGP 金鑰生成</span></h1>
+        <p data-i18n="cry043_desc">生成 PGP 公鑰和私鑰對</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3>金鑰設定</h3>
+        <div class="setting-row">
+          <label for="keyType">金鑰類型</label>
+          <select id="keyType">
+            <option value="rsa" selected>RSA</option>
+            <option value="ecc">ECC (橢圓曲線)</option>
+          </select>
+        </div>
+        <div class="setting-row" id="rsaOptions">
+          <label for="rsaKeySize">RSA 金鑰長度</label>
+          <select id="rsaKeySize">
+            <option value="2048">2048 位元</option>
+            <option value="3072">3072 位元</option>
+            <option value="4096" selected>4096 位元</option>
+          </select>
+        </div>
+        <div class="setting-row" id="eccOptions" style="display: none;">
+          <label for="eccCurve">ECC 曲線</label>
+          <select id="eccCurve">
+            <option value="p256">P-256 (NIST)</option>
+            <option value="p384">P-384 (NIST)</option>
+            <option value="p521" selected>P-521 (NIST)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="name">名稱</label>
+        <input type="text" id="name" placeholder="輸入您的名稱">
+      </div>
+
+      <div class="input-group">
+        <label for="email">電子郵件</label>
+        <input type="email" id="email" placeholder="輸入您的電子郵件">
+      </div>
+
+      <div class="input-group">
+        <label for="passphrase">密碼短語（保護私鑰）</label>
+        <div class="password-input">
+          <input type="password" id="passphrase" placeholder="輸入密碼短語">
+          <button type="button" id="togglePassphrase" class="btn btn-small">顯示</button>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="confirmPassphrase">確認密碼短語</label>
+        <input type="password" id="confirmPassphrase" placeholder="再次輸入密碼短語">
+      </div>
+
+      <div class="action-buttons">
+        <button id="generateBtn" class="btn btn-primary">
+          <span>🔑</span>
+          <span>生成金鑰對</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div id="progressContainer" class="progress-container" style="display: none;">
+        <div class="progress-bar">
+          <div id="progressBar" class="progress-fill"></div>
+        </div>
+        <span id="progressText">生成中...</span>
+      </div>
+
+      <div id="keyResult" class="settings-panel" style="display: none;">
+        <h3>公鑰</h3>
+        <textarea id="publicKey" rows="8" readonly class="mono"></textarea>
+        <button id="copyPublicBtn" class="btn btn-small btn-success" style="margin-top: 0.5rem;">複製公鑰</button>
+        <button id="downloadPublicBtn" class="btn btn-small btn-secondary" style="margin-top: 0.5rem;">下載公鑰</button>
+
+        <h3 style="margin-top: 1rem;">私鑰（已加密）</h3>
+        <textarea id="privateKey" rows="8" readonly class="mono"></textarea>
+        <button id="copyPrivateBtn" class="btn btn-small btn-success" style="margin-top: 0.5rem;">複製私鑰</button>
+        <button id="downloadPrivateBtn" class="btn btn-small btn-secondary" style="margin-top: 0.5rem;">下載私鑰</button>
+
+        <div class="setting-row" style="margin-top: 1rem;">
+          <label>金鑰指紋</label>
+          <span id="fingerprint" class="mono">-</span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./pgp-keygen.js"></script>
+</body>
+</html>

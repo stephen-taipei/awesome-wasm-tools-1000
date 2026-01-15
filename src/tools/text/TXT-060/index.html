@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-060 ASCII 藝術轉圖 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="將圖片轉換為 ASCII 藝術">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-060 <span data-i18n="txt060_name">ASCII 藝術轉圖</span></h1>
+        <p data-i18n="txt060_desc">將圖片轉換為 ASCII 藝術</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="upload_image">上傳圖片</h3>
+        <input type="file" id="fileInput" class="file-input" accept="image/*">
+        <canvas id="previewCanvas" style="display: none;"></canvas>
+      </div>
+
+      <div class="options-section">
+        <div class="option-row">
+          <label data-i18n="width">寬度 (字元):</label>
+          <input type="number" id="widthInput" class="number-input" value="80" min="20" max="200">
+        </div>
+        <div class="option-row">
+          <label data-i18n="charset">字元集:</label>
+          <select id="charsetSelect" class="select-input">
+            <option value="standard">標準 (@%#*+=-:. )</option>
+            <option value="blocks">方塊 (█▓▒░ )</option>
+            <option value="detailed">詳細 ($@B%8&WM#*...)</option>
+            <option value="simple">簡單 (#. )</option>
+          </select>
+        </div>
+        <div class="option-row">
+          <label>
+            <input type="checkbox" id="invertCheck">
+            <span data-i18n="invert_colors">反轉顏色</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary">
+          <span>🎨</span>
+          <span data-i18n="convert">轉換</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">ASCII 藝術</h3>
+        <pre id="outputText" class="ascii-output"></pre>
+        <button id="copyBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span data-i18n="copy">複製</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./image-to-ascii.js"></script>
+</body>
+</html>

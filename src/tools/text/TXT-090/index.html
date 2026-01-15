@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-090 文字填充 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="在文字前後填充字元到指定長度">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-090 <span data-i18n="txt090_name">文字填充</span></h1>
+        <p data-i18n="txt090_desc">在文字前後填充字元到指定長度</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字 (每行一個)</h3>
+        <textarea id="inputText" class="text-input" rows="6" placeholder="輸入文字，每行一個..."></textarea>
+      </div>
+
+      <div class="options-section">
+        <h3 data-i18n="options">填充選項</h3>
+        <div class="option-row">
+          <label>目標長度:</label>
+          <input type="number" id="targetLength" class="number-input" value="20" min="1">
+        </div>
+        <div class="option-row">
+          <label>填充字元:</label>
+          <input type="text" id="padChar" class="text-input" value=" " style="width: 80px;">
+        </div>
+        <div class="option-row">
+          <label>填充位置:</label>
+          <select id="padPosition" class="select-input">
+            <option value="start">左側填充 (padStart)</option>
+            <option value="end">右側填充 (padEnd)</option>
+            <option value="both">兩側填充 (置中)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="padBtn" class="btn btn-primary">
+          <span>📏</span>
+          <span data-i18n="pad">填充</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">填充結果</h3>
+        <textarea id="outputText" class="text-input" rows="6" readonly></textarea>
+        <button id="copyBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span data-i18n="copy">複製</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./text-padder.js"></script>
+</body>
+</html>

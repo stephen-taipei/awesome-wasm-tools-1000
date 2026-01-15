@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-086 空行清理 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="移除多餘的空白行，保持程式碼整潔">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-086 <span data-i18n="txt086_name">空行清理</span></h1>
+        <p data-i18n="txt086_desc">移除多餘的空白行，保持程式碼整潔</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="10" placeholder="在此貼上文字..."></textarea>
+      </div>
+
+      <div class="options-section">
+        <h3 data-i18n="options">選項</h3>
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="removeAll">
+            <span>移除所有空白行</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="mergeMultiple" checked>
+            <span>合併連續空白行為一行</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="trimLines" checked>
+            <span>移除每行結尾空白</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="removeLeading">
+            <span>移除開頭空白行</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="removeTrailing">
+            <span>移除結尾空白行</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="cleanBtn" class="btn btn-primary">
+          <span>🧹</span>
+          <span data-i18n="clean">清理</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">清理結果</h3>
+        <textarea id="outputText" class="text-input" rows="10" readonly></textarea>
+        <div class="stats-row">
+          <span>原始: <span id="originalLines">0</span> 行</span>
+          <span>處理後: <span id="cleanedLines">0</span> 行</span>
+        </div>
+        <button id="copyBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span data-i18n="copy">複製</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./blank-line-cleaner.js"></script>
+</body>
+</html>

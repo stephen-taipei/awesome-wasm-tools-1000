@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMP-045 LZMA 字典大小設定 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="設定 LZMA 壓縮的字典大小以優化壓縮效果">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CMP-045 <span data-i18n="cmp045_name">LZMA 字典大小設定</span></h1>
+        <p data-i18n="cmp045_desc">設定 LZMA 壓縮的字典大小</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📦</div>
+        <h3 data-i18n="upload_title">拖放檔案到此處</h3>
+        <p data-i18n="upload_subtitle">或點擊選擇檔案進行 LZMA 壓縮</p>
+        <p class="upload-formats" data-i18n="upload_formats">支援任何類型的檔案</p>
+        <input type="file" id="fileInput" class="file-input">
+      </div>
+
+      <div id="fileInfo" class="file-info" style="display: none;">
+        <h3>檔案資訊</h3>
+        <p id="fileName">檔名: -</p>
+        <p id="fileSize">大小: -</p>
+      </div>
+
+      <div class="settings-panel">
+        <h3 data-i18n="settings">LZMA 字典設定</h3>
+        <div class="setting-row">
+          <label data-i18n="dictionary_size">字典大小</label>
+          <select id="dictSize">
+            <option value="65536">64 KB - 快速</option>
+            <option value="262144">256 KB</option>
+            <option value="1048576">1 MB</option>
+            <option value="4194304" selected>4 MB - 標準</option>
+            <option value="8388608">8 MB</option>
+            <option value="16777216">16 MB</option>
+            <option value="33554432">32 MB - 最佳</option>
+            <option value="67108864">64 MB - 極致</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="compression_level">壓縮等級</label>
+          <select id="compressionLevel">
+            <option value="1">1 - 最快</option>
+            <option value="3">3 - 快速</option>
+            <option value="5" selected>5 - 平衡</option>
+            <option value="7">7 - 較佳</option>
+            <option value="9">9 - 最佳</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="literal_context">文字上下文位元</label>
+          <select id="lc">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="literal_pos">文字位置位元</label>
+          <select id="lp">
+            <option value="0" selected>0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="pos_bits">位置位元</label>
+          <select id="pb">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="output_filename">輸出檔名</label>
+          <input type="text" id="outputFilename" placeholder="輸入檔名">
+        </div>
+      </div>
+
+      <div id="dictInfo" class="settings-panel">
+        <h3>📖 字典大小說明</h3>
+        <p id="dictDescription">較大的字典可以提供更好的壓縮比，但需要更多記憶體。建議字典大小不超過檔案大小。</p>
+        <div class="setting-row">
+          <label>建議字典大小</label>
+          <span id="recommendedDict">-</span>
+        </div>
+        <div class="setting-row">
+          <label>預估記憶體使用</label>
+          <span id="memoryUsage">-</span>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text" data-i18n="compressing">壓縮中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="compressBtn" class="btn btn-primary" disabled>
+          <span>📦</span>
+          <span data-i18n="compress">開始壓縮</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span data-i18n="download">下載檔案</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+
+      <div id="performanceInfo" class="settings-panel" style="display: none;">
+        <h3>📊 壓縮資訊</h3>
+        <div class="setting-row">
+          <label>處理時間</label>
+          <span id="processTime">-</span>
+        </div>
+        <div class="setting-row">
+          <label>原始大小</label>
+          <span id="originalSize">-</span>
+        </div>
+        <div class="setting-row">
+          <label>壓縮後大小</label>
+          <span id="compressedSize">-</span>
+        </div>
+        <div class="setting-row">
+          <label>壓縮比</label>
+          <span id="compressionRatio">-</span>
+        </div>
+        <div class="setting-row">
+          <label>使用的字典大小</label>
+          <span id="usedDictSize">-</span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lzma/2.3.2/lzma_worker.min.js"></script>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./lzma-dict.js"></script>
+</body>
+</html>

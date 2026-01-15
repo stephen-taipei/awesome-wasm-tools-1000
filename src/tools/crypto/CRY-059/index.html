@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-059 JWK 轉換 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="在 JWK 和 PEM 格式之間轉換金鑰，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-059 <span data-i18n="cry059_name">JWK 轉換</span></h1>
+        <p data-i18n="cry059_desc">在 JWK 和 PEM 格式之間轉換金鑰</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3>轉換方向</h3>
+        <div class="setting-row">
+          <label for="direction">轉換方向</label>
+          <select id="direction">
+            <option value="jwk-to-pem" selected>JWK → PEM</option>
+            <option value="pem-to-jwk">PEM → JWK</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="jwkInput" class="input-group">
+        <label for="jwkText">JWK</label>
+        <textarea id="jwkText" rows="10" class="mono" placeholder='輸入 JWK，例如：
+{
+  "kty": "EC",
+  "crv": "P-256",
+  "x": "...",
+  "y": "..."
+}'></textarea>
+      </div>
+
+      <div id="pemInput" class="input-group" style="display: none;">
+        <label for="pemText">PEM</label>
+        <textarea id="pemText" rows="10" class="mono" placeholder="輸入 PEM 格式金鑰..."></textarea>
+        <input type="file" id="pemFile" accept=".pem,.key,.pub" style="margin-top: 0.5rem;">
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary">
+          <span>🔄</span>
+          <span>轉換</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div class="input-group">
+        <label for="output">轉換結果</label>
+        <textarea id="output" rows="12" readonly class="mono" placeholder="轉換結果將顯示在此..."></textarea>
+        <div style="margin-top: 0.5rem;">
+          <button id="copyBtn" class="btn btn-small btn-success">複製</button>
+          <button id="downloadBtn" class="btn btn-small btn-secondary">下載</button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./jwk-convert.js"></script>
+</body>
+</html>

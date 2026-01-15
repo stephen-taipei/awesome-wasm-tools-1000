@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-074 文字模糊匹配 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="在文字列表中進行模糊搜尋匹配">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-074 <span data-i18n="txt074_name">文字模糊匹配</span></h1>
+        <p data-i18n="txt074_desc">在文字列表中進行模糊搜尋匹配</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="search_term">搜尋詞</h3>
+        <input type="text" id="searchTerm" class="text-input" placeholder="輸入要搜尋的文字...">
+      </div>
+
+      <div class="input-section">
+        <h3 data-i18n="text_list">文字列表 (每行一個)</h3>
+        <textarea id="textList" class="text-input" rows="8" placeholder="輸入文字列表，每行一個..."></textarea>
+      </div>
+
+      <div class="options-section">
+        <div class="option-row">
+          <label data-i18n="threshold">相似度門檻:</label>
+          <input type="range" id="threshold" min="0" max="100" value="50">
+          <span id="thresholdValue">50%</span>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="searchBtn" class="btn btn-primary">
+          <span>🔍</span>
+          <span data-i18n="search">搜尋</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">匹配結果</h3>
+        <div id="matchList" class="match-list"></div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./fuzzy-match.js"></script>
+</body>
+</html>

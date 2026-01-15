@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-054 JWT 驗證 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="驗證 JSON Web Token (JWT) 的簽章，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-054 <span data-i18n="cry054_name">JWT 驗證</span></h1>
+        <p data-i18n="cry054_desc">驗證 JSON Web Token (JWT) 的簽章</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-group">
+        <label for="jwt">JWT</label>
+        <textarea id="jwt" rows="5" class="mono" placeholder="輸入要驗證的 JWT..."></textarea>
+      </div>
+
+      <div class="input-group">
+        <label for="secret">密鑰</label>
+        <div class="password-input">
+          <input type="password" id="secret" placeholder="輸入簽章密鑰">
+          <button type="button" id="toggleSecret" class="btn btn-small">顯示</button>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="verifyBtn" class="btn btn-primary">
+          <span>✅</span>
+          <span>驗證 JWT</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div id="verificationResult" class="settings-panel" style="display: none;">
+        <h3>驗證結果</h3>
+        <div id="signatureResult" style="text-align: center; padding: 1rem; margin-bottom: 1rem; border-radius: 0.5rem;"></div>
+
+        <h4>詳細檢查</h4>
+        <div id="checkResults"></div>
+
+        <h4 style="margin-top: 1rem;">Header</h4>
+        <pre id="headerOutput" class="mono" style="background: #f1f5f9; padding: 1rem; border-radius: 0.5rem; overflow-x: auto;"></pre>
+
+        <h4>Payload</h4>
+        <pre id="payloadOutput" class="mono" style="background: #f1f5f9; padding: 1rem; border-radius: 0.5rem; overflow-x: auto;"></pre>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./jwt-verify.js"></script>
+</body>
+</html>

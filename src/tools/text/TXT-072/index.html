@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-072 零寬字元移除 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="移除文字中的零寬字元並解碼隱藏訊息">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-072 <span data-i18n="txt072_name">零寬字元移除</span></h1>
+        <p data-i18n="txt072_desc">移除文字中的零寬字元並解碼隱藏訊息</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="6" placeholder="貼上可能包含零寬字元的文字..."></textarea>
+      </div>
+
+      <div class="action-buttons">
+        <button id="decodeBtn" class="btn btn-primary">
+          <span>🔓</span>
+          <span data-i18n="decode">解碼</span>
+        </button>
+        <button id="removeBtn" class="btn btn-secondary">
+          <span>🧹</span>
+          <span data-i18n="remove_only">僅移除</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">結果</h3>
+        <div class="result-section">
+          <h4 data-i18n="clean_text">清理後的文字</h4>
+          <textarea id="cleanText" class="text-input" rows="3" readonly></textarea>
+        </div>
+        <div id="hiddenSection" class="result-section" style="display: none;">
+          <h4 data-i18n="hidden_message">隱藏訊息</h4>
+          <textarea id="hiddenText" class="text-input" rows="3" readonly></textarea>
+        </div>
+        <div class="stats-row">
+          <span data-i18n="zwc_found">發現零寬字元:</span>
+          <span id="zwcCount">0</span>
+        </div>
+        <button id="copyBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span data-i18n="copy">複製清理後文字</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./zwc-remove.js"></script>
+</body>
+</html>
