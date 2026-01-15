@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-031 PBKDF2 金鑰衍生 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="使用 PBKDF2 從密碼衍生金鑰，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn"><span>&larr;</span><span data-i18n="back">返回</span></a>
+      <div class="tool-title">
+        <h1>CRY-031 <span data-i18n="cry031_name">PBKDF2 金鑰衍生</span></h1>
+        <p data-i18n="cry031_desc">使用 PBKDF2 從密碼衍生加密金鑰</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+      <div class="settings-panel">
+        <h3>PBKDF2 設定</h3>
+        <div class="setting-row"><label for="algorithm">雜湊演算法</label><select id="algorithm"><option value="SHA-256" selected>SHA-256</option><option value="SHA-384">SHA-384</option><option value="SHA-512">SHA-512</option></select></div>
+        <div class="setting-row"><label for="iterations">迭代次數</label><select id="iterations"><option value="10000">10,000</option><option value="100000" selected>100,000 (推薦)</option><option value="310000">310,000 (OWASP)</option><option value="600000">600,000 (高安全)</option></select></div>
+        <div class="setting-row"><label for="keyLength">金鑰長度</label><select id="keyLength"><option value="128">128 bits</option><option value="256" selected>256 bits</option><option value="384">384 bits</option><option value="512">512 bits</option></select></div>
+        <div class="setting-row"><label for="outputFormat">輸出格式</label><select id="outputFormat"><option value="hex" selected>十六進位</option><option value="base64">Base64</option></select></div>
+      </div>
+      <div class="input-group"><label for="password">密碼</label><div class="password-input"><input type="password" id="password" placeholder="輸入密碼"><button type="button" id="togglePassword" class="btn btn-small">顯示</button></div></div>
+      <div class="input-group"><label for="salt">鹽值 (Salt)</label><div class="password-input"><input type="text" id="salt" placeholder="輸入鹽值 (十六進位或 Base64)" class="mono"><button type="button" id="generateSalt" class="btn btn-small btn-secondary">生成鹽值</button></div></div>
+      <div class="action-buttons"><button id="deriveBtn" class="btn btn-primary"><span>🔑</span><span>衍生金鑰</span></button><button id="clearBtn" class="btn btn-secondary"><span>🗑️</span><span>清除</span></button></div>
+      <div class="input-group"><label for="derivedKey">衍生金鑰</label><textarea id="derivedKey" rows="2" readonly placeholder="金鑰將顯示在此..." class="mono"></textarea><button id="copyBtn" class="btn btn-small btn-success" style="margin-top: 0.5rem;">複製金鑰</button></div>
+      <div id="deriveInfo" class="settings-panel" style="display: none;"><h3>衍生資訊</h3><div class="setting-row"><label>處理時間</label><span id="processTime">-</span></div></div>
+    </main>
+    <footer class="footer"><p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p></footer>
+  </div>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./pbkdf2.js"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-037 密碼短語生成 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="生成易記的密碼短語，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn"><span>&larr;</span><span data-i18n="back">返回</span></a>
+      <div class="tool-title">
+        <h1>CRY-037 <span data-i18n="cry037_name">密碼短語生成</span></h1>
+        <p data-i18n="cry037_desc">生成易於記憶的安全密碼短語</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+      <div class="settings-panel">
+        <h3>短語設定</h3>
+        <div class="setting-row"><label for="wordCount">單字數量</label><select id="wordCount"><option value="4">4 個單字</option><option value="5" selected>5 個單字</option><option value="6">6 個單字</option><option value="8">8 個單字</option></select></div>
+        <div class="setting-row"><label for="separator">分隔符號</label><select id="separator"><option value="-">連字號 (-)</option><option value="_">底線 (_)</option><option value=".">點 (.)</option><option value=" ">空格</option><option value="">無</option></select></div>
+        <div class="setting-row"><label for="capitalize">首字母大寫</label><input type="checkbox" id="capitalize" checked></div>
+        <div class="setting-row"><label for="addNumber">加入數字</label><input type="checkbox" id="addNumber" checked></div>
+        <div class="setting-row"><label for="addSymbol">加入符號</label><input type="checkbox" id="addSymbol"></div>
+        <div class="setting-row"><label for="wordList">單字表</label><select id="wordList"><option value="eff" selected>EFF 單字表 (7776字)</option><option value="diceware">Diceware 單字表</option><option value="simple">簡易單字表</option></select></div>
+      </div>
+      <div class="action-buttons"><button id="generateBtn" class="btn btn-primary"><span>🔄</span><span>生成短語</span></button><button id="generateMultiBtn" class="btn btn-secondary"><span>📋</span><span>批量生成 (5組)</span></button></div>
+      <div class="input-group"><label for="passphraseResult">生成的密碼短語</label><textarea id="passphraseResult" rows="4" readonly placeholder="密碼短語將顯示在此..." class="mono"></textarea><button id="copyBtn" class="btn btn-small btn-success" style="margin-top: 0.5rem;">複製短語</button></div>
+      <div id="strengthInfo" class="settings-panel" style="display: none;">
+        <h3>短語資訊</h3>
+        <div class="setting-row"><label>熵值</label><span id="entropyBits">-</span></div>
+        <div class="setting-row"><label>總長度</label><span id="totalLength">-</span></div>
+      </div>
+    </main>
+    <footer class="footer"><p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p></footer>
+  </div>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./passphrase.js"></script>
+</body>
+</html>

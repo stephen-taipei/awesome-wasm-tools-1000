@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-038 UUID 生成 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="生成各版本 UUID，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn"><span>&larr;</span><span data-i18n="back">返回</span></a>
+      <div class="tool-title">
+        <h1>CRY-038 <span data-i18n="cry038_name">UUID 生成</span></h1>
+        <p data-i18n="cry038_desc">生成通用唯一識別碼 (UUID)</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+      <div class="settings-panel">
+        <h3>UUID 設定</h3>
+        <div class="setting-row"><label for="uuidVersion">UUID 版本</label><select id="uuidVersion"><option value="4" selected>v4 (隨機)</option><option value="1">v1 (時間戳)</option><option value="7">v7 (時間排序)</option></select></div>
+        <div class="setting-row"><label for="outputFormat">輸出格式</label><select id="outputFormat"><option value="standard" selected>標準格式</option><option value="uppercase">大寫</option><option value="braces">帶大括號</option><option value="urn">URN 格式</option><option value="raw">無連字號</option></select></div>
+        <div class="setting-row"><label for="batchCount">批量數量</label><select id="batchCount"><option value="1" selected>1</option><option value="5">5</option><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option></select></div>
+      </div>
+      <div class="action-buttons"><button id="generateBtn" class="btn btn-primary"><span>🔄</span><span>生成 UUID</span></button><button id="clearBtn" class="btn btn-secondary"><span>🗑️</span><span>清除</span></button></div>
+      <div class="input-group"><label for="uuidResult">生成的 UUID</label><textarea id="uuidResult" rows="8" readonly placeholder="UUID 將顯示在此..." class="mono"></textarea><button id="copyBtn" class="btn btn-small btn-success" style="margin-top: 0.5rem;">複製結果</button></div>
+      <div id="uuidInfo" class="settings-panel" style="display: none;">
+        <h3>UUID 資訊</h3>
+        <div class="setting-row"><label>生成數量</label><span id="generatedCount">-</span></div>
+        <div class="setting-row"><label>版本</label><span id="uuidVersionInfo">-</span></div>
+      </div>
+    </main>
+    <footer class="footer"><p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p></footer>
+  </div>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./uuid.js"></script>
+</body>
+</html>

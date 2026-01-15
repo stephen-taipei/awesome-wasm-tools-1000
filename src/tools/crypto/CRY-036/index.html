@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-036 隨機密碼生成 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="生成安全的隨機密碼，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn"><span>&larr;</span><span data-i18n="back">返回</span></a>
+      <div class="tool-title">
+        <h1>CRY-036 <span data-i18n="cry036_name">隨機密碼生成</span></h1>
+        <p data-i18n="cry036_desc">使用密碼學安全隨機數生成密碼</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+      <div class="settings-panel">
+        <h3>密碼設定</h3>
+        <div class="setting-row"><label for="pwdLength">密碼長度</label><input type="range" id="pwdLength" min="8" max="64" value="16"><span id="lengthDisplay">16</span></div>
+        <div class="setting-row"><label for="includeLower">小寫字母 (a-z)</label><input type="checkbox" id="includeLower" checked></div>
+        <div class="setting-row"><label for="includeUpper">大寫字母 (A-Z)</label><input type="checkbox" id="includeUpper" checked></div>
+        <div class="setting-row"><label for="includeDigits">數字 (0-9)</label><input type="checkbox" id="includeDigits" checked></div>
+        <div class="setting-row"><label for="includeSpecial">特殊符號</label><input type="checkbox" id="includeSpecial" checked></div>
+        <div class="setting-row"><label for="excludeAmbiguous">排除易混淆字元 (0O1lI)</label><input type="checkbox" id="excludeAmbiguous"></div>
+        <div class="setting-row"><label for="customChars">自訂字元 (選填)</label><input type="text" id="customChars" placeholder="額外包含的字元"></div>
+      </div>
+      <div class="action-buttons"><button id="generateBtn" class="btn btn-primary"><span>🔄</span><span>生成密碼</span></button><button id="generateMultiBtn" class="btn btn-secondary"><span>📋</span><span>批量生成 (5組)</span></button></div>
+      <div class="input-group"><label for="passwordResult">生成的密碼</label><textarea id="passwordResult" rows="3" readonly placeholder="密碼將顯示在此..." class="mono"></textarea><button id="copyBtn" class="btn btn-small btn-success" style="margin-top: 0.5rem;">複製密碼</button></div>
+      <div id="strengthInfo" class="settings-panel" style="display: none;">
+        <h3>密碼資訊</h3>
+        <div class="setting-row"><label>熵值</label><span id="entropyBits">-</span></div>
+        <div class="setting-row"><label>字元集大小</label><span id="charsetSize">-</span></div>
+      </div>
+    </main>
+    <footer class="footer"><p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p></footer>
+  </div>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./generator.js"></script>
+</body>
+</html>

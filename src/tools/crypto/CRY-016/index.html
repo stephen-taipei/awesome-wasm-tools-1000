@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-016 Blowfish 解密 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="使用 Blowfish 演算法解密資料，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-016 <span data-i18n="cry016_name">Blowfish 解密</span></h1>
+        <p data-i18n="cry016_desc">使用 Blowfish 對稱加密演算法解密資料</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3>解密設定</h3>
+        <div class="setting-row">
+          <label for="mode">加密模式</label>
+          <select id="mode">
+            <option value="CBC" selected>CBC</option>
+            <option value="ECB">ECB</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="inputFormat">輸入格式</label>
+          <select id="inputFormat">
+            <option value="base64" selected>Base64</option>
+            <option value="hex">十六進位</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="ciphertext">密文</label>
+        <textarea id="ciphertext" rows="5" placeholder="輸入要解密的密文..."></textarea>
+      </div>
+
+      <div class="input-group">
+        <label for="password">密碼 (4-56 bytes)</label>
+        <div class="password-input">
+          <input type="password" id="password" placeholder="輸入解密密碼">
+          <button type="button" id="togglePassword" class="btn btn-small">顯示</button>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="decryptBtn" class="btn btn-primary">
+          <span>🔓</span>
+          <span>解密</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div class="input-group">
+        <label for="plaintext">解密結果</label>
+        <textarea id="plaintext" rows="5" readonly placeholder="解密結果將顯示在此..."></textarea>
+        <button id="copyBtn" class="btn btn-small btn-success" style="margin-top: 0.5rem;">複製結果</button>
+      </div>
+
+      <div id="decryptionInfo" class="settings-panel" style="display: none;">
+        <h3>解密資訊</h3>
+        <div class="setting-row">
+          <label>處理時間</label>
+          <span id="processTime">-</span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./blowfish-decrypt.js"></script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-022 SHA-1 雜湊 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="計算 SHA-1 雜湊值，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-022 <span data-i18n="cry022_name">SHA-1 雜湊</span></h1>
+        <p data-i18n="cry022_desc">計算 SHA-1 安全雜湊 (160 位元)</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3>輸入設定</h3>
+        <div class="setting-row">
+          <label for="inputType">輸入類型</label>
+          <select id="inputType">
+            <option value="text" selected>文字</option>
+            <option value="file">檔案</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="outputFormat">輸出格式</label>
+          <select id="outputFormat">
+            <option value="hex" selected>十六進位 (小寫)</option>
+            <option value="HEX">十六進位 (大寫)</option>
+            <option value="base64">Base64</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group" id="textInputGroup">
+        <label for="inputText">輸入文字</label>
+        <textarea id="inputText" rows="5" placeholder="輸入要計算雜湊的文字..."></textarea>
+      </div>
+
+      <div class="input-group" id="fileInputGroup" style="display: none;">
+        <label>選擇檔案</label>
+        <div id="uploadArea" class="upload-area">
+          <div class="icon">📁</div>
+          <h3>拖放檔案到此處</h3>
+          <p>或點擊選擇檔案</p>
+          <input type="file" id="fileInput" class="file-input">
+        </div>
+        <p id="fileName" style="margin-top: 0.5rem;"></p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="hashBtn" class="btn btn-primary">
+          <span>#️⃣</span>
+          <span>計算雜湊</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div class="input-group">
+        <label for="hashResult">SHA-1 雜湊值</label>
+        <input type="text" id="hashResult" readonly placeholder="雜湊值將顯示在此..." class="mono">
+        <button id="copyBtn" class="btn btn-small btn-success" style="margin-top: 0.5rem;">複製結果</button>
+      </div>
+
+      <div id="hashInfo" class="settings-panel" style="display: none;">
+        <h3>雜湊資訊</h3>
+        <div class="setting-row">
+          <label>輸入長度</label>
+          <span id="inputLength">-</span>
+        </div>
+        <div class="setting-row">
+          <label>處理時間</label>
+          <span id="processTime">-</span>
+        </div>
+      </div>
+
+      <div class="settings-panel" style="margin-top: 1rem; background: #fff3cd;">
+        <p><strong>警告：</strong>SHA-1 已被認為不安全，不應用於密碼學安全用途。請考慮使用 SHA-256 或更強的雜湊演算法。</p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./sha1-hash.js"></script>
+</body>
+</html>

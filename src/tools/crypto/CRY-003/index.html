@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-003 RSA 金鑰生成 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="生成 RSA 公鑰/私鑰對，支援 2048/3072/4096 位元，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-003 <span data-i18n="cry003_name">RSA 金鑰生成</span></h1>
+        <p data-i18n="cry003_desc">生成 RSA 公鑰/私鑰對，支援多種金鑰長度</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3>金鑰設定</h3>
+        <div class="setting-row">
+          <label for="keySize">金鑰長度</label>
+          <select id="keySize">
+            <option value="2048">2048 位元</option>
+            <option value="3072">3072 位元</option>
+            <option value="4096" selected>4096 位元 (推薦)</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="hashAlgorithm">雜湊演算法</label>
+          <select id="hashAlgorithm">
+            <option value="SHA-256" selected>SHA-256</option>
+            <option value="SHA-384">SHA-384</option>
+            <option value="SHA-512">SHA-512</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="outputFormat">輸出格式</label>
+          <select id="outputFormat">
+            <option value="pem" selected>PEM</option>
+            <option value="jwk">JWK (JSON)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="generateBtn" class="btn btn-primary">
+          <span>🔑</span>
+          <span>生成金鑰對</span>
+        </button>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">生成中...</p>
+      </div>
+
+      <div class="input-group">
+        <label for="publicKey">公鑰 (Public Key)</label>
+        <textarea id="publicKey" rows="8" readonly placeholder="公鑰將顯示在此..."></textarea>
+        <button id="copyPublicBtn" class="btn btn-small btn-success" style="margin-top: 0.5rem;">複製公鑰</button>
+      </div>
+
+      <div class="input-group">
+        <label for="privateKey">私鑰 (Private Key) - 請妥善保管！</label>
+        <textarea id="privateKey" rows="12" readonly placeholder="私鑰將顯示在此..."></textarea>
+        <div style="margin-top: 0.5rem;">
+          <button id="copyPrivateBtn" class="btn btn-small btn-success">複製私鑰</button>
+          <button id="downloadPrivateBtn" class="btn btn-small btn-secondary">下載私鑰</button>
+        </div>
+      </div>
+
+      <div id="keyInfo" class="settings-panel" style="display: none;">
+        <h3>金鑰資訊</h3>
+        <div class="setting-row">
+          <label>金鑰長度</label>
+          <span id="keySizeInfo">-</span>
+        </div>
+        <div class="setting-row">
+          <label>生成時間</label>
+          <span id="processTime">-</span>
+        </div>
+        <div class="setting-row">
+          <label>指紋 (SHA-256)</label>
+          <span id="fingerprint" class="mono" style="font-size: 0.75rem;">-</span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./rsa-keygen.js"></script>
+</body>
+</html>

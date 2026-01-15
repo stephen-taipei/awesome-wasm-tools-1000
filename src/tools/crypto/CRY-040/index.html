@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-040 檔案校驗和計算 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="計算檔案的多種校驗和，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn"><span>&larr;</span><span data-i18n="back">返回</span></a>
+      <div class="tool-title">
+        <h1>CRY-040 <span data-i18n="cry040_name">檔案校驗和計算</span></h1>
+        <p data-i18n="cry040_desc">計算檔案的多種雜湊校驗和</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📁</div>
+        <p>拖放檔案到此處或點擊選擇</p>
+        <input type="file" id="fileInput" hidden>
+        <button class="btn btn-primary" id="selectBtn">選擇檔案</button>
+      </div>
+      <div id="fileInfo" class="settings-panel" style="display: none;">
+        <h3>檔案資訊</h3>
+        <div class="setting-row"><label>檔案名稱</label><span id="fileName">-</span></div>
+        <div class="setting-row"><label>檔案大小</label><span id="fileSize">-</span></div>
+        <div class="setting-row"><label>檔案類型</label><span id="fileType">-</span></div>
+      </div>
+      <div class="settings-panel">
+        <h3>校驗和選項</h3>
+        <div class="setting-row"><label for="calcMD5">MD5</label><input type="checkbox" id="calcMD5" checked></div>
+        <div class="setting-row"><label for="calcSHA1">SHA-1</label><input type="checkbox" id="calcSHA1" checked></div>
+        <div class="setting-row"><label for="calcSHA256">SHA-256</label><input type="checkbox" id="calcSHA256" checked></div>
+        <div class="setting-row"><label for="calcSHA384">SHA-384</label><input type="checkbox" id="calcSHA384"></div>
+        <div class="setting-row"><label for="calcSHA512">SHA-512</label><input type="checkbox" id="calcSHA512"></div>
+        <div class="setting-row"><label for="calcCRC32">CRC32</label><input type="checkbox" id="calcCRC32" checked></div>
+      </div>
+      <div class="action-buttons"><button id="calculateBtn" class="btn btn-primary" disabled><span>🔢</span><span>計算校驗和</span></button><button id="clearBtn" class="btn btn-secondary"><span>🗑️</span><span>清除</span></button></div>
+      <div id="progressContainer" class="progress-container"><div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div><p id="progressText" class="progress-text">處理中...</p></div>
+      <div id="checksumResults" class="settings-panel" style="display: none;">
+        <h3>校驗和結果</h3>
+        <div id="resultsList"></div>
+        <button id="copyAllBtn" class="btn btn-small btn-success" style="margin-top: 1rem;">複製全部結果</button>
+      </div>
+      <div class="input-group" style="margin-top: 1rem;"><label for="verifyHash">驗證校驗和 (選填)</label><input type="text" id="verifyHash" placeholder="輸入要驗證的校驗和值" class="mono"><div id="verifyResult" class="result-box" style="display: none;"><div id="verifyIcon" class="result-icon"></div><div id="verifyText" class="result-text"></div></div></div>
+    </main>
+    <footer class="footer"><p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p></footer>
+  </div>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./checksum.js"></script>
+</body>
+</html>
