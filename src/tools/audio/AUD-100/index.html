@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-100 音訊多軌混音 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 16px; }
+    h1 { font-size: 2rem; margin-bottom: 10px; background: linear-gradient(135deg, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #a0a0a0; }
+    .upload-area { border: 2px dashed #4a4a6a; border-radius: 16px; padding: 40px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); margin-bottom: 20px; }
+    .upload-area:hover { border-color: #fbbf24; }
+    .upload-icon { font-size: 3rem; margin-bottom: 10px; }
+    .file-input { display: none; }
+    .tracks-panel { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .tracks-panel.show { display: block; }
+    .tracks-title { font-size: 1.2rem; margin-bottom: 15px; color: #fbbf24; }
+    .track-list { max-height: 400px; overflow-y: auto; }
+    .track-item { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 15px; margin-bottom: 10px; }
+    .track-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .track-name { font-weight: 600; color: #e0e0e0; }
+    .track-duration { color: #a0a0a0; font-size: 0.9rem; }
+    .track-remove { background: rgba(239,68,68,0.2); color: #ef4444; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+    .track-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .control-group { }
+    .control-label { font-size: 0.85rem; color: #a0a0a0; margin-bottom: 6px; display: flex; justify-content: space-between; }
+    .control-value { color: #fbbf24; }
+    input[type="range"] { width: 100%; height: 6px; border-radius: 3px; background: #2a2a4a; outline: none; -webkit-appearance: none; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f59e0b); cursor: pointer; }
+    .action-buttons { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+    .btn { padding: 15px 35px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .btn-primary { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1a1a2e; }
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .btn:disabled { opacity: 0.5; }
+    .result-panel { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .result-panel.show { display: block; }
+    .result-title { color: #10b981; font-size: 1.2rem; margin-bottom: 15px; }
+    .audio-player { width: 100%; margin-top: 15px; }
+    footer { text-align: center; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-100 音訊多軌混音</h1>
+      <p class="subtitle">將多個音訊檔案混合成一個輸出</p>
+    </header>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">🎛️</div>
+      <div>拖放音訊檔案到此處（可多選）</div>
+      <div style="color:#888;margin-top:10px;">支援 MP3, WAV, OGG 格式</div>
+      <input type="file" id="fileInput" class="file-input" accept="audio/*" multiple>
+    </div>
+
+    <div class="tracks-panel" id="tracksPanel">
+      <div class="tracks-title">🎚️ 音軌列表</div>
+      <div class="track-list" id="trackList"></div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="mixBtn" disabled><span>🎛️</span> 混音</button>
+      <button class="btn btn-success" id="downloadBtn" style="display:none;"><span>⬇️</span> 下載檔案</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">✅ 混音完成</div>
+      <div id="resultInfo"></div>
+      <audio id="audioPreview" class="audio-player" controls></audio>
+    </div>
+
+    <footer><p>所有處理均在本地完成</p></footer>
+  </div>
+
+  <script src="./multi-track-mixer.js"></script>
+</body>
+</html>

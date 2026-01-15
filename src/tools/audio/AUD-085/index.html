@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-085 DTMF 音調生成 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 16px; }
+    h1 { font-size: 2rem; margin-bottom: 10px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #a0a0a0; }
+    .keypad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 400px; margin: 20px auto; }
+    .key { padding: 20px; font-size: 1.5rem; font-weight: bold; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 12px; cursor: pointer; transition: all 0.2s; text-align: center; }
+    .key:hover { background: rgba(59, 130, 246, 0.3); border-color: #3b82f6; }
+    .key:active { transform: scale(0.95); }
+    .key.active { background: rgba(59, 130, 246, 0.5); border-color: #3b82f6; }
+    .settings-panel { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 25px; margin-bottom: 20px; }
+    .settings-title { font-size: 1.1rem; margin-bottom: 20px; color: #3b82f6; }
+    .setting-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+    .setting-label { font-weight: 500; }
+    input[type="text"] { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 10px 15px; color: #e0e0e0; width: 200px; font-size: 1.2rem; letter-spacing: 3px; }
+    .action-buttons { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+    .btn { padding: 15px 35px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .btn-primary { background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; }
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .btn:disabled { opacity: 0.5; }
+    .result-panel { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .result-panel.show { display: block; }
+    .result-title { color: #10b981; font-size: 1.2rem; margin-bottom: 15px; }
+    .audio-player { width: 100%; margin-top: 15px; }
+    footer { text-align: center; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-085 DTMF 音調生成</h1>
+      <p class="subtitle">生成電話撥號音 (雙音多頻)</p>
+    </header>
+
+    <div class="settings-panel">
+      <div class="settings-title">輸入號碼</div>
+      <div class="setting-row">
+        <span class="setting-label">號碼序列</span>
+        <input type="text" id="sequence" placeholder="例如: 0912345678" maxlength="20">
+      </div>
+    </div>
+
+    <div class="keypad">
+      <div class="key" data-key="1">1</div>
+      <div class="key" data-key="2">2</div>
+      <div class="key" data-key="3">3</div>
+      <div class="key" data-key="A">A</div>
+      <div class="key" data-key="4">4</div>
+      <div class="key" data-key="5">5</div>
+      <div class="key" data-key="6">6</div>
+      <div class="key" data-key="B">B</div>
+      <div class="key" data-key="7">7</div>
+      <div class="key" data-key="8">8</div>
+      <div class="key" data-key="9">9</div>
+      <div class="key" data-key="C">C</div>
+      <div class="key" data-key="*">*</div>
+      <div class="key" data-key="0">0</div>
+      <div class="key" data-key="#">#</div>
+      <div class="key" data-key="D">D</div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="generateBtn"><span>📞</span> 生成 DTMF</button>
+      <button class="btn btn-success" id="downloadBtn" style="display:none;"><span>⬇️</span> 下載檔案</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">✅ 生成完成</div>
+      <audio id="audioPreview" class="audio-player" controls></audio>
+    </div>
+
+    <footer><p>所有處理均在本地完成</p></footer>
+  </div>
+
+  <script src="./dtmf-generator.js"></script>
+</body>
+</html>

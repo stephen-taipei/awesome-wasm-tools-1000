@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-090 音訊聲道分離 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 16px; }
+    h1 { font-size: 2rem; margin-bottom: 10px; background: linear-gradient(135deg, #8b5cf6, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #a0a0a0; }
+    .upload-area { border: 2px dashed #4a4a6a; border-radius: 16px; padding: 60px 40px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); margin-bottom: 20px; }
+    .upload-area:hover { border-color: #8b5cf6; }
+    .upload-icon { font-size: 4rem; margin-bottom: 15px; }
+    .file-input { display: none; }
+    .file-info { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; margin-bottom: 20px; display: none; }
+    .file-info.show { display: block; }
+    .action-buttons { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+    .btn { padding: 15px 35px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .btn-primary { background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: white; }
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .btn:disabled { opacity: 0.5; }
+    .result-panel { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .result-panel.show { display: block; }
+    .result-title { color: #10b981; font-size: 1.2rem; margin-bottom: 15px; }
+    .channel-result { margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; }
+    .channel-title { font-weight: 600; margin-bottom: 10px; color: #a78bfa; }
+    .audio-player { width: 100%; }
+    .download-btn { margin-top: 10px; padding: 8px 16px; font-size: 0.9rem; }
+    footer { text-align: center; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-090 音訊聲道分離</h1>
+      <p class="subtitle">將立體聲音訊分離為左右聲道檔案</p>
+    </header>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">📤</div>
+      <div>拖放立體聲音訊檔案到此處</div>
+      <div style="color:#888;margin-top:10px;">支援 MP3, WAV, OGG 格式</div>
+      <input type="file" id="fileInput" class="file-input" accept="audio/*">
+    </div>
+
+    <div class="file-info" id="fileInfo">
+      <p>檔案: <span id="fileName">-</span> | 聲道: <span id="channels">-</span></p>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="separateBtn" disabled><span>📤</span> 分離聲道</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">✅ 聲道分離完成</div>
+      <div class="channel-result">
+        <div class="channel-title">左聲道 (L)</div>
+        <audio id="leftPreview" class="audio-player" controls></audio>
+        <button class="btn btn-success download-btn" id="downloadLeft"><span>⬇️</span> 下載左聲道</button>
+      </div>
+      <div class="channel-result">
+        <div class="channel-title">右聲道 (R)</div>
+        <audio id="rightPreview" class="audio-player" controls></audio>
+        <button class="btn btn-success download-btn" id="downloadRight"><span>⬇️</span> 下載右聲道</button>
+      </div>
+    </div>
+
+    <footer><p>所有處理均在本地完成</p></footer>
+  </div>
+
+  <script src="./channel-separator.js"></script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-096 音訊峰值分析 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 16px; }
+    h1 { font-size: 2rem; margin-bottom: 10px; background: linear-gradient(135deg, #f97316, #ea580c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #a0a0a0; }
+    .upload-area { border: 2px dashed #4a4a6a; border-radius: 16px; padding: 60px 40px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); margin-bottom: 20px; }
+    .upload-area:hover { border-color: #f97316; }
+    .upload-icon { font-size: 4rem; margin-bottom: 15px; }
+    .file-input { display: none; }
+    .action-buttons { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+    .btn { padding: 15px 35px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .btn-primary { background: linear-gradient(135deg, #f97316, #ea580c); color: white; }
+    .btn:disabled { opacity: 0.5; }
+    .result-panel { background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.3); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .result-panel.show { display: block; }
+    .result-title { color: #f97316; font-size: 1.2rem; margin-bottom: 15px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .stat-item { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; text-align: center; }
+    .stat-label { font-size: 0.85rem; color: #a0a0a0; margin-bottom: 8px; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: #f97316; }
+    .peak-list { margin-top: 20px; }
+    .peak-list-title { font-size: 1rem; color: #a0a0a0; margin-bottom: 10px; }
+    .peak-item { display: flex; justify-content: space-between; padding: 10px 15px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px; }
+    .peak-time { color: #94a3b8; }
+    .peak-level { color: #f97316; font-weight: 600; }
+    .canvas-container { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 15px; margin-top: 20px; }
+    canvas { width: 100%; height: 150px; }
+    footer { text-align: center; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-096 音訊峰值分析</h1>
+      <p class="subtitle">分析音訊的峰值和動態範圍</p>
+    </header>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">📈</div>
+      <div>拖放音訊檔案到此處</div>
+      <div style="color:#888;margin-top:10px;">支援 MP3, WAV, OGG 格式</div>
+      <input type="file" id="fileInput" class="file-input" accept="audio/*">
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="analyzeBtn" disabled><span>📈</span> 分析峰值</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">📊 分析結果</div>
+      <div class="stats-grid" id="statsGrid"></div>
+      <div class="canvas-container">
+        <canvas id="peakCanvas"></canvas>
+      </div>
+      <div class="peak-list">
+        <div class="peak-list-title">前 10 個峰值位置</div>
+        <div id="peakListContent"></div>
+      </div>
+    </div>
+
+    <footer><p>所有處理均在本地完成</p></footer>
+  </div>
+
+  <script src="./peak-analyzer.js"></script>
+</body>
+</html>

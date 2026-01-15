@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-074 位元深度轉換 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #43e97b, #38f9d7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .subtitle { color: #a0a0a0; font-size: 1rem; }
+    .lang-switcher { margin-top: 15px; }
+    .lang-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 5px 15px;
+      margin: 0 5px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .lang-btn:hover { background: rgba(255,255,255,0.2); }
+    .upload-area {
+      border: 2px dashed #4a4a6a;
+      border-radius: 16px;
+      padding: 60px 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.02);
+      margin-bottom: 20px;
+    }
+    .upload-area:hover { border-color: #43e97b; background: rgba(67, 233, 123, 0.05); }
+    .upload-area.dragover { border-color: #43e97b; background: rgba(67, 233, 123, 0.1); transform: scale(1.02); }
+    .upload-icon { font-size: 4rem; margin-bottom: 20px; }
+    .upload-text { font-size: 1.2rem; margin-bottom: 10px; }
+    .upload-hint { color: #888; font-size: 0.9rem; }
+    .file-input { display: none; }
+    .settings-panel {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+    .settings-title { font-size: 1.1rem; margin-bottom: 20px; color: #43e97b; }
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .setting-row:last-child { border-bottom: none; margin-bottom: 0; }
+    .setting-label { font-weight: 500; }
+    .setting-control { display: flex; align-items: center; gap: 15px; }
+    select {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      min-width: 180px;
+    }
+    .file-info {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .file-info.show { display: block; }
+    .file-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
+    .detail-item { text-align: center; padding: 15px; background: rgba(255, 255, 255, 0.03); border-radius: 10px; }
+    .detail-label { font-size: 0.85rem; color: #888; margin-bottom: 5px; }
+    .detail-value { font-size: 1.1rem; font-weight: 600; color: #43e97b; }
+    .progress-container {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .progress-container.show { display: block; }
+    .progress-bar { height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; margin-bottom: 15px; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #43e97b, #38f9d7); border-radius: 4px; width: 0%; transition: width 0.3s ease; }
+    .progress-text { text-align: center; color: #a0a0a0; }
+    .action-buttons { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+    .btn {
+      padding: 15px 35px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-primary { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #333; }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(67, 233, 123, 0.3); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .btn-success:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.1); color: #e0e0e0; border: 1px solid rgba(255, 255, 255, 0.2); }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); }
+    .result-panel {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .result-panel.show { display: block; }
+    .result-title { color: #10b981; font-size: 1.2rem; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+    .result-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; }
+    .stat-item { text-align: center; padding: 12px; background: rgba(255, 255, 255, 0.03); border-radius: 10px; }
+    .stat-label { font-size: 0.8rem; color: #888; margin-bottom: 5px; }
+    .stat-value { font-size: 1rem; font-weight: 600; color: #10b981; }
+    .audio-player { width: 100%; margin-top: 15px; border-radius: 8px; }
+    footer { text-align: center; padding: 20px; color: #666; font-size: 0.85rem; }
+    @media (max-width: 600px) {
+      .action-buttons { flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+      .setting-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .setting-control { width: 100%; }
+      select { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-074 <span data-i18n="toolName">位元深度轉換</span></h1>
+      <p class="subtitle" data-i18n="toolDesc">轉換音訊檔案的位元深度</p>
+      <div class="lang-switcher">
+        <button class="lang-btn" onclick="setLanguage('zh-TW')">繁中</button>
+        <button class="lang-btn" onclick="setLanguage('en')">EN</button>
+        <button class="lang-btn" onclick="setLanguage('ja')">日本語</button>
+      </div>
+    </header>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">📀</div>
+      <div class="upload-text" data-i18n="uploadText">拖放音訊檔案到此處</div>
+      <div class="upload-hint" data-i18n="uploadHint">支援 MP3, WAV, OGG, FLAC 格式</div>
+      <input type="file" id="fileInput" class="file-input" accept="audio/*">
+    </div>
+
+    <div class="file-info" id="fileInfo">
+      <div class="file-details">
+        <div class="detail-item">
+          <div class="detail-label" data-i18n="fileName">檔案名稱</div>
+          <div class="detail-value" id="fileName">-</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label" data-i18n="fileSize">檔案大小</div>
+          <div class="detail-value" id="fileSize">-</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label" data-i18n="sampleRate">取樣率</div>
+          <div class="detail-value" id="sampleRate">-</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label" data-i18n="duration">時長</div>
+          <div class="detail-value" id="duration">-</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-panel">
+      <div class="settings-title" data-i18n="settings">位元深度設定</div>
+      <div class="setting-row">
+        <span class="setting-label" data-i18n="targetBitDepth">目標位元深度</span>
+        <div class="setting-control">
+          <select id="targetBitDepth">
+            <option value="8">8-bit</option>
+            <option value="16" selected>16-bit (CD品質)</option>
+            <option value="24">24-bit (專業品質)</option>
+            <option value="32">32-bit float</option>
+          </select>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label" data-i18n="dithering">抖動處理</span>
+        <div class="setting-control">
+          <select id="dithering">
+            <option value="none">無</option>
+            <option value="triangular" selected>三角分佈</option>
+            <option value="rectangular">矩形分佈</option>
+          </select>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label" data-i18n="outputFormat">輸出格式</span>
+        <div class="setting-control">
+          <select id="outputFormat">
+            <option value="wav">WAV</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-container" id="progressContainer">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text" id="progressText">處理中...</div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="processBtn" disabled>
+        <span>🔄</span>
+        <span data-i18n="process">開始轉換</span>
+      </button>
+      <button class="btn btn-success" id="downloadBtn" style="display: none;">
+        <span>⬇️</span>
+        <span data-i18n="download">下載結果</span>
+      </button>
+      <button class="btn btn-secondary" id="resetBtn" style="display: none;">
+        <span>🔄</span>
+        <span data-i18n="reset">重置</span>
+      </button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">
+        <span>✅</span>
+        <span data-i18n="processComplete">轉換完成</span>
+      </div>
+      <div class="result-stats">
+        <div class="stat-item">
+          <div class="stat-label" data-i18n="originalBitDepth">原始位元深度</div>
+          <div class="stat-value" id="originalBitDepth">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label" data-i18n="newBitDepth">新位元深度</div>
+          <div class="stat-value" id="newBitDepth">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label" data-i18n="fileSizeChange">檔案大小變化</div>
+          <div class="stat-value" id="fileSizeChange">-</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label" data-i18n="processTime">處理時間</div>
+          <div class="stat-value" id="processTime">-</div>
+        </div>
+      </div>
+      <audio id="audioPreview" class="audio-player" controls></audio>
+    </div>
+
+    <footer>
+      <p data-i18n="footer">所有處理均在本地完成，檔案不會上傳至伺服器</p>
+    </footer>
+  </div>
+
+  <script src="./bit-depth-converter.js"></script>
+</body>
+</html>

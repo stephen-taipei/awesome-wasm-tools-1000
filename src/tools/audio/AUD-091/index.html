@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-091 音訊聲道合併 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 16px; }
+    h1 { font-size: 2rem; margin-bottom: 10px; background: linear-gradient(135deg, #06b6d4, #0891b2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #a0a0a0; }
+    .upload-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .upload-area { border: 2px dashed #4a4a6a; border-radius: 16px; padding: 40px 20px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); }
+    .upload-area:hover { border-color: #06b6d4; }
+    .upload-area.has-file { border-color: #10b981; border-style: solid; }
+    .upload-icon { font-size: 3rem; margin-bottom: 10px; }
+    .channel-label { font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; color: #06b6d4; }
+    .file-input { display: none; }
+    .file-name { font-size: 0.9rem; color: #10b981; margin-top: 10px; word-break: break-all; }
+    .action-buttons { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+    .btn { padding: 15px 35px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .btn-primary { background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; }
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .btn:disabled { opacity: 0.5; }
+    .result-panel { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .result-panel.show { display: block; }
+    .result-title { color: #10b981; font-size: 1.2rem; margin-bottom: 15px; }
+    .audio-player { width: 100%; margin-top: 15px; }
+    footer { text-align: center; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-091 音訊聲道合併</h1>
+      <p class="subtitle">將左右聲道檔案合併為立體聲</p>
+    </header>
+
+    <div class="upload-section">
+      <div class="upload-area" id="uploadAreaLeft">
+        <div class="channel-label">左聲道 (L)</div>
+        <div class="upload-icon">🔊</div>
+        <div>拖放或點擊上傳</div>
+        <div class="file-name" id="fileNameLeft"></div>
+        <input type="file" id="fileInputLeft" class="file-input" accept="audio/*">
+      </div>
+      <div class="upload-area" id="uploadAreaRight">
+        <div class="channel-label">右聲道 (R)</div>
+        <div class="upload-icon">🔊</div>
+        <div>拖放或點擊上傳</div>
+        <div class="file-name" id="fileNameRight"></div>
+        <input type="file" id="fileInputRight" class="file-input" accept="audio/*">
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="mergeBtn" disabled><span>🔗</span> 合併聲道</button>
+      <button class="btn btn-success" id="downloadBtn" style="display:none;"><span>⬇️</span> 下載檔案</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">✅ 合併完成</div>
+      <div id="resultInfo"></div>
+      <audio id="audioPreview" class="audio-player" controls></audio>
+    </div>
+
+    <footer><p>所有處理均在本地完成</p></footer>
+  </div>
+
+  <script src="./channel-merger.js"></script>
+</body>
+</html>

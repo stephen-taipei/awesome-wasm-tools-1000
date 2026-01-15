@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-092 音訊靜音偵測 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 16px; }
+    h1 { font-size: 2rem; margin-bottom: 10px; background: linear-gradient(135deg, #64748b, #475569); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #a0a0a0; }
+    .upload-area { border: 2px dashed #4a4a6a; border-radius: 16px; padding: 60px 40px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); margin-bottom: 20px; }
+    .upload-area:hover { border-color: #64748b; }
+    .upload-icon { font-size: 4rem; margin-bottom: 15px; }
+    .file-input { display: none; }
+    .settings-panel { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .settings-panel.show { display: block; }
+    .setting-group { margin-bottom: 20px; }
+    .setting-label { font-size: 0.9rem; color: #a0a0a0; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .setting-value { color: #64748b; font-weight: 600; }
+    input[type="range"] { width: 100%; height: 8px; border-radius: 4px; background: #2a2a4a; outline: none; -webkit-appearance: none; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, #64748b, #475569); cursor: pointer; }
+    .action-buttons { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+    .btn { padding: 15px 35px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .btn-primary { background: linear-gradient(135deg, #64748b, #475569); color: white; }
+    .btn:disabled { opacity: 0.5; }
+    .result-panel { background: rgba(100,116,139,0.1); border: 1px solid rgba(100,116,139,0.3); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .result-panel.show { display: block; }
+    .result-title { color: #64748b; font-size: 1.2rem; margin-bottom: 15px; }
+    .silence-list { max-height: 300px; overflow-y: auto; }
+    .silence-item { display: flex; justify-content: space-between; padding: 10px 15px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px; }
+    .silence-time { color: #94a3b8; }
+    .silence-duration { color: #64748b; font-weight: 600; }
+    .summary { margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; }
+    footer { text-align: center; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-092 音訊靜音偵測</h1>
+      <p class="subtitle">偵測音訊中的靜音區段</p>
+    </header>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">🔇</div>
+      <div>拖放音訊檔案到此處</div>
+      <div style="color:#888;margin-top:10px;">支援 MP3, WAV, OGG 格式</div>
+      <input type="file" id="fileInput" class="file-input" accept="audio/*">
+    </div>
+
+    <div class="settings-panel" id="settingsPanel">
+      <div class="setting-group">
+        <div class="setting-label">
+          <span>靜音閾值</span>
+          <span class="setting-value" id="thresholdValue">-40 dB</span>
+        </div>
+        <input type="range" id="threshold" min="-60" max="-20" value="-40">
+      </div>
+      <div class="setting-group">
+        <div class="setting-label">
+          <span>最小靜音長度</span>
+          <span class="setting-value" id="minDurationValue">0.5 秒</span>
+        </div>
+        <input type="range" id="minDuration" min="0.1" max="3" step="0.1" value="0.5">
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="detectBtn" disabled><span>🔍</span> 偵測靜音</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">✅ 偵測完成</div>
+      <div class="silence-list" id="silenceList"></div>
+      <div class="summary" id="summary"></div>
+    </div>
+
+    <footer><p>所有處理均在本地完成</p></footer>
+  </div>
+
+  <script src="./silence-detector.js"></script>
+</body>
+</html>
