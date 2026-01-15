@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-025 文字語言偵測 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="偵測文字所使用的語言">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-025 <span data-i18n="txt025_name">文字語言偵測</span></h1>
+        <p data-i18n="txt025_desc">偵測文字所使用的語言</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="8" placeholder="輸入要偵測的文字..."></textarea>
+      </div>
+
+      <div class="action-buttons">
+        <button id="detectBtn" class="btn btn-primary">
+          <span>🌐</span>
+          <span data-i18n="detect">偵測語言</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="detection_result">偵測結果</h3>
+        <div class="detection-main">
+          <div class="detected-language">
+            <span class="lang-flag" id="langFlag">🌐</span>
+            <span class="lang-name" id="langName">未知</span>
+            <span class="lang-confidence" id="langConfidence">0%</span>
+          </div>
+        </div>
+
+        <h4>語言分佈</h4>
+        <div id="languageBreakdown" class="language-breakdown"></div>
+
+        <h4>字元統計</h4>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-label">中文字元</span>
+            <span id="chineseCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">英文字母</span>
+            <span id="englishCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">日文假名</span>
+            <span id="japaneseCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">韓文字元</span>
+            <span id="koreanCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">數字</span>
+            <span id="numberCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">符號</span>
+            <span id="symbolCount" class="stat-value">0</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./langdetect.js"></script>
+</body>
+</html>

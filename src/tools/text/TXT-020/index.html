@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-020 情感分析 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="分析文字的情感傾向">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-020 <span data-i18n="txt020_name">情感分析</span></h1>
+        <p data-i18n="txt020_desc">分析文字的情感傾向</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="8" placeholder="輸入要分析的文字..."></textarea>
+      </div>
+
+      <div class="action-buttons">
+        <button id="analyzeBtn" class="btn btn-primary">
+          <span>😊</span>
+          <span data-i18n="analyze">分析情感</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="sentiment_result">情感分析結果</h3>
+
+        <div class="sentiment-meter">
+          <div class="meter-labels">
+            <span>負面</span>
+            <span>中性</span>
+            <span>正面</span>
+          </div>
+          <div class="meter-bar">
+            <div id="meterFill" class="meter-fill"></div>
+            <div id="meterIndicator" class="meter-indicator"></div>
+          </div>
+        </div>
+
+        <div class="sentiment-summary">
+          <div class="sentiment-emoji" id="sentimentEmoji">😐</div>
+          <div class="sentiment-label" id="sentimentLabel">中性</div>
+          <div class="sentiment-score">分數: <strong id="sentimentScore">0</strong></div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-label">正面詞彙</span>
+            <span id="positiveCount" class="stat-value text-success">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">負面詞彙</span>
+            <span id="negativeCount" class="stat-value text-danger">0</span>
+          </div>
+        </div>
+
+        <div class="word-lists">
+          <div class="word-list">
+            <h4>正面詞彙</h4>
+            <div id="positiveWords" class="word-tags"></div>
+          </div>
+          <div class="word-list">
+            <h4>負面詞彙</h4>
+            <div id="negativeWords" class="word-tags"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./sentiment.js"></script>
+</body>
+</html>

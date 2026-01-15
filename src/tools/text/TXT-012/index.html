@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-012 正規表達式生成器 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="視覺化建構正規表達式">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-012 <span data-i18n="txt012_name">正規表達式生成器</span></h1>
+        <p data-i18n="txt012_desc">視覺化建構正規表達式</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3 data-i18n="build_regex">建構正規表達式</h3>
+        <div id="regexBlocks" class="regex-blocks"></div>
+        <div class="action-buttons">
+          <button id="addBlockBtn" class="btn btn-primary">
+            <span>➕</span>
+            <span>添加元素</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <h3>快速添加</h3>
+        <div class="pattern-buttons">
+          <button class="btn btn-sm" data-add="digit">數字 \d</button>
+          <button class="btn btn-sm" data-add="word">字母數字 \w</button>
+          <button class="btn btn-sm" data-add="space">空白 \s</button>
+          <button class="btn btn-sm" data-add="any">任意字元 .</button>
+          <button class="btn btn-sm" data-add="start">開頭 ^</button>
+          <button class="btn btn-sm" data-add="end">結尾 $</button>
+          <button class="btn btn-sm" data-add="group">群組 ()</button>
+          <button class="btn btn-sm" data-add="or">或 |</button>
+          <button class="btn btn-sm" data-add="optional">可選 ?</button>
+          <button class="btn btn-sm" data-add="onemore">一個以上 +</button>
+          <button class="btn btn-sm" data-add="zeromore">零個以上 *</button>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <h3>旗標設定</h3>
+        <div class="checkbox-group">
+          <label><input type="checkbox" id="flagG" checked> g (全域)</label>
+          <label><input type="checkbox" id="flagI"> i (不區分大小寫)</label>
+          <label><input type="checkbox" id="flagM"> m (多行)</label>
+          <label><input type="checkbox" id="flagS"> s (單行)</label>
+        </div>
+      </div>
+
+      <div class="result-area">
+        <h3 data-i18n="generated_regex">生成的正規表達式</h3>
+        <div class="regex-output">
+          <code id="regexOutput">//g</code>
+          <button id="copyRegexBtn" class="btn btn-sm btn-success">複製</button>
+        </div>
+      </div>
+
+      <div class="input-section">
+        <h3 data-i18n="test">測試</h3>
+        <textarea id="testInput" class="text-input" rows="4" placeholder="輸入測試文字..."></textarea>
+        <div id="testResult" class="test-result"></div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./regexbuilder.js"></script>
+</body>
+</html>

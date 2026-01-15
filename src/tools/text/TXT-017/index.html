@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-017 Slug 生成器 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="將文字轉換為 URL 友善的 slug">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-017 <span data-i18n="txt017_name">Slug 生成器</span></h1>
+        <p data-i18n="txt017_desc">將文字轉換為 URL 友善的 slug</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="4" placeholder="輸入標題或文字..."></textarea>
+      </div>
+
+      <div class="settings-panel">
+        <h3 data-i18n="settings">設定</h3>
+        <div class="setting-row">
+          <label data-i18n="separator">分隔符</label>
+          <select id="separator">
+            <option value="-">連字符 (-)</option>
+            <option value="_">底線 (_)</option>
+            <option value=".">點 (.)</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="lowercase">全部小寫</label>
+          <input type="checkbox" id="lowercase" checked>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="max_length">最大長度</label>
+          <input type="number" id="maxLength" value="100" min="10" max="500">
+        </div>
+        <div class="setting-row">
+          <label data-i18n="transliterate">音譯中文</label>
+          <input type="checkbox" id="transliterate">
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="generateBtn" class="btn btn-primary">
+          <span>🔗</span>
+          <span data-i18n="generate">生成</span>
+        </button>
+        <button id="copyBtn" class="btn btn-success" style="display: none;">
+          <span>📋</span>
+          <span data-i18n="copy">複製</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">結果</h3>
+        <div class="slug-output">
+          <code id="slugOutput"></code>
+        </div>
+        <div class="preview-url">
+          <span>預覽: https://example.com/</span><span id="urlPreview"></span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./slug.js"></script>
+</body>
+</html>

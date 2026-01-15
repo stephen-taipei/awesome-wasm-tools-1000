@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-010 文字查找替換 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="在文字中查找並替換指定內容">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-010 <span data-i18n="txt010_name">文字查找替換</span></h1>
+        <p data-i18n="txt010_desc">在文字中查找並替換指定內容</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="8" placeholder="輸入文字..."></textarea>
+      </div>
+
+      <div class="settings-panel">
+        <h3 data-i18n="find_replace">查找與替換</h3>
+        <div class="setting-row">
+          <label data-i18n="find">查找</label>
+          <input type="text" id="findText" placeholder="輸入要查找的文字">
+        </div>
+        <div class="setting-row">
+          <label data-i18n="replace">替換為</label>
+          <input type="text" id="replaceText" placeholder="輸入替換文字 (留空則刪除)">
+        </div>
+        <div class="setting-row">
+          <label data-i18n="use_regex">使用正規表達式</label>
+          <input type="checkbox" id="useRegex">
+        </div>
+        <div class="setting-row">
+          <label data-i18n="case_sensitive">區分大小寫</label>
+          <input type="checkbox" id="caseSensitive">
+        </div>
+        <div class="setting-row">
+          <label data-i18n="whole_word">全詞匹配</label>
+          <input type="checkbox" id="wholeWord">
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="findBtn" class="btn btn-primary">
+          <span>🔍</span>
+          <span data-i18n="find_all">查找全部</span>
+        </button>
+        <button id="replaceBtn" class="btn btn-warning">
+          <span>🔄</span>
+          <span data-i18n="replace_all">全部替換</span>
+        </button>
+        <button id="copyBtn" class="btn btn-success" style="display: none;">
+          <span>📋</span>
+          <span data-i18n="copy">複製結果</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">結果</h3>
+        <div class="stats-summary">
+          <span>找到: <strong id="matchCount">0</strong> 處</span>
+        </div>
+        <textarea id="outputText" class="text-input" rows="8" readonly></textarea>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./findreplace.js"></script>
+</body>
+</html>

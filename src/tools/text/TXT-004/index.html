@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-004 文字去重 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="移除重複的行或單詞，保留唯一的內容">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-004 <span data-i18n="txt004_name">文字去重</span></h1>
+        <p data-i18n="txt004_desc">移除重複的行或單詞</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="10" placeholder="輸入文字，每行一個項目..."></textarea>
+      </div>
+
+      <div class="settings-panel">
+        <h3 data-i18n="settings">設定</h3>
+        <div class="setting-row">
+          <label data-i18n="dedup_mode">去重模式</label>
+          <select id="dedupMode">
+            <option value="line">按行去重</option>
+            <option value="word">按單詞去重</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="ignore_case">忽略大小寫</label>
+          <input type="checkbox" id="ignoreCase">
+        </div>
+        <div class="setting-row">
+          <label data-i18n="trim_whitespace">移除首尾空白</label>
+          <input type="checkbox" id="trimWhitespace" checked>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="keep_empty">保留空行</label>
+          <input type="checkbox" id="keepEmpty">
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="dedupBtn" class="btn btn-primary">
+          <span>🔧</span>
+          <span data-i18n="remove_duplicates">去除重複</span>
+        </button>
+        <button id="copyBtn" class="btn btn-success" style="display: none;">
+          <span>📋</span>
+          <span data-i18n="copy">複製結果</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">結果</h3>
+        <div class="stats-summary">
+          <span>原始數量: <strong id="originalCount">0</strong></span>
+          <span>去重後: <strong id="uniqueCount">0</strong></span>
+          <span>移除: <strong id="removedCount" class="text-danger">0</strong></span>
+        </div>
+        <textarea id="outputText" class="text-input" rows="10" readonly></textarea>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./dedup.js"></script>
+</body>
+</html>

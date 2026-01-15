@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-027 JSON 驗證 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="驗證 JSON 資料格式是否正確">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-027 <span data-i18n="txt027_name">JSON 驗證</span></h1>
+        <p data-i18n="txt027_desc">驗證 JSON 資料格式是否正確</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_json">輸入 JSON</h3>
+        <textarea id="inputText" class="text-input code-input" rows="15" placeholder='{"key": "value"}'></textarea>
+      </div>
+
+      <div class="action-buttons">
+        <button id="validateBtn" class="btn btn-primary">
+          <span>✅</span>
+          <span data-i18n="validate">驗證</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <div id="validationResult" class="validation-result"></div>
+        <div id="jsonInfo" class="json-info" style="display: none;">
+          <h4>JSON 資訊</h4>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-label">根類型</span>
+              <span id="rootType" class="stat-value">-</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">深度</span>
+              <span id="jsonDepth" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">鍵數量</span>
+              <span id="keyCount" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">陣列元素</span>
+              <span id="arrayCount" class="stat-value">0</span>
+            </div>
+          </div>
+          <h4>結構預覽</h4>
+          <pre id="structurePreview" class="code-output"></pre>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./jsonvalidate.js"></script>
+</body>
+</html>

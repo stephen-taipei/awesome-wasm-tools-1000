@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-021 繁簡轉換 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="繁體中文與簡體中文互相轉換">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-021 <span data-i18n="txt021_name">繁簡轉換</span></h1>
+        <p data-i18n="txt021_desc">繁體中文與簡體中文互相轉換</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="8" placeholder="輸入中文文字..."></textarea>
+      </div>
+
+      <div class="action-buttons">
+        <button id="toSimplifiedBtn" class="btn btn-primary">
+          <span>简</span>
+          <span>轉換為簡體</span>
+        </button>
+        <button id="toTraditionalBtn" class="btn btn-primary">
+          <span>繁</span>
+          <span>轉換為繁體</span>
+        </button>
+        <button id="copyBtn" class="btn btn-success" style="display: none;">
+          <span>📋</span>
+          <span data-i18n="copy">複製</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">結果</h3>
+        <div class="stats-summary">
+          <span>轉換字數: <strong id="convertedCount">0</strong></span>
+        </div>
+        <textarea id="outputText" class="text-input" rows="8" readonly></textarea>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./zhconvert.js"></script>
+</body>
+</html>
