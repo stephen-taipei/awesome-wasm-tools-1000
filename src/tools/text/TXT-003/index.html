@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-003 文字比較 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="比較兩段文字的差異，高亮顯示新增和刪除的部分">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-003 <span data-i18n="txt003_name">文字比較</span></h1>
+        <p data-i18n="txt003_desc">比較兩段文字的差異，高亮顯示變更</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="compare-container">
+        <div class="input-section">
+          <h3 data-i18n="original_text">原始文字</h3>
+          <textarea id="text1" class="text-input" rows="10" placeholder="輸入原始文字..."></textarea>
+        </div>
+        <div class="input-section">
+          <h3 data-i18n="modified_text">修改後文字</h3>
+          <textarea id="text2" class="text-input" rows="10" placeholder="輸入修改後文字..."></textarea>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <h3 data-i18n="settings">設定</h3>
+        <div class="setting-row">
+          <label data-i18n="compare_mode">比較模式</label>
+          <select id="compareMode">
+            <option value="char">逐字元比較</option>
+            <option value="word">逐單詞比較</option>
+            <option value="line" selected>逐行比較</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="ignore_case">忽略大小寫</label>
+          <input type="checkbox" id="ignoreCase">
+        </div>
+        <div class="setting-row">
+          <label data-i18n="ignore_whitespace">忽略空白</label>
+          <input type="checkbox" id="ignoreWhitespace">
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="compareBtn" class="btn btn-primary">
+          <span>🔍</span>
+          <span data-i18n="compare">比較</span>
+        </button>
+        <button id="swapBtn" class="btn btn-secondary">
+          <span>🔄</span>
+          <span data-i18n="swap">交換</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="diff_result">比較結果</h3>
+        <div class="diff-legend">
+          <span class="legend-item"><span class="diff-added">新增</span></span>
+          <span class="legend-item"><span class="diff-removed">刪除</span></span>
+          <span class="legend-item"><span class="diff-unchanged">未變更</span></span>
+        </div>
+        <div id="diffOutput" class="diff-output"></div>
+        <div class="stats-summary">
+          <span>新增: <strong id="addedCount" class="text-success">0</strong></span>
+          <span>刪除: <strong id="removedCount" class="text-danger">0</strong></span>
+          <span>未變更: <strong id="unchangedCount">0</strong></span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./diff.js"></script>
+</body>
+</html>

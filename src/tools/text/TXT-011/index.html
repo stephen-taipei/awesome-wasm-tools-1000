@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-011 正規表達式測試 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="測試正規表達式，即時顯示匹配結果">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-011 <span data-i18n="txt011_name">正規表達式測試</span></h1>
+        <p data-i18n="txt011_desc">測試正規表達式，即時顯示匹配結果</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3 data-i18n="regex_pattern">正規表達式</h3>
+        <div class="regex-input-row">
+          <span class="regex-delimiter">/</span>
+          <input type="text" id="regexPattern" class="regex-input" placeholder="輸入正規表達式...">
+          <span class="regex-delimiter">/</span>
+          <input type="text" id="regexFlags" class="regex-flags" value="g" placeholder="flags">
+        </div>
+        <div id="regexError" class="error-message" style="display: none;"></div>
+      </div>
+
+      <div class="input-section">
+        <h3 data-i18n="test_string">測試字串</h3>
+        <textarea id="testString" class="text-input" rows="6" placeholder="輸入要測試的字串..."></textarea>
+      </div>
+
+      <div class="settings-panel">
+        <h3 data-i18n="common_patterns">常用模式</h3>
+        <div class="pattern-buttons">
+          <button class="btn btn-sm" data-pattern="\\d+" data-desc="數字">數字</button>
+          <button class="btn btn-sm" data-pattern="[a-zA-Z]+" data-desc="字母">字母</button>
+          <button class="btn btn-sm" data-pattern="\\w+" data-desc="單詞">單詞</button>
+          <button class="btn btn-sm" data-pattern="\\s+" data-desc="空白">空白</button>
+          <button class="btn btn-sm" data-pattern="[\\u4e00-\\u9fa5]+" data-desc="中文">中文</button>
+          <button class="btn btn-sm" data-pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}" data-desc="Email">Email</button>
+          <button class="btn btn-sm" data-pattern="https?://[\\w\\-._~:/?#\\[\\]@!$&'()*+,;=%]+" data-desc="URL">URL</button>
+          <button class="btn btn-sm" data-pattern="\\d{4}-\\d{2}-\\d{2}" data-desc="日期">日期</button>
+          <button class="btn btn-sm" data-pattern="0[0-9]{1,2}-?\\d{7,8}" data-desc="電話">電話</button>
+          <button class="btn btn-sm" data-pattern="#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})" data-desc="顏色碼">顏色碼</button>
+        </div>
+      </div>
+
+      <div id="resultArea" class="result-area">
+        <h3 data-i18n="match_result">匹配結果</h3>
+        <div class="stats-summary">
+          <span>匹配數: <strong id="matchCount">0</strong></span>
+          <span>群組數: <strong id="groupCount">0</strong></span>
+        </div>
+        <div id="highlightedText" class="highlighted-text"></div>
+        <h4 data-i18n="matches">匹配詳情</h4>
+        <div id="matchDetails" class="match-details"></div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./regex.js"></script>
+</body>
+</html>

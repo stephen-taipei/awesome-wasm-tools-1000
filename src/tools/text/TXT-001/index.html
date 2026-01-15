@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-001 字數統計 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="統計文字的字數、字元數、行數、段落數等資訊">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-001 <span data-i18n="txt001_name">字數統計</span></h1>
+        <p data-i18n="txt001_desc">統計文字的字數、字元數、行數、段落數等資訊</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="10" placeholder="在此輸入或貼上文字..."></textarea>
+      </div>
+
+      <div class="action-buttons">
+        <button id="analyzeBtn" class="btn btn-primary">
+          <span>📊</span>
+          <span data-i18n="analyze">分析</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="statistics">統計結果</h3>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-label" data-i18n="characters">字元數</span>
+            <span id="charCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label" data-i18n="characters_no_space">字元數 (不含空格)</span>
+            <span id="charNoSpaceCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label" data-i18n="words">單詞數</span>
+            <span id="wordCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label" data-i18n="chinese_chars">中文字數</span>
+            <span id="chineseCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label" data-i18n="lines">行數</span>
+            <span id="lineCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label" data-i18n="paragraphs">段落數</span>
+            <span id="paragraphCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label" data-i18n="sentences">句子數</span>
+            <span id="sentenceCount" class="stat-value">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label" data-i18n="read_time">閱讀時間</span>
+            <span id="readTime" class="stat-value">0 分鐘</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./counter.js"></script>
+</body>
+</html>

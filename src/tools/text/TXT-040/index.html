@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-040 JSON 轉 CSV - Awesome WASM Tools 1000</title>
+  <meta name="description" content="將 JSON 格式轉換為 CSV 格式">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-040 <span data-i18n="txt040_name">JSON 轉 CSV</span></h1>
+        <p data-i18n="txt040_desc">將 JSON 格式轉換為 CSV 格式</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_json">輸入 JSON</h3>
+        <textarea id="inputText" class="text-input code-input" rows="10" placeholder='[{"name": "John", "age": 30}]'></textarea>
+      </div>
+
+      <div class="settings-panel">
+        <h3 data-i18n="settings">設定</h3>
+        <div class="setting-row">
+          <label data-i18n="delimiter">分隔符</label>
+          <select id="delimiter">
+            <option value=",">逗號 (,)</option>
+            <option value=";">分號 (;)</option>
+            <option value="\t">Tab</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="include_header">包含標題行</label>
+          <input type="checkbox" id="includeHeader" checked>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary">
+          <span>🔄</span>
+          <span data-i18n="convert">轉換</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span data-i18n="download">下載 CSV</span>
+        </button>
+        <button id="copyBtn" class="btn btn-info" style="display: none;">
+          <span>📋</span>
+          <span data-i18n="copy">複製</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="csv_output">CSV 輸出</h3>
+        <pre id="outputText" class="code-output"></pre>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./json2csv.js"></script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-006 大小寫轉換 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="轉換文字的大小寫，支援多種轉換模式">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-006 <span data-i18n="txt006_name">大小寫轉換</span></h1>
+        <p data-i18n="txt006_desc">轉換文字的大小寫</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="8" placeholder="輸入文字..."></textarea>
+      </div>
+
+      <div class="button-grid">
+        <button class="btn btn-primary" data-case="upper">
+          <span>🔠</span>
+          <span>全部大寫</span>
+        </button>
+        <button class="btn btn-primary" data-case="lower">
+          <span>🔡</span>
+          <span>全部小寫</span>
+        </button>
+        <button class="btn btn-primary" data-case="title">
+          <span>📝</span>
+          <span>標題格式</span>
+        </button>
+        <button class="btn btn-primary" data-case="sentence">
+          <span>💬</span>
+          <span>句首大寫</span>
+        </button>
+        <button class="btn btn-primary" data-case="camel">
+          <span>🐪</span>
+          <span>camelCase</span>
+        </button>
+        <button class="btn btn-primary" data-case="pascal">
+          <span>📦</span>
+          <span>PascalCase</span>
+        </button>
+        <button class="btn btn-primary" data-case="snake">
+          <span>🐍</span>
+          <span>snake_case</span>
+        </button>
+        <button class="btn btn-primary" data-case="kebab">
+          <span>🍢</span>
+          <span>kebab-case</span>
+        </button>
+        <button class="btn btn-primary" data-case="constant">
+          <span>📢</span>
+          <span>CONSTANT_CASE</span>
+        </button>
+        <button class="btn btn-primary" data-case="toggle">
+          <span>🔄</span>
+          <span>反轉大小寫</span>
+        </button>
+        <button class="btn btn-primary" data-case="alternate">
+          <span>🎭</span>
+          <span>交替大小寫</span>
+        </button>
+        <button class="btn btn-primary" data-case="random">
+          <span>🎲</span>
+          <span>隨機大小寫</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">結果</h3>
+        <textarea id="outputText" class="text-input" rows="8" readonly></textarea>
+        <div class="action-buttons">
+          <button id="copyBtn" class="btn btn-success">
+            <span>📋</span>
+            <span data-i18n="copy">複製結果</span>
+          </button>
+          <button id="clearBtn" class="btn btn-secondary">
+            <span>🗑️</span>
+            <span data-i18n="clear">清除</span>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./case.js"></script>
+</body>
+</html>

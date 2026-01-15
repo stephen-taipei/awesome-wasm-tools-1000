@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-008 空白處理 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="處理文字中的空白、空行和縮排">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-008 <span data-i18n="txt008_name">空白處理</span></h1>
+        <p data-i18n="txt008_desc">處理文字中的空白、空行和縮排</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="8" placeholder="輸入文字..."></textarea>
+      </div>
+
+      <div class="button-grid">
+        <button class="btn btn-primary" data-action="trim-all">
+          <span>✂️</span>
+          <span>去除首尾空白</span>
+        </button>
+        <button class="btn btn-primary" data-action="trim-lines">
+          <span>📋</span>
+          <span>去除每行首尾空白</span>
+        </button>
+        <button class="btn btn-primary" data-action="remove-empty">
+          <span>🗑️</span>
+          <span>移除空行</span>
+        </button>
+        <button class="btn btn-primary" data-action="collapse-spaces">
+          <span>📏</span>
+          <span>合併多餘空格</span>
+        </button>
+        <button class="btn btn-primary" data-action="collapse-lines">
+          <span>📄</span>
+          <span>合併多餘空行</span>
+        </button>
+        <button class="btn btn-primary" data-action="remove-all-spaces">
+          <span>🚫</span>
+          <span>移除所有空格</span>
+        </button>
+        <button class="btn btn-primary" data-action="tabs-to-spaces">
+          <span>➡️</span>
+          <span>Tab 轉空格</span>
+        </button>
+        <button class="btn btn-primary" data-action="spaces-to-tabs">
+          <span>⬅️</span>
+          <span>空格轉 Tab</span>
+        </button>
+        <button class="btn btn-primary" data-action="normalize">
+          <span>🔧</span>
+          <span>標準化空白</span>
+        </button>
+      </div>
+
+      <div class="settings-panel">
+        <h3 data-i18n="settings">設定</h3>
+        <div class="setting-row">
+          <label data-i18n="tab_size">Tab 大小</label>
+          <input type="number" id="tabSize" value="4" min="1" max="8">
+        </div>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">結果</h3>
+        <textarea id="outputText" class="text-input" rows="8" readonly></textarea>
+        <div class="action-buttons">
+          <button id="copyBtn" class="btn btn-success">
+            <span>📋</span>
+            <span data-i18n="copy">複製結果</span>
+          </button>
+          <button id="clearBtn" class="btn btn-secondary">
+            <span>🗑️</span>
+            <span data-i18n="clear">清除</span>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./whitespace.js"></script>
+</body>
+</html>
