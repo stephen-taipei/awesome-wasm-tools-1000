@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMP-030 壓縮格式識別 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="識別壓縮檔案的格式類型，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CMP-030 <span data-i18n="cmp030_name">壓縮格式識別</span></h1>
+        <p data-i18n="cmp030_desc">識別壓縮檔案的格式類型</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">🔍</div>
+        <h3 data-i18n="upload_title">拖放壓縮檔到此處</h3>
+        <p data-i18n="upload_subtitle">或點擊選擇檔案</p>
+        <p class="upload-formats" data-i18n="upload_formats">支援識別所有常見壓縮格式</p>
+        <input type="file" id="fileInput" class="file-input">
+      </div>
+
+      <div id="resultPanel" class="settings-panel" style="display: none;">
+        <h3>📋 識別結果</h3>
+        <div class="setting-row">
+          <label>檔案名稱</label>
+          <span id="fileName">-</span>
+        </div>
+        <div class="setting-row">
+          <label>檔案大小</label>
+          <span id="fileSize">-</span>
+        </div>
+        <div class="setting-row">
+          <label>識別格式</label>
+          <span id="formatType" class="format-badge">-</span>
+        </div>
+        <div class="setting-row">
+          <label>MIME 類型</label>
+          <span id="mimeType">-</span>
+        </div>
+        <div class="setting-row">
+          <label>Magic Bytes</label>
+          <span id="magicBytes" class="code">-</span>
+        </div>
+        <div class="setting-row">
+          <label>格式說明</label>
+          <span id="formatDesc">-</span>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="identifyBtn" class="btn btn-primary" disabled>
+          <span>🔍</span>
+          <span data-i18n="identify">識別格式</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+
+      <div class="settings-panel">
+        <h3>支援的壓縮格式</h3>
+        <div class="format-list">
+          <span class="format-tag">ZIP</span>
+          <span class="format-tag">7z</span>
+          <span class="format-tag">RAR</span>
+          <span class="format-tag">TAR</span>
+          <span class="format-tag">GZIP</span>
+          <span class="format-tag">BZIP2</span>
+          <span class="format-tag">XZ</span>
+          <span class="format-tag">LZMA</span>
+          <span class="format-tag">Zstandard</span>
+          <span class="format-tag">Brotli</span>
+          <span class="format-tag">LZ4</span>
+          <span class="format-tag">Snappy</span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./identify.js"></script>
+</body>
+</html>
