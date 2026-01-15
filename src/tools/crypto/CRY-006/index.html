@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-006 RSA 數位簽章 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="使用 RSA 私鑰建立數位簽章，支援 PSS 填充，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-006 <span data-i18n="cry006_name">RSA 數位簽章</span></h1>
+        <p data-i18n="cry006_desc">使用 RSA 私鑰建立數位簽章</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3>簽章設定</h3>
+        <div class="setting-row">
+          <label for="hashAlgorithm">雜湊演算法</label>
+          <select id="hashAlgorithm">
+            <option value="SHA-256" selected>SHA-256</option>
+            <option value="SHA-384">SHA-384</option>
+            <option value="SHA-512">SHA-512</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="saltLength">鹽值長度</label>
+          <select id="saltLength">
+            <option value="32" selected>32 bytes</option>
+            <option value="48">48 bytes</option>
+            <option value="64">64 bytes</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="outputFormat">輸出格式</label>
+          <select id="outputFormat">
+            <option value="base64" selected>Base64</option>
+            <option value="hex">十六進位</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="privateKey">私鑰 (PEM 格式)</label>
+        <textarea id="privateKey" rows="10" placeholder="貼上 RSA 私鑰 (PEM 格式)..."></textarea>
+      </div>
+
+      <div class="input-group">
+        <label for="message">訊息</label>
+        <textarea id="message" rows="4" placeholder="輸入要簽章的訊息..."></textarea>
+      </div>
+
+      <div class="action-buttons">
+        <button id="signBtn" class="btn btn-primary">
+          <span>✍️</span>
+          <span>建立簽章</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div class="input-group">
+        <label for="signature">數位簽章</label>
+        <textarea id="signature" rows="6" readonly placeholder="簽章將顯示在此..."></textarea>
+        <button id="copyBtn" class="btn btn-small btn-success" style="margin-top: 0.5rem;">複製簽章</button>
+      </div>
+
+      <div id="signInfo" class="settings-panel" style="display: none;">
+        <h3>簽章資訊</h3>
+        <div class="setting-row">
+          <label>處理時間</label>
+          <span id="processTime">-</span>
+        </div>
+        <div class="setting-row">
+          <label>簽章長度</label>
+          <span id="signatureLength">-</span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./rsa-sign.js"></script>
+</body>
+</html>

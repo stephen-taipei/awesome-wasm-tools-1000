@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-039 CSPRNG 隨機數 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="生成密碼學安全的隨機數，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn"><span>&larr;</span><span data-i18n="back">返回</span></a>
+      <div class="tool-title">
+        <h1>CRY-039 <span data-i18n="cry039_name">CSPRNG 隨機數</span></h1>
+        <p data-i18n="cry039_desc">密碼學安全偽隨機數生成器</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+      <div class="settings-panel">
+        <h3>隨機數設定</h3>
+        <div class="setting-row"><label for="outputType">輸出類型</label><select id="outputType"><option value="bytes" selected>隨機位元組</option><option value="integer">整數</option><option value="float">浮點數 (0-1)</option><option value="bigint">大整數</option></select></div>
+        <div class="setting-row" id="bytesOptions"><label for="byteCount">位元組數量</label><select id="byteCount"><option value="16">16 bytes (128 bits)</option><option value="32" selected>32 bytes (256 bits)</option><option value="64">64 bytes (512 bits)</option><option value="128">128 bytes</option><option value="256">256 bytes</option></select></div>
+        <div class="setting-row" id="integerOptions" style="display: none;"><label for="intMin">最小值</label><input type="number" id="intMin" value="0"><label for="intMax" style="margin-left: 1rem;">最大值</label><input type="number" id="intMax" value="100"></div>
+        <div class="setting-row" id="bigintOptions" style="display: none;"><label for="bigintBits">位元數</label><select id="bigintBits"><option value="256">256 bits</option><option value="512">512 bits</option><option value="1024">1024 bits</option><option value="2048">2048 bits</option><option value="4096">4096 bits</option></select></div>
+        <div class="setting-row"><label for="outputFormat">輸出格式</label><select id="outputFormat"><option value="hex" selected>十六進位</option><option value="base64">Base64</option><option value="decimal">十進位</option><option value="binary">二進位</option></select></div>
+        <div class="setting-row"><label for="batchCount">生成數量</label><select id="batchCount"><option value="1" selected>1</option><option value="5">5</option><option value="10">10</option><option value="20">20</option></select></div>
+      </div>
+      <div class="action-buttons"><button id="generateBtn" class="btn btn-primary"><span>🎲</span><span>生成隨機數</span></button><button id="clearBtn" class="btn btn-secondary"><span>🗑️</span><span>清除</span></button></div>
+      <div class="input-group"><label for="randomResult">隨機數結果</label><textarea id="randomResult" rows="8" readonly placeholder="隨機數將顯示在此..." class="mono"></textarea><button id="copyBtn" class="btn btn-small btn-success" style="margin-top: 0.5rem;">複製結果</button></div>
+      <div id="randomInfo" class="settings-panel" style="display: none;">
+        <h3>生成資訊</h3>
+        <div class="setting-row"><label>熵值</label><span id="entropyBits">-</span></div>
+        <div class="setting-row"><label>來源</label><span id="randomSource">Web Crypto API (CSPRNG)</span></div>
+      </div>
+    </main>
+    <footer class="footer"><p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p></footer>
+  </div>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./csprng.js"></script>
+</body>
+</html>

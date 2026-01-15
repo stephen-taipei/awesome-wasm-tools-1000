@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-030 HMAC 驗證 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="驗證 HMAC 訊息驗證碼，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn"><span>&larr;</span><span data-i18n="back">返回</span></a>
+      <div class="tool-title">
+        <h1>CRY-030 <span data-i18n="cry030_name">HMAC 驗證</span></h1>
+        <p data-i18n="cry030_desc">驗證 HMAC (雜湊訊息驗證碼)</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+      <div class="settings-panel">
+        <h3>HMAC 設定</h3>
+        <div class="setting-row"><label for="algorithm">雜湊演算法</label><select id="algorithm"><option value="SHA-256" selected>HMAC-SHA256</option><option value="SHA-384">HMAC-SHA384</option><option value="SHA-512">HMAC-SHA512</option></select></div>
+        <div class="setting-row"><label for="inputFormat">HMAC 格式</label><select id="inputFormat"><option value="hex" selected>十六進位</option><option value="base64">Base64</option></select></div>
+      </div>
+      <div class="input-group"><label for="secretKey">密鑰 (Secret Key)</label>
+        <div class="password-input"><input type="password" id="secretKey" placeholder="輸入 HMAC 密鑰"><button type="button" id="toggleKey" class="btn btn-small">顯示</button></div>
+      </div>
+      <div class="input-group"><label for="message">原始訊息</label><textarea id="message" rows="4" placeholder="輸入原始訊息..."></textarea></div>
+      <div class="input-group"><label for="hmacValue">HMAC 值</label><textarea id="hmacValue" rows="2" placeholder="輸入要驗證的 HMAC 值..." class="mono"></textarea></div>
+      <div class="action-buttons"><button id="verifyBtn" class="btn btn-primary"><span>✅</span><span>驗證 HMAC</span></button><button id="clearBtn" class="btn btn-secondary"><span>🗑️</span><span>清除</span></button></div>
+      <div id="verifyResult" class="result-box" style="display: none;"><div id="resultIcon" class="result-icon"></div><div id="resultText" class="result-text"></div></div>
+      <div id="verifyInfo" class="settings-panel" style="display: none;"><h3>驗證資訊</h3><div class="setting-row"><label>處理時間</label><span id="processTime">-</span></div></div>
+    </main>
+    <footer class="footer"><p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p></footer>
+  </div>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./hmac-verify.js"></script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-012 Ed25519 驗證 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="使用 Ed25519 演算法驗證數位簽章，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-012 <span data-i18n="cry012_name">Ed25519 驗證</span></h1>
+        <p data-i18n="cry012_desc">使用 Ed25519 演算法驗證數位簽章</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3>驗證設定</h3>
+        <div class="setting-row">
+          <label for="inputFormat">輸入格式</label>
+          <select id="inputFormat">
+            <option value="base64" selected>Base64</option>
+            <option value="hex">十六進位</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="publicKey">公鑰 (32 bytes)</label>
+        <textarea id="publicKey" rows="2" placeholder="輸入 Ed25519 公鑰..."></textarea>
+      </div>
+
+      <div class="input-group">
+        <label for="message">原始訊息</label>
+        <textarea id="message" rows="4" placeholder="輸入原始訊息..."></textarea>
+      </div>
+
+      <div class="input-group">
+        <label for="signature">數位簽章 (64 bytes)</label>
+        <textarea id="signature" rows="3" placeholder="輸入要驗證的簽章..."></textarea>
+      </div>
+
+      <div class="action-buttons">
+        <button id="verifyBtn" class="btn btn-primary">
+          <span>✅</span>
+          <span>驗證簽章</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div id="verifyResult" class="result-box" style="display: none;">
+        <div id="resultIcon" class="result-icon"></div>
+        <div id="resultText" class="result-text"></div>
+      </div>
+
+      <div id="verifyInfo" class="settings-panel" style="display: none;">
+        <h3>驗證資訊</h3>
+        <div class="setting-row">
+          <label>處理時間</label>
+          <span id="processTime">-</span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./ed25519-verify.js"></script>
+</body>
+</html>
