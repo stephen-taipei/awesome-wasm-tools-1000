@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-098 音訊節拍標記 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 16px; }
+    h1 { font-size: 2rem; margin-bottom: 10px; background: linear-gradient(135deg, #6366f1, #4f46e5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #a0a0a0; }
+    .upload-area { border: 2px dashed #4a4a6a; border-radius: 16px; padding: 60px 40px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); margin-bottom: 20px; }
+    .upload-area:hover { border-color: #6366f1; }
+    .upload-icon { font-size: 4rem; margin-bottom: 15px; }
+    .file-input { display: none; }
+    .settings-panel { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .settings-panel.show { display: block; }
+    .setting-group { margin-bottom: 20px; }
+    .setting-label { font-size: 0.9rem; color: #a0a0a0; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .setting-value { color: #6366f1; font-weight: 600; }
+    input[type="range"] { width: 100%; height: 8px; border-radius: 4px; background: #2a2a4a; outline: none; -webkit-appearance: none; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #4f46e5); cursor: pointer; }
+    .action-buttons { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+    .btn { padding: 15px 35px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .btn-primary { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; }
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .btn:disabled { opacity: 0.5; }
+    .result-panel { background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .result-panel.show { display: block; }
+    .result-title { color: #6366f1; font-size: 1.2rem; margin-bottom: 15px; }
+    .beat-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .stat-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center; }
+    .stat-label { font-size: 0.85rem; color: #a0a0a0; margin-bottom: 5px; }
+    .stat-value { font-size: 1.2rem; font-weight: 600; color: #6366f1; }
+    .canvas-container { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+    canvas { width: 100%; height: 150px; }
+    .audio-player { width: 100%; margin-top: 15px; }
+    footer { text-align: center; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-098 音訊節拍標記</h1>
+      <p class="subtitle">標記音訊中的節拍位置並加入點擊聲</p>
+    </header>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">🥁</div>
+      <div>拖放音訊檔案到此處</div>
+      <div style="color:#888;margin-top:10px;">支援 MP3, WAV, OGG 格式</div>
+      <input type="file" id="fileInput" class="file-input" accept="audio/*">
+    </div>
+
+    <div class="settings-panel" id="settingsPanel">
+      <div class="setting-group">
+        <div class="setting-label">
+          <span>靈敏度</span>
+          <span class="setting-value" id="sensitivityValue">中</span>
+        </div>
+        <input type="range" id="sensitivity" min="1" max="5" value="3">
+      </div>
+      <div class="setting-group">
+        <div class="setting-label">
+          <span>點擊聲音量</span>
+          <span class="setting-value" id="clickVolumeValue">50%</span>
+        </div>
+        <input type="range" id="clickVolume" min="0" max="100" value="50">
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="markBtn" disabled><span>🥁</span> 標記節拍</button>
+      <button class="btn btn-success" id="downloadBtn" style="display:none;"><span>⬇️</span> 下載檔案</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">🥁 節拍標記結果</div>
+      <div class="beat-stats" id="beatStats"></div>
+      <div class="canvas-container">
+        <canvas id="beatCanvas"></canvas>
+      </div>
+      <audio id="audioPreview" class="audio-player" controls></audio>
+    </div>
+
+    <footer><p>所有處理均在本地完成</p></footer>
+  </div>
+
+  <script src="./beat-marker.js"></script>
+</body>
+</html>

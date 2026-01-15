@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-086 音訊水印嵌入 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 16px; }
+    h1 { font-size: 2rem; margin-bottom: 10px; background: linear-gradient(135deg, #ec4899, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #a0a0a0; }
+    .upload-area { border: 2px dashed #4a4a6a; border-radius: 16px; padding: 40px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); margin-bottom: 20px; }
+    .upload-area:hover { border-color: #ec4899; }
+    .upload-icon { font-size: 3rem; margin-bottom: 15px; }
+    .file-input { display: none; }
+    .settings-panel { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 25px; margin-bottom: 20px; }
+    .settings-title { font-size: 1.1rem; margin-bottom: 20px; color: #ec4899; }
+    .setting-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+    .setting-label { font-weight: 500; }
+    input[type="text"], input[type="range"] { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 10px 15px; color: #e0e0e0; }
+    input[type="text"] { width: 250px; }
+    input[type="range"] { width: 200px; }
+    .value-display { min-width: 60px; text-align: center; color: #ec4899; }
+    .file-info { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; margin-bottom: 20px; display: none; }
+    .file-info.show { display: block; }
+    .action-buttons { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+    .btn { padding: 15px 35px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .btn-primary { background: linear-gradient(135deg, #ec4899, #8b5cf6); color: white; }
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .btn:disabled { opacity: 0.5; }
+    .result-panel { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .result-panel.show { display: block; }
+    .result-title { color: #10b981; font-size: 1.2rem; margin-bottom: 15px; }
+    .audio-player { width: 100%; margin-top: 15px; }
+    footer { text-align: center; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-086 音訊水印嵌入</h1>
+      <p class="subtitle">將隱藏水印嵌入音訊檔案中</p>
+    </header>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">🔐</div>
+      <div>拖放音訊檔案到此處</div>
+      <div style="color:#888;margin-top:10px;">支援 MP3, WAV, OGG 格式</div>
+      <input type="file" id="fileInput" class="file-input" accept="audio/*">
+    </div>
+
+    <div class="file-info" id="fileInfo">
+      <p>檔案: <span id="fileName">-</span></p>
+    </div>
+
+    <div class="settings-panel">
+      <div class="settings-title">水印設定</div>
+      <div class="setting-row">
+        <span class="setting-label">水印文字</span>
+        <input type="text" id="watermarkText" placeholder="輸入水印內容" maxlength="50">
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">水印強度</span>
+        <div style="display:flex;align-items:center;gap:15px;">
+          <input type="range" id="strength" min="1" max="10" value="5">
+          <span class="value-display" id="strengthValue">5</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="embedBtn" disabled><span>🔏</span> 嵌入水印</button>
+      <button class="btn btn-success" id="downloadBtn" style="display:none;"><span>⬇️</span> 下載檔案</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">✅ 水印已嵌入</div>
+      <audio id="audioPreview" class="audio-player" controls></audio>
+    </div>
+
+    <footer><p>所有處理均在本地完成</p></footer>
+  </div>
+
+  <script src="./watermark-embed.js"></script>
+</body>
+</html>

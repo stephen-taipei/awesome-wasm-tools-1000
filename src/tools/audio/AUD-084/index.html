@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-084 三角波生成 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 16px; }
+    h1 { font-size: 2rem; margin-bottom: 10px; background: linear-gradient(135deg, #22c55e, #4ade80); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #a0a0a0; }
+    .settings-panel { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 25px; margin-bottom: 20px; }
+    .settings-title { font-size: 1.1rem; margin-bottom: 20px; color: #22c55e; }
+    .setting-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .setting-label { font-weight: 500; }
+    .setting-control { display: flex; align-items: center; gap: 15px; }
+    input[type="range"], input[type="number"] { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 8px; color: #e0e0e0; }
+    input[type="range"] { width: 200px; }
+    input[type="number"] { width: 100px; text-align: center; }
+    .value-display { min-width: 80px; text-align: center; font-weight: 600; color: #22c55e; }
+    .action-buttons { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+    .btn { padding: 15px 35px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .btn-primary { background: linear-gradient(135deg, #22c55e, #4ade80); color: #111; }
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .result-panel { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .result-panel.show { display: block; }
+    .result-title { color: #10b981; font-size: 1.2rem; margin-bottom: 15px; }
+    .audio-player { width: 100%; margin-top: 15px; }
+    #waveCanvas { width: 100%; height: 100px; background: #111; border-radius: 8px; margin-bottom: 15px; }
+    footer { text-align: center; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-084 三角波生成</h1>
+      <p class="subtitle">生成三角波音訊，音色柔和圓潤</p>
+    </header>
+
+    <div class="settings-panel">
+      <div class="settings-title">波形設定</div>
+      <div class="setting-row">
+        <span class="setting-label">頻率 (Hz)</span>
+        <div class="setting-control">
+          <input type="range" id="frequency" min="20" max="5000" value="440">
+          <input type="number" id="freqInput" min="20" max="5000" value="440">
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">持續時間</span>
+        <div class="setting-control">
+          <input type="range" id="duration" min="1" max="60" value="5">
+          <span class="value-display" id="durationValue">5 秒</span>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">音量</span>
+        <div class="setting-control">
+          <input type="range" id="volume" min="1" max="100" value="80">
+          <span class="value-display" id="volumeValue">80%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="generateBtn"><span>🎵</span> 生成三角波</button>
+      <button class="btn btn-success" id="downloadBtn" style="display:none;"><span>⬇️</span> 下載檔案</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">✅ 生成完成</div>
+      <canvas id="waveCanvas"></canvas>
+      <audio id="audioPreview" class="audio-player" controls></audio>
+    </div>
+
+    <footer><p>所有處理均在本地完成</p></footer>
+  </div>
+
+  <script src="./triangle-wave-generator.js"></script>
+</body>
+</html>

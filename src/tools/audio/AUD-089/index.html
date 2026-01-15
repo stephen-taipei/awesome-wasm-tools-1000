@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-089 音訊倒放 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 16px; }
+    h1 { font-size: 2rem; margin-bottom: 10px; background: linear-gradient(135deg, #ef4444, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #a0a0a0; }
+    .upload-area { border: 2px dashed #4a4a6a; border-radius: 16px; padding: 60px 40px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); margin-bottom: 20px; }
+    .upload-area:hover { border-color: #ef4444; }
+    .upload-icon { font-size: 4rem; margin-bottom: 15px; }
+    .file-input { display: none; }
+    .file-info { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; margin-bottom: 20px; display: none; }
+    .file-info.show { display: block; }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+    .info-item { text-align: center; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 10px; }
+    .info-label { font-size: 0.85rem; color: #888; margin-bottom: 5px; }
+    .info-value { font-size: 1.1rem; font-weight: 600; color: #ef4444; }
+    .action-buttons { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+    .btn { padding: 15px 35px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .btn-primary { background: linear-gradient(135deg, #ef4444, #f97316); color: white; }
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .btn:disabled { opacity: 0.5; }
+    .result-panel { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .result-panel.show { display: block; }
+    .result-title { color: #10b981; font-size: 1.2rem; margin-bottom: 15px; }
+    .audio-player { width: 100%; margin-top: 15px; }
+    footer { text-align: center; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-089 音訊倒放</h1>
+      <p class="subtitle">將音訊檔案反向播放</p>
+    </header>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">⏪</div>
+      <div>拖放音訊檔案到此處</div>
+      <div style="color:#888;margin-top:10px;">支援 MP3, WAV, OGG 格式</div>
+      <input type="file" id="fileInput" class="file-input" accept="audio/*">
+    </div>
+
+    <div class="file-info" id="fileInfo">
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">檔案名稱</div>
+          <div class="info-value" id="fileName">-</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">時長</div>
+          <div class="info-value" id="duration">-</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">取樣率</div>
+          <div class="info-value" id="sampleRate">-</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="reverseBtn" disabled><span>⏪</span> 倒放音訊</button>
+      <button class="btn btn-success" id="downloadBtn" style="display:none;"><span>⬇️</span> 下載檔案</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">✅ 倒放完成</div>
+      <audio id="audioPreview" class="audio-player" controls></audio>
+    </div>
+
+    <footer><p>所有處理均在本地完成</p></footer>
+  </div>
+
+  <script src="./audio-reverse.js"></script>
+</body>
+</html>

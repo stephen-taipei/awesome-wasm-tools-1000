@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-077 音訊波形生成 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 16px; }
+    h1 { font-size: 2rem; margin-bottom: 10px; background: linear-gradient(135deg, #f857a6, #ff5858); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #a0a0a0; }
+    .upload-area { border: 2px dashed #4a4a6a; border-radius: 16px; padding: 60px 40px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); margin-bottom: 20px; transition: all 0.3s; }
+    .upload-area:hover { border-color: #f857a6; }
+    .upload-icon { font-size: 4rem; margin-bottom: 20px; }
+    .file-input { display: none; }
+    .waveform-container { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; margin-bottom: 20px; display: none; }
+    .waveform-container.show { display: block; }
+    #waveformCanvas { width: 100%; height: 200px; background: #111; border-radius: 8px; }
+    .settings-panel { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .settings-panel.show { display: block; }
+    .setting-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .setting-label { font-weight: 500; }
+    select, input[type="color"] { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 8px 12px; color: #e0e0e0; }
+    .action-buttons { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+    .btn { padding: 15px 35px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .btn-primary { background: linear-gradient(135deg, #f857a6, #ff5858); color: white; }
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    footer { text-align: center; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-077 音訊波形生成</h1>
+      <p class="subtitle">從音訊檔案生成波形圖片</p>
+    </header>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">📈</div>
+      <div>拖放音訊檔案到此處</div>
+      <div style="color:#888;margin-top:10px;">支援 MP3, WAV, OGG 格式</div>
+      <input type="file" id="fileInput" class="file-input" accept="audio/*">
+    </div>
+
+    <div class="waveform-container" id="waveformContainer">
+      <canvas id="waveformCanvas"></canvas>
+    </div>
+
+    <div class="settings-panel" id="settingsPanel">
+      <div class="setting-row">
+        <span class="setting-label">波形顏色</span>
+        <input type="color" id="waveColor" value="#f857a6">
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">背景顏色</span>
+        <input type="color" id="bgColor" value="#111111">
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">樣式</span>
+        <select id="waveStyle">
+          <option value="bars">長條圖</option>
+          <option value="mirror">鏡像波形</option>
+          <option value="line">線條</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="generateBtn" disabled>
+        <span>🎨</span> 生成波形
+      </button>
+      <button class="btn btn-success" id="downloadBtn" style="display:none;">
+        <span>⬇️</span> 下載圖片
+      </button>
+    </div>
+
+    <footer>
+      <p>所有處理均在本地完成</p>
+    </footer>
+  </div>
+
+  <script src="./waveform-generator.js"></script>
+</body>
+</html>

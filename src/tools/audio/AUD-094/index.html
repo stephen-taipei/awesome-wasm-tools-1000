@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-094 音訊交叉淡化 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 16px; }
+    h1 { font-size: 2rem; margin-bottom: 10px; background: linear-gradient(135deg, #a855f7, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #a0a0a0; }
+    .upload-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .upload-area { border: 2px dashed #4a4a6a; border-radius: 16px; padding: 40px 20px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); }
+    .upload-area:hover { border-color: #a855f7; }
+    .upload-area.has-file { border-color: #10b981; border-style: solid; }
+    .upload-icon { font-size: 3rem; margin-bottom: 10px; }
+    .track-label { font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; color: #a855f7; }
+    .file-input { display: none; }
+    .file-name { font-size: 0.9rem; color: #10b981; margin-top: 10px; word-break: break-all; }
+    .settings-panel { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .settings-panel.show { display: block; }
+    .setting-group { margin-bottom: 20px; }
+    .setting-label { font-size: 0.9rem; color: #a0a0a0; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .setting-value { color: #a855f7; font-weight: 600; }
+    input[type="range"] { width: 100%; height: 8px; border-radius: 4px; background: #2a2a4a; outline: none; -webkit-appearance: none; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, #a855f7, #9333ea); cursor: pointer; }
+    select { width: 100%; padding: 12px; border-radius: 8px; background: #2a2a4a; color: #e0e0e0; border: 1px solid #4a4a6a; font-size: 1rem; }
+    .action-buttons { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+    .btn { padding: 15px 35px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .btn-primary { background: linear-gradient(135deg, #a855f7, #9333ea); color: white; }
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .btn:disabled { opacity: 0.5; }
+    .result-panel { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .result-panel.show { display: block; }
+    .result-title { color: #10b981; font-size: 1.2rem; margin-bottom: 15px; }
+    .audio-player { width: 100%; margin-top: 15px; }
+    footer { text-align: center; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-094 音訊交叉淡化</h1>
+      <p class="subtitle">將兩個音訊檔案交叉淡化合併</p>
+    </header>
+
+    <div class="upload-section">
+      <div class="upload-area" id="uploadArea1">
+        <div class="track-label">音軌 1</div>
+        <div class="upload-icon">🎵</div>
+        <div>拖放或點擊上傳</div>
+        <div class="file-name" id="fileName1"></div>
+        <input type="file" id="fileInput1" class="file-input" accept="audio/*">
+      </div>
+      <div class="upload-area" id="uploadArea2">
+        <div class="track-label">音軌 2</div>
+        <div class="upload-icon">🎵</div>
+        <div>拖放或點擊上傳</div>
+        <div class="file-name" id="fileName2"></div>
+        <input type="file" id="fileInput2" class="file-input" accept="audio/*">
+      </div>
+    </div>
+
+    <div class="settings-panel" id="settingsPanel">
+      <div class="setting-group">
+        <div class="setting-label">
+          <span>交叉淡化時間</span>
+          <span class="setting-value" id="fadeTimeValue">3 秒</span>
+        </div>
+        <input type="range" id="fadeTime" min="0.5" max="10" step="0.5" value="3">
+      </div>
+      <div class="setting-group">
+        <div class="setting-label"><span>淡化曲線</span></div>
+        <select id="fadeCurve">
+          <option value="linear">線性</option>
+          <option value="equal-power" selected>等功率</option>
+          <option value="exponential">指數</option>
+          <option value="logarithmic">對數</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="crossfadeBtn" disabled><span>🔀</span> 交叉淡化</button>
+      <button class="btn btn-success" id="downloadBtn" style="display:none;"><span>⬇️</span> 下載檔案</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">✅ 交叉淡化完成</div>
+      <div id="resultInfo"></div>
+      <audio id="audioPreview" class="audio-player" controls></audio>
+    </div>
+
+    <footer><p>所有處理均在本地完成</p></footer>
+  </div>
+
+  <script src="./crossfade.js"></script>
+</body>
+</html>

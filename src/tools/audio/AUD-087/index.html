@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUD-087 音訊水印提取 - WASM Tools</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e); min-height: 100vh; color: #e0e0e0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 16px; }
+    h1 { font-size: 2rem; margin-bottom: 10px; background: linear-gradient(135deg, #14b8a6, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #a0a0a0; }
+    .upload-area { border: 2px dashed #4a4a6a; border-radius: 16px; padding: 40px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02); margin-bottom: 20px; }
+    .upload-area:hover { border-color: #14b8a6; }
+    .upload-icon { font-size: 3rem; margin-bottom: 15px; }
+    .file-input { display: none; }
+    .file-info { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; margin-bottom: 20px; display: none; }
+    .file-info.show { display: block; }
+    .action-buttons { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+    .btn { padding: 15px 35px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .btn-primary { background: linear-gradient(135deg, #14b8a6, #06b6d4); color: white; }
+    .btn:disabled { opacity: 0.5; }
+    .result-panel { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 16px; padding: 25px; margin-bottom: 20px; display: none; }
+    .result-panel.show { display: block; }
+    .result-title { color: #10b981; font-size: 1.2rem; margin-bottom: 15px; }
+    .watermark-result { background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; font-family: monospace; font-size: 1.1rem; word-break: break-all; }
+    .no-watermark { color: #f87171; }
+    footer { text-align: center; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AUD-087 音訊水印提取</h1>
+      <p class="subtitle">從音訊檔案中提取隱藏的水印</p>
+    </header>
+
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">🔓</div>
+      <div>拖放含有水印的音訊檔案</div>
+      <div style="color:#888;margin-top:10px;">支援 MP3, WAV, OGG 格式</div>
+      <input type="file" id="fileInput" class="file-input" accept="audio/*">
+    </div>
+
+    <div class="file-info" id="fileInfo">
+      <p>檔案: <span id="fileName">-</span></p>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="extractBtn" disabled><span>🔍</span> 提取水印</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel">
+      <div class="result-title">提取結果</div>
+      <div class="watermark-result" id="watermarkResult">-</div>
+    </div>
+
+    <footer><p>所有處理均在本地完成</p></footer>
+  </div>
+
+  <script src="./watermark-extract.js"></script>
+</body>
+</html>
