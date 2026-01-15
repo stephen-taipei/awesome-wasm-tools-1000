@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-060 TOTP 生成 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="生成基於時間的一次性密碼 (TOTP)，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-060 <span data-i18n="cry060_name">TOTP 生成</span></h1>
+        <p data-i18n="cry060_desc">生成基於時間的一次性密碼 (TOTP)</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3>TOTP 設定</h3>
+        <div class="setting-row">
+          <label for="digits">位數</label>
+          <select id="digits">
+            <option value="6" selected>6 位數</option>
+            <option value="8">8 位數</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="period">時間週期（秒）</label>
+          <select id="period">
+            <option value="30" selected>30 秒</option>
+            <option value="60">60 秒</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="algorithm">演算法</label>
+          <select id="algorithm">
+            <option value="SHA-1" selected>SHA-1</option>
+            <option value="SHA-256">SHA-256</option>
+            <option value="SHA-512">SHA-512</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="secret">密鑰（Base32 編碼）</label>
+        <div class="password-input">
+          <input type="text" id="secret" placeholder="輸入或貼上 Base32 密鑰" class="mono">
+          <button type="button" id="generateSecret" class="btn btn-small btn-secondary">生成</button>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="generateBtn" class="btn btn-primary">
+          <span>🔢</span>
+          <span>生成 TOTP</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div id="totpResult" class="settings-panel" style="display: none;">
+        <h3>TOTP 驗證碼</h3>
+        <div id="totpDisplay" style="text-align: center; font-size: 3rem; font-weight: bold; font-family: monospace; letter-spacing: 0.5rem; padding: 1rem;"></div>
+
+        <div class="progress-container" style="margin-top: 1rem;">
+          <div class="progress-bar">
+            <div id="timeBar" class="progress-fill"></div>
+          </div>
+          <span id="timeRemaining" style="margin-left: 0.5rem;">30s</span>
+        </div>
+
+        <div style="margin-top: 1rem; text-align: center;">
+          <button id="copyTotp" class="btn btn-success">複製驗證碼</button>
+        </div>
+
+        <div class="setting-row" style="margin-top: 1rem;">
+          <label>當前時間戳</label>
+          <span id="timestamp" class="mono">-</span>
+        </div>
+        <div class="setting-row">
+          <label>計數器值</label>
+          <span id="counter" class="mono">-</span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./totp-generate.js"></script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMP-065 壓縮效率分析 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="分析檔案壓縮效率並提供建議">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CMP-065 <span data-i18n="cmp065_name">壓縮效率分析</span></h1>
+        <p data-i18n="cmp065_desc">分析檔案壓縮效率並提供建議</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📊</div>
+        <h3 data-i18n="upload_title">拖放檔案到此處</h3>
+        <p data-i18n="upload_subtitle">或點擊選擇要分析的檔案</p>
+        <p class="upload-formats">支援任何類型的檔案</p>
+        <input type="file" id="fileInput" class="file-input">
+      </div>
+
+      <div id="fileInfo" class="file-info" style="display: none;">
+        <h3>檔案資訊</h3>
+        <p id="fileName">檔名: -</p>
+        <p id="fileSize">大小: -</p>
+        <p id="fileType">類型: -</p>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">準備中...</p>
+      </div>
+
+      <div id="analysisResults" class="settings-panel" style="display: none;">
+        <h3>📊 壓縮效率分析</h3>
+        <div class="setting-row">
+          <label>資料熵值</label>
+          <span id="entropy">-</span>
+        </div>
+        <div class="setting-row">
+          <label>可壓縮性評分</label>
+          <span id="compressibilityScore">-</span>
+        </div>
+        <div class="setting-row">
+          <label>重複資料比例</label>
+          <span id="redundancy">-</span>
+        </div>
+        <div class="setting-row">
+          <label>零字節比例</label>
+          <span id="zeroBytes">-</span>
+        </div>
+      </div>
+
+      <div id="testResults" class="settings-panel" style="display: none;">
+        <h3>🧪 壓縮測試結果</h3>
+        <div id="compressionTests"></div>
+      </div>
+
+      <div id="recommendations" class="settings-panel" style="display: none;">
+        <h3>💡 建議</h3>
+        <div id="recommendationList"></div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="analyzeBtn" class="btn btn-primary" disabled>
+          <span>📊</span>
+          <span>分析壓縮效率</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./efficiency-analyzer.js"></script>
+</body>
+</html>

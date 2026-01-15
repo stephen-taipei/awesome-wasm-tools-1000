@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF-002 PDF 分割 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="將 PDF 文件分割成多個獨立文件，支援按頁面範圍分割">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>PDF-002 <span data-i18n="pdf002_name">PDF 分割</span></h1>
+        <p data-i18n="pdf002_desc">將 PDF 文件分割成多個獨立文件</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📄</div>
+        <h3 data-i18n="upload_title">拖放 PDF 文件到此處</h3>
+        <p data-i18n="upload_subtitle">或點擊選擇檔案</p>
+        <p class="upload-formats" data-i18n="upload_formats">支援格式：PDF</p>
+        <input type="file" id="fileInput" class="file-input" accept="application/pdf">
+      </div>
+
+      <div id="settingsPanel" class="settings-panel" style="display: none;">
+        <h3 data-i18n="settings">分割設定</h3>
+        <div class="setting-row">
+          <label>分割模式</label>
+          <select id="splitMode">
+            <option value="each">每頁分割為單獨文件</option>
+            <option value="range">按頁面範圍分割</option>
+            <option value="fixed">固定頁數分割</option>
+          </select>
+        </div>
+        <div id="rangeSettings" class="setting-row" style="display: none;">
+          <label>頁面範圍（如：1-3,5,7-9）</label>
+          <input type="text" id="pageRanges" placeholder="1-3,5,7-9">
+        </div>
+        <div id="fixedSettings" class="setting-row" style="display: none;">
+          <label>每份頁數</label>
+          <input type="number" id="pagesPerFile" min="1" value="5">
+        </div>
+        <div class="setting-row">
+          <label>文件資訊</label>
+          <span id="fileInfo">-</span>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">處理中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="processBtn" class="btn btn-primary" disabled>
+          <span>✂️</span>
+          <span data-i18n="split">分割 PDF</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span data-i18n="download">下載所有文件 (ZIP)</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+
+      <div id="performanceInfo" class="settings-panel" style="display: none;">
+        <h3>📊 處理資訊</h3>
+        <div class="setting-row">
+          <label>處理時間</label>
+          <span id="processTime">-</span>
+        </div>
+        <div class="setting-row">
+          <label>生成文件數</label>
+          <span id="outputCount">-</span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./splitter.js"></script>
+</body>
+</html>

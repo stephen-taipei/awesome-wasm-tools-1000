@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMP-049 記憶體使用優化 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="優化壓縮時的記憶體使用，適合處理大型檔案">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CMP-049 <span data-i18n="cmp049_name">記憶體使用優化</span></h1>
+        <p data-i18n="cmp049_desc">優化壓縮時的記憶體使用</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="memoryStatus" class="settings-panel">
+        <h3>💾 系統記憶體狀態</h3>
+        <div class="setting-row">
+          <label>可用記憶體</label>
+          <span id="availableMemory">檢測中...</span>
+        </div>
+        <div class="setting-row">
+          <label>已使用記憶體</label>
+          <span id="usedMemory">-</span>
+        </div>
+        <div class="setting-row">
+          <label>記憶體使用率</label>
+          <div class="progress-bar small">
+            <div id="memoryUsageFill" class="progress-fill"></div>
+          </div>
+          <span id="memoryUsage">0%</span>
+        </div>
+      </div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">💾</div>
+        <h3 data-i18n="upload_title">拖放檔案到此處</h3>
+        <p data-i18n="upload_subtitle">或點擊選擇要壓縮的檔案</p>
+        <p class="upload-formats" data-i18n="upload_formats">記憶體優化模式適合大型檔案</p>
+        <input type="file" id="fileInput" class="file-input">
+      </div>
+
+      <div id="fileInfo" class="file-info" style="display: none;">
+        <h3>檔案資訊</h3>
+        <p id="fileName">檔名: -</p>
+        <p id="fileSize">大小: -</p>
+        <p id="memoryWarning" class="warning" style="display: none;">
+          警告：檔案較大，建議使用低記憶體模式
+        </p>
+      </div>
+
+      <div class="settings-panel">
+        <h3 data-i18n="settings">記憶體優化設定</h3>
+        <div class="setting-row">
+          <label data-i18n="memory_mode">記憶體模式</label>
+          <select id="memoryMode">
+            <option value="auto">自動（推薦）</option>
+            <option value="low">低記憶體模式</option>
+            <option value="normal">標準模式</option>
+            <option value="high">高效能模式</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="chunk_size">區塊大小</label>
+          <select id="chunkSize">
+            <option value="65536">64 KB - 最低記憶體</option>
+            <option value="262144">256 KB</option>
+            <option value="1048576" selected>1 MB - 平衡</option>
+            <option value="4194304">4 MB</option>
+            <option value="16777216">16 MB - 高效能</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="gc_interval">GC 間隔</label>
+          <select id="gcInterval">
+            <option value="10">每 10 個區塊</option>
+            <option value="50" selected>每 50 個區塊</option>
+            <option value="100">每 100 個區塊</option>
+            <option value="0">停用</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="output_filename">輸出檔名</label>
+          <input type="text" id="outputFilename" placeholder="輸入檔名">
+        </div>
+      </div>
+
+      <div id="memoryMonitor" class="settings-panel">
+        <h3>📊 即時記憶體監控</h3>
+        <div class="setting-row">
+          <label>峰值記憶體</label>
+          <span id="peakMemory">0 MB</span>
+        </div>
+        <div class="setting-row">
+          <label>目前記憶體</label>
+          <span id="currentMemory">0 MB</span>
+        </div>
+        <div class="setting-row">
+          <label>GC 次數</label>
+          <span id="gcCount">0</span>
+        </div>
+        <div class="setting-row">
+          <label>已處理區塊</label>
+          <span id="chunksProcessed">0</span>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">準備中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="compressBtn" class="btn btn-primary" disabled>
+          <span>💾</span>
+          <span data-i18n="compress">開始壓縮</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span data-i18n="download">下載檔案</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+
+      <div id="performanceInfo" class="settings-panel" style="display: none;">
+        <h3>📈 壓縮統計</h3>
+        <div class="setting-row">
+          <label>處理時間</label>
+          <span id="processTime">-</span>
+        </div>
+        <div class="setting-row">
+          <label>原始大小</label>
+          <span id="originalSize">-</span>
+        </div>
+        <div class="setting-row">
+          <label>壓縮後大小</label>
+          <span id="compressedSize">-</span>
+        </div>
+        <div class="setting-row">
+          <label>壓縮比</label>
+          <span id="compressionRatio">-</span>
+        </div>
+        <div class="setting-row">
+          <label>最大記憶體使用</label>
+          <span id="maxMemoryUsed">-</span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./memory-optimize.js"></script>
+</body>
+</html>

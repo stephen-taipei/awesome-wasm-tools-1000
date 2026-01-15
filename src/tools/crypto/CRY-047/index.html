@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-047 PGP 驗證 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="使用 PGP 公鑰驗證數位簽章，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-047 <span data-i18n="cry047_name">PGP 驗證</span></h1>
+        <p data-i18n="cry047_desc">使用 PGP 公鑰驗證數位簽章</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3>驗證設定</h3>
+        <div class="setting-row">
+          <label for="signatureType">簽章類型</label>
+          <select id="signatureType">
+            <option value="cleartext" selected>明文簽章 (Clearsign)</option>
+            <option value="detached">分離簽章 (Detached)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="publicKey">公鑰</label>
+        <textarea id="publicKey" rows="5" placeholder="貼上 PGP 公鑰..."></textarea>
+        <input type="file" id="publicKeyFile" accept=".asc,.pem,.pub" style="margin-top: 0.5rem;">
+      </div>
+
+      <div class="input-group">
+        <label for="signedMessage">簽章訊息</label>
+        <textarea id="signedMessage" rows="8" placeholder="貼上 PGP 簽章訊息..."></textarea>
+        <input type="file" id="signedMessageFile" accept=".asc,.sig" style="margin-top: 0.5rem;">
+      </div>
+
+      <div class="input-group" id="originalMessageGroup" style="display: none;">
+        <label for="originalMessage">原始訊息（分離簽章用）</label>
+        <textarea id="originalMessage" rows="4" placeholder="貼上原始訊息..."></textarea>
+      </div>
+
+      <div class="action-buttons">
+        <button id="verifyBtn" class="btn btn-primary">
+          <span>✅</span>
+          <span>驗證</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div id="verificationResult" class="settings-panel" style="display: none;">
+        <h3>驗證結果</h3>
+        <div id="resultIcon" style="font-size: 3rem; text-align: center; margin: 1rem 0;"></div>
+        <div id="resultText" style="text-align: center; font-weight: bold;"></div>
+        <div class="setting-row" style="margin-top: 1rem;">
+          <label>簽章者</label>
+          <span id="signerInfo">-</span>
+        </div>
+        <div class="setting-row">
+          <label>雜湊演算法</label>
+          <span id="hashAlgorithm">-</span>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./pgp-verify.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMP-059 壓縮檔刪除檔案 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="從 ZIP 壓縮檔中刪除檔案">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CMP-059 <span data-i18n="cmp059_name">壓縮檔刪除檔案</span></h1>
+        <p data-i18n="cmp059_desc">從 ZIP 壓縮檔中刪除檔案</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📦</div>
+        <h3 data-i18n="upload_title">拖放 ZIP 檔案到此處</h3>
+        <p data-i18n="upload_subtitle">或點擊選擇 ZIP 壓縮檔</p>
+        <input type="file" id="fileInput" class="file-input" accept=".zip">
+      </div>
+
+      <div id="archiveInfo" class="settings-panel" style="display: none;">
+        <h3>📦 壓縮檔資訊</h3>
+        <div class="setting-row">
+          <label>檔案名稱</label>
+          <span id="archiveName">-</span>
+        </div>
+        <div class="setting-row">
+          <label>原始大小</label>
+          <span id="archiveSize">-</span>
+        </div>
+        <div class="setting-row">
+          <label>總檔案數</label>
+          <span id="totalFiles">-</span>
+        </div>
+        <div class="setting-row">
+          <label>已選擇刪除</label>
+          <span id="selectedCount">0 個</span>
+        </div>
+      </div>
+
+      <div id="fileList" class="settings-panel" style="display: none;">
+        <h3>📁 檔案列表 (勾選要刪除的檔案)</h3>
+        <div class="file-actions">
+          <button id="selectAllBtn" class="btn btn-small">全選</button>
+          <button id="deselectAllBtn" class="btn btn-small">取消全選</button>
+        </div>
+        <div id="fileTree" class="file-tree"></div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">準備中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="deleteBtn" class="btn btn-danger" style="display: none;">
+          <span>🗑️</span>
+          <span>刪除選擇的檔案</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span data-i18n="download">下載</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./delete-files.js"></script>
+</body>
+</html>

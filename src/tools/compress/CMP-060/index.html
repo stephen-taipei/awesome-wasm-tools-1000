@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMP-060 壓縮檔更新檔案 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="更新 ZIP 壓縮檔中的檔案">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CMP-060 <span data-i18n="cmp060_name">壓縮檔更新檔案</span></h1>
+        <p data-i18n="cmp060_desc">更新 ZIP 壓縮檔中的檔案</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">📦</div>
+        <h3>步驟 1: 選擇 ZIP 壓縮檔</h3>
+        <p>拖放或點擊選擇要更新的 ZIP 檔案</p>
+        <input type="file" id="zipInput" class="file-input" accept=".zip">
+      </div>
+
+      <div id="archiveInfo" class="settings-panel" style="display: none;">
+        <h3>📦 壓縮檔資訊</h3>
+        <div class="setting-row">
+          <label>檔案名稱</label>
+          <span id="archiveName">-</span>
+        </div>
+        <div class="setting-row">
+          <label>檔案數量</label>
+          <span id="fileCount">-</span>
+        </div>
+      </div>
+
+      <div id="fileList" class="settings-panel" style="display: none;">
+        <h3>📁 選擇要更新的檔案</h3>
+        <div id="fileTree" class="file-tree"></div>
+      </div>
+
+      <div id="updateArea" class="upload-area secondary" style="display: none;">
+        <div class="icon">🔄</div>
+        <h3>步驟 2: 選擇新版本檔案</h3>
+        <p id="updateTarget">選擇用於替換的檔案</p>
+        <input type="file" id="updateInput" class="file-input">
+      </div>
+
+      <div id="updateQueue" class="settings-panel" style="display: none;">
+        <h3>🔄 待更新列表</h3>
+        <div id="updateList"></div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">準備中...</p>
+      </div>
+
+      <div class="action-buttons">
+        <button id="applyBtn" class="btn btn-primary" style="display: none;">
+          <span>✓</span>
+          <span>套用更新</span>
+        </button>
+        <button id="downloadBtn" class="btn btn-success" style="display: none;">
+          <span>⬇️</span>
+          <span data-i18n="download">下載</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./update-files.js"></script>
+</body>
+</html>

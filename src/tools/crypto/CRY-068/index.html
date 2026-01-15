@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-068 SSL/TLS 憑證檢查 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="檢查網站的 SSL/TLS 憑證資訊">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-068 <span data-i18n="cry068_name">SSL/TLS 憑證檢查</span></h1>
+        <p data-i18n="cry068_desc">檢查網站的 SSL/TLS 憑證資訊</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-group">
+        <label for="hostname">主機名稱</label>
+        <input type="text" id="hostname" placeholder="例如：www.example.com">
+      </div>
+
+      <div class="input-group">
+        <label for="port">連接埠</label>
+        <input type="number" id="port" value="443" min="1" max="65535">
+      </div>
+
+      <div class="action-buttons">
+        <button id="checkBtn" class="btn btn-primary">
+          <span>🔍</span>
+          <span>檢查憑證</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div id="checkResult" class="settings-panel" style="display: none;">
+        <h3>憑證資訊</h3>
+
+        <div id="sslStatus" style="text-align: center; padding: 1rem; margin-bottom: 1rem; border-radius: 0.5rem;"></div>
+
+        <div class="setting-row">
+          <label>主機名稱</label>
+          <span id="resultHostname">-</span>
+        </div>
+
+        <div class="setting-row">
+          <label>通用名稱 (CN)</label>
+          <span id="commonName">-</span>
+        </div>
+
+        <div class="setting-row">
+          <label>發行者</label>
+          <span id="issuer">-</span>
+        </div>
+
+        <div class="setting-row">
+          <label>有效期開始</label>
+          <span id="validFrom">-</span>
+        </div>
+
+        <div class="setting-row">
+          <label>有效期結束</label>
+          <span id="validTo">-</span>
+        </div>
+
+        <div class="setting-row">
+          <label>剩餘天數</label>
+          <span id="daysRemaining">-</span>
+        </div>
+
+        <div class="setting-row">
+          <label>協議版本</label>
+          <span id="protocol">-</span>
+        </div>
+
+        <div class="setting-row">
+          <label>主題替代名稱 (SAN)</label>
+          <span id="san" style="word-break: break-all;">-</span>
+        </div>
+
+        <p style="margin-top: 1rem; padding: 1rem; background: #fffbeb; border-radius: 0.5rem; font-size: 0.875rem;">
+          <strong>注意：</strong>由於瀏覽器安全限制，此工具無法直接連接遠端伺服器。
+          請貼上您要檢查的憑證內容到下方，或使用命令列工具如 <code>openssl</code> 獲取憑證。
+        </p>
+
+        <div class="input-group" style="margin-top: 1rem;">
+          <label for="certificatePaste">或貼上憑證 (PEM 格式)</label>
+          <textarea id="certificatePaste" rows="8" class="mono" placeholder="-----BEGIN CERTIFICATE-----
+...
+-----END CERTIFICATE-----"></textarea>
+          <button id="parseCertBtn" class="btn btn-small btn-primary" style="margin-top: 0.5rem;">解析憑證</button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./ssl-check.js"></script>
+</body>
+</html>

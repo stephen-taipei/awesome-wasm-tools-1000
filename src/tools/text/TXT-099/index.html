@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-099 表情符號轉換 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="文字表情符號與 Emoji 互相轉換">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-099 <span data-i18n="txt099_name">表情符號轉換</span></h1>
+        <p data-i18n="txt099_desc">文字表情符號與 Emoji 互相轉換</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="6" placeholder="輸入包含表情符號或 Emoji 的文字...
+例如: Hello :) I am happy :D"></textarea>
+      </div>
+
+      <div class="options-section">
+        <div class="option-row">
+          <label>轉換方向:</label>
+          <select id="convertDirection" class="select-input">
+            <option value="textToEmoji">文字表情 → Emoji</option>
+            <option value="emojiToText">Emoji → 文字表情</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary">
+          <span>🔄</span>
+          <span data-i18n="convert">轉換</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">轉換結果</h3>
+        <textarea id="outputText" class="text-input" rows="6" readonly></textarea>
+        <button id="copyBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span data-i18n="copy">複製</span>
+        </button>
+      </div>
+
+      <div class="reference-section">
+        <h3>常用對照表</h3>
+        <div id="referenceTable" class="reference-table"></div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <style>
+    .reference-table {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 8px;
+      padding: 16px;
+      background: var(--card-bg, #f5f5f5);
+      border-radius: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .reference-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px;
+      background: var(--input-bg, white);
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .reference-emoji {
+      font-size: 1.5rem;
+    }
+  </style>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./emoticon-converter.js"></script>
+</body>
+</html>

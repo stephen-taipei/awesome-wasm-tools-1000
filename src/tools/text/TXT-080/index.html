@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-080 參考文獻格式 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="生成 APA、MLA、Chicago 等參考文獻格式">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-080 <span data-i18n="txt080_name">參考文獻格式</span></h1>
+        <p data-i18n="txt080_desc">生成 APA、MLA、Chicago 等參考文獻格式</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="source_type">來源類型</h3>
+        <select id="sourceType" class="select-input">
+          <option value="book">書籍</option>
+          <option value="journal">期刊文章</option>
+          <option value="website">網頁</option>
+        </select>
+      </div>
+
+      <div class="input-section">
+        <h3 data-i18n="source_info">來源資訊</h3>
+        <div class="form-grid" id="formFields">
+        </div>
+      </div>
+
+      <div class="options-section">
+        <h3 data-i18n="citation_style">引用格式</h3>
+        <select id="styleSelect" class="select-input">
+          <option value="apa">APA (第 7 版)</option>
+          <option value="mla">MLA (第 9 版)</option>
+          <option value="chicago">Chicago</option>
+          <option value="harvard">Harvard</option>
+        </select>
+      </div>
+
+      <div class="action-buttons">
+        <button id="generateBtn" class="btn btn-primary">
+          <span>📝</span>
+          <span data-i18n="generate">生成</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">參考文獻</h3>
+        <div id="outputText" class="citation-output"></div>
+        <button id="copyBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span data-i18n="copy">複製</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./bibliography.js"></script>
+</body>
+</html>

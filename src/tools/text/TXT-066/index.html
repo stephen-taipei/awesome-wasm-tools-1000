@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-066 阿拉伯數字轉中文 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="將阿拉伯數字轉換為中文數字">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-066 <span data-i18n="txt066_name">阿拉伯數字轉中文</span></h1>
+        <p data-i18n="txt066_desc">將阿拉伯數字轉換為中文數字</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_number">輸入數字</h3>
+        <input type="text" id="inputNumber" class="text-input" placeholder="輸入阿拉伯數字 (例如: 12345)">
+      </div>
+
+      <div class="options-section">
+        <h3 data-i18n="number_format">數字格式</h3>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" name="format" value="lowercase" checked>
+            <span>小寫 (一二三四五)</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="format" value="uppercase">
+            <span>大寫 (壹貳參肆伍)</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="format" value="financial">
+            <span>金融大寫 (壹貳叁肆伍)</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary">
+          <span>🔄</span>
+          <span data-i18n="convert">轉換</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">中文數字</h3>
+        <div class="result-display">
+          <span id="outputText" class="large-text"></span>
+        </div>
+        <button id="copyBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span data-i18n="copy">複製</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./arabic-to-chinese.js"></script>
+</body>
+</html>

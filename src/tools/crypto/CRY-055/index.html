@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-055 JWT 解碼 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="解碼並檢視 JWT 內容（不驗證簽章），完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-055 <span data-i18n="cry055_name">JWT 解碼</span></h1>
+        <p data-i18n="cry055_desc">解碼並檢視 JWT 內容（不驗證簽章）</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-group">
+        <label for="jwt">JWT</label>
+        <textarea id="jwt" rows="5" class="mono" placeholder="貼上 JWT 進行解碼..."></textarea>
+      </div>
+
+      <div class="action-buttons">
+        <button id="decodeBtn" class="btn btn-primary">
+          <span>🔓</span>
+          <span>解碼</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div id="decodeResult" class="settings-panel" style="display: none;">
+        <h3>Header</h3>
+        <div style="position: relative;">
+          <pre id="headerOutput" class="mono" style="background: #fef3c7; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; border-left: 4px solid #f59e0b;"></pre>
+          <button id="copyHeader" class="btn btn-small" style="position: absolute; top: 0.5rem; right: 0.5rem;">複製</button>
+        </div>
+
+        <h3 style="margin-top: 1rem;">Payload</h3>
+        <div style="position: relative;">
+          <pre id="payloadOutput" class="mono" style="background: #dbeafe; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; border-left: 4px solid #3b82f6;"></pre>
+          <button id="copyPayload" class="btn btn-small" style="position: absolute; top: 0.5rem; right: 0.5rem;">複製</button>
+        </div>
+
+        <h3 style="margin-top: 1rem;">Signature</h3>
+        <div style="position: relative;">
+          <pre id="signatureOutput" class="mono" style="background: #fce7f3; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; border-left: 4px solid #ec4899; word-break: break-all;"></pre>
+        </div>
+
+        <div id="claimsInfo" class="settings-panel" style="margin-top: 1rem;">
+          <h4>標準聲明解析</h4>
+          <div id="claimsList"></div>
+        </div>
+
+        <div style="margin-top: 1rem; padding: 1rem; background: #fffbeb; border-radius: 0.5rem;">
+          <strong style="color: #f59e0b;">⚠️ 注意：</strong>
+          <p style="margin-top: 0.5rem;">此工具僅解碼 JWT 內容，並不驗證簽章。如需驗證 JWT 的有效性，請使用 JWT 驗證工具。</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./jwt-decode.js"></script>
+</body>
+</html>

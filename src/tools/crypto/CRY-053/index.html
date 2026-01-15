@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-053 JWT 生成 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="生成 JSON Web Token (JWT)，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-053 <span data-i18n="cry053_name">JWT 生成</span></h1>
+        <p data-i18n="cry053_desc">生成 JSON Web Token (JWT)</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3>簽章設定</h3>
+        <div class="setting-row">
+          <label for="algorithm">演算法</label>
+          <select id="algorithm">
+            <option value="HS256" selected>HS256 (HMAC + SHA-256)</option>
+            <option value="HS384">HS384 (HMAC + SHA-384)</option>
+            <option value="HS512">HS512 (HMAC + SHA-512)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="secret">密鑰</label>
+        <div class="password-input">
+          <input type="password" id="secret" placeholder="輸入簽章密鑰">
+          <button type="button" id="toggleSecret" class="btn btn-small">顯示</button>
+          <button type="button" id="generateSecret" class="btn btn-small btn-secondary">生成</button>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="payload">Payload（JSON 格式）</label>
+        <textarea id="payload" rows="10" placeholder='{
+  "sub": "1234567890",
+  "name": "John Doe",
+  "iat": 1516239022,
+  "exp": 1516242622
+}'></textarea>
+      </div>
+
+      <div class="settings-panel">
+        <h3>快速設定</h3>
+        <div class="setting-row">
+          <label for="expiresIn">有效期</label>
+          <select id="expiresIn">
+            <option value="">不設定</option>
+            <option value="3600" selected>1 小時</option>
+            <option value="86400">1 天</option>
+            <option value="604800">1 週</option>
+            <option value="2592000">30 天</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="issuer">發行者 (iss)</label>
+          <input type="text" id="issuer" placeholder="可選">
+        </div>
+        <div class="setting-row">
+          <label for="subject">主體 (sub)</label>
+          <input type="text" id="subject" placeholder="可選">
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="generateBtn" class="btn btn-primary">
+          <span>🔑</span>
+          <span>生成 JWT</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div class="input-group">
+        <label for="jwtOutput">JWT</label>
+        <textarea id="jwtOutput" rows="5" readonly class="mono" placeholder="生成的 JWT 將顯示在此..."></textarea>
+        <div style="margin-top: 0.5rem;">
+          <button id="copyBtn" class="btn btn-small btn-success">複製</button>
+        </div>
+      </div>
+
+      <div id="jwtInfo" class="settings-panel" style="display: none;">
+        <h3>JWT 結構</h3>
+        <div class="setting-row">
+          <label>Header</label>
+          <code id="headerDisplay" class="mono"></code>
+        </div>
+        <div class="setting-row">
+          <label>Payload</label>
+          <code id="payloadDisplay" class="mono"></code>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./jwt-generate.js"></script>
+</body>
+</html>

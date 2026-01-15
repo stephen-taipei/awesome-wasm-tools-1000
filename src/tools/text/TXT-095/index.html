@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-095 文字流程圖 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="將文字轉換為 ASCII 流程圖">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-095 <span data-i18n="txt095_name">文字流程圖</span></h1>
+        <p data-i18n="txt095_desc">將文字轉換為 ASCII 流程圖</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入步驟 (每行一個步驟)</h3>
+        <textarea id="inputText" class="text-input" rows="8" placeholder="開始
+輸入資料
+處理資料
+輸出結果
+結束"></textarea>
+      </div>
+
+      <div class="options-section">
+        <div class="option-row">
+          <label>流程方向:</label>
+          <select id="flowDirection" class="select-input">
+            <option value="vertical">垂直</option>
+            <option value="horizontal">水平</option>
+          </select>
+        </div>
+        <div class="option-row">
+          <label>框線樣式:</label>
+          <select id="boxStyle" class="select-input">
+            <option value="unicode">Unicode 框線</option>
+            <option value="ascii">ASCII 框線</option>
+            <option value="simple">簡單框線</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="generateBtn" class="btn btn-primary">
+          <span>📊</span>
+          <span data-i18n="generate">生成</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">流程圖結果</h3>
+        <pre id="outputText" class="text-output monospace"></pre>
+        <button id="copyBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span data-i18n="copy">複製</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./text-flowchart.js"></script>
+</body>
+</html>

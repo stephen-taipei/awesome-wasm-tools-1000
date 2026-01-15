@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-050 CSR 生成 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="生成憑證簽章請求（CSR），完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-050 <span data-i18n="cry050_name">CSR 生成</span></h1>
+        <p data-i18n="cry050_desc">生成憑證簽章請求（Certificate Signing Request）</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3>金鑰設定</h3>
+        <div class="setting-row">
+          <label for="keyType">金鑰類型</label>
+          <select id="keyType">
+            <option value="RSA" selected>RSA</option>
+            <option value="EC">ECDSA</option>
+          </select>
+        </div>
+        <div class="setting-row" id="rsaKeyOptions">
+          <label for="rsaKeySize">RSA 金鑰長度</label>
+          <select id="rsaKeySize">
+            <option value="2048">2048 位元</option>
+            <option value="3072">3072 位元</option>
+            <option value="4096" selected>4096 位元</option>
+          </select>
+        </div>
+        <div class="setting-row" id="ecKeyOptions" style="display: none;">
+          <label for="ecCurve">EC 曲線</label>
+          <select id="ecCurve">
+            <option value="P-256" selected>P-256</option>
+            <option value="P-384">P-384</option>
+            <option value="P-521">P-521</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <h3>主體資訊</h3>
+        <div class="input-group">
+          <label for="commonName">通用名稱（CN）*</label>
+          <input type="text" id="commonName" placeholder="example.com">
+        </div>
+        <div class="input-group">
+          <label for="organization">組織（O）</label>
+          <input type="text" id="organization" placeholder="My Company Ltd.">
+        </div>
+        <div class="input-group">
+          <label for="organizationalUnit">組織單位（OU）</label>
+          <input type="text" id="organizationalUnit" placeholder="IT Department">
+        </div>
+        <div class="input-group">
+          <label for="locality">地區（L）</label>
+          <input type="text" id="locality" placeholder="Taipei">
+        </div>
+        <div class="input-group">
+          <label for="state">州/省（ST）</label>
+          <input type="text" id="state" placeholder="Taiwan">
+        </div>
+        <div class="input-group">
+          <label for="country">國家代碼（C）</label>
+          <input type="text" id="country" placeholder="TW" maxlength="2">
+        </div>
+        <div class="input-group">
+          <label for="email">電子郵件</label>
+          <input type="email" id="email" placeholder="admin@example.com">
+        </div>
+      </div>
+
+      <div class="settings-panel">
+        <h3>主體替代名稱（SAN）</h3>
+        <div class="input-group">
+          <label for="sanDns">DNS 名稱（每行一個）</label>
+          <textarea id="sanDns" rows="3" placeholder="www.example.com&#10;api.example.com"></textarea>
+        </div>
+        <div class="input-group">
+          <label for="sanIp">IP 位址（每行一個）</label>
+          <textarea id="sanIp" rows="2" placeholder="192.168.1.1&#10;10.0.0.1"></textarea>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="generateBtn" class="btn btn-primary">
+          <span>🔑</span>
+          <span>生成 CSR</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div id="progressContainer" class="progress-container" style="display: none;">
+        <div class="progress-bar">
+          <div id="progressBar" class="progress-fill"></div>
+        </div>
+        <span id="progressText">生成中...</span>
+      </div>
+
+      <div id="csrResult" class="settings-panel" style="display: none;">
+        <h3>CSR（憑證簽章請求）</h3>
+        <textarea id="csrOutput" rows="10" readonly class="mono"></textarea>
+        <div style="margin-top: 0.5rem;">
+          <button id="copyCsrBtn" class="btn btn-small btn-success">複製 CSR</button>
+          <button id="downloadCsrBtn" class="btn btn-small btn-secondary">下載 CSR</button>
+        </div>
+
+        <h3 style="margin-top: 1rem;">私鑰</h3>
+        <textarea id="privateKeyOutput" rows="8" readonly class="mono"></textarea>
+        <div style="margin-top: 0.5rem;">
+          <button id="copyKeyBtn" class="btn btn-small btn-success">複製私鑰</button>
+          <button id="downloadKeyBtn" class="btn btn-small btn-secondary">下載私鑰</button>
+        </div>
+        <p style="color: #ef4444; margin-top: 0.5rem; font-size: 0.875rem;">⚠️ 請妥善保存私鑰，不要分享給任何人！</p>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./csr-generator.js"></script>
+</body>
+</html>

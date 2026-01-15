@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-058 JWK 生成 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="生成 JSON Web Key (JWK)，完全在本地處理">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>&larr;</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CRY-058 <span data-i18n="cry058_name">JWK 生成</span></h1>
+        <p data-i18n="cry058_desc">生成 JSON Web Key (JWK)</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="settings-panel">
+        <h3>金鑰設定</h3>
+        <div class="setting-row">
+          <label for="keyType">金鑰類型</label>
+          <select id="keyType">
+            <option value="RSA">RSA</option>
+            <option value="EC" selected>EC (橢圓曲線)</option>
+            <option value="oct">oct (對稱金鑰)</option>
+          </select>
+        </div>
+        <div class="setting-row" id="rsaOptions" style="display: none;">
+          <label for="rsaSize">RSA 金鑰長度</label>
+          <select id="rsaSize">
+            <option value="2048">2048 位元</option>
+            <option value="4096" selected>4096 位元</option>
+          </select>
+        </div>
+        <div class="setting-row" id="ecOptions">
+          <label for="ecCurve">EC 曲線</label>
+          <select id="ecCurve">
+            <option value="P-256" selected>P-256</option>
+            <option value="P-384">P-384</option>
+            <option value="P-521">P-521</option>
+          </select>
+        </div>
+        <div class="setting-row" id="octOptions" style="display: none;">
+          <label for="octSize">金鑰長度</label>
+          <select id="octSize">
+            <option value="128">128 位元</option>
+            <option value="256" selected>256 位元</option>
+            <option value="512">512 位元</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="keyUse">用途 (use)</label>
+          <select id="keyUse">
+            <option value="">不指定</option>
+            <option value="sig" selected>sig (簽章)</option>
+            <option value="enc">enc (加密)</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="keyId">金鑰 ID (kid)</label>
+          <input type="text" id="keyId" placeholder="可選，自動生成">
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="generateBtn" class="btn btn-primary">
+          <span>🔑</span>
+          <span>生成 JWK</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>清除</span>
+        </button>
+      </div>
+
+      <div id="jwkResult" class="settings-panel" style="display: none;">
+        <h3>公鑰 (JWK)</h3>
+        <textarea id="publicJwk" rows="10" readonly class="mono"></textarea>
+        <div style="margin-top: 0.5rem;">
+          <button id="copyPublic" class="btn btn-small btn-success">複製公鑰</button>
+          <button id="downloadPublic" class="btn btn-small btn-secondary">下載公鑰</button>
+        </div>
+
+        <div id="privateKeySection">
+          <h3 style="margin-top: 1rem;">私鑰 (JWK)</h3>
+          <textarea id="privateJwk" rows="12" readonly class="mono"></textarea>
+          <div style="margin-top: 0.5rem;">
+            <button id="copyPrivate" class="btn btn-small btn-success">複製私鑰</button>
+            <button id="downloadPrivate" class="btn btn-small btn-secondary">下載私鑰</button>
+          </div>
+          <p style="color: #ef4444; margin-top: 0.5rem; font-size: 0.875rem;">⚠️ 私鑰請妥善保存，不要分享給任何人！</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./jwk-generate.js"></script>
+</body>
+</html>

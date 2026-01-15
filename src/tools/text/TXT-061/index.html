@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-061 文字轉語音標記 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="將文字轉換為 SSML 語音標記語言">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-061 <span data-i18n="txt061_name">文字轉語音標記</span></h1>
+        <p data-i18n="txt061_desc">將文字轉換為 SSML 語音標記語言</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="6" placeholder="在此輸入要轉換為語音標記的文字..."></textarea>
+      </div>
+
+      <div class="options-section">
+        <h3 data-i18n="ssml_options">SSML 選項</h3>
+        <div class="option-row">
+          <label data-i18n="language">語言:</label>
+          <select id="langSelect" class="select-input">
+            <option value="zh-TW">繁體中文 (zh-TW)</option>
+            <option value="zh-CN">簡體中文 (zh-CN)</option>
+            <option value="en-US">英文 (en-US)</option>
+            <option value="ja-JP">日文 (ja-JP)</option>
+            <option value="ko-KR">韓文 (ko-KR)</option>
+          </select>
+        </div>
+        <div class="option-row">
+          <label data-i18n="rate">語速:</label>
+          <select id="rateSelect" class="select-input">
+            <option value="x-slow">極慢</option>
+            <option value="slow">慢</option>
+            <option value="medium" selected>正常</option>
+            <option value="fast">快</option>
+            <option value="x-fast">極快</option>
+          </select>
+        </div>
+        <div class="option-row">
+          <label data-i18n="pitch">音調:</label>
+          <select id="pitchSelect" class="select-input">
+            <option value="x-low">極低</option>
+            <option value="low">低</option>
+            <option value="medium" selected>正常</option>
+            <option value="high">高</option>
+            <option value="x-high">極高</option>
+          </select>
+        </div>
+        <div class="option-row">
+          <label>
+            <input type="checkbox" id="addBreaks" checked>
+            <span data-i18n="add_breaks">在句號處加入停頓</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary">
+          <span>🔄</span>
+          <span data-i18n="convert">轉換</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">SSML 結果</h3>
+        <textarea id="outputText" class="text-input code-output" rows="10" readonly></textarea>
+        <button id="copyBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span data-i18n="copy">複製</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./text-to-ssml.js"></script>
+</body>
+</html>

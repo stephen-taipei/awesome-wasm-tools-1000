@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-054 字元編碼轉換 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="在不同字元編碼之間轉換文字">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-054 <span data-i18n="txt054_name">字元編碼轉換</span></h1>
+        <p data-i18n="txt054_desc">在不同字元編碼之間轉換文字</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="6" placeholder="在此輸入文字..."></textarea>
+      </div>
+
+      <div class="options-section">
+        <div class="option-row">
+          <label data-i18n="target_encoding">目標編碼:</label>
+          <select id="encodingSelect" class="select-input">
+            <option value="utf-8">UTF-8</option>
+            <option value="utf-16">UTF-16</option>
+            <option value="utf-16le">UTF-16 LE</option>
+            <option value="utf-16be">UTF-16 BE</option>
+            <option value="ascii">ASCII</option>
+            <option value="iso-8859-1">ISO-8859-1 (Latin-1)</option>
+          </select>
+        </div>
+        <div class="option-row">
+          <label data-i18n="output_format">輸出格式:</label>
+          <select id="formatSelect" class="select-input">
+            <option value="hex">十六進制</option>
+            <option value="decimal">十進制</option>
+            <option value="binary">二進制</option>
+            <option value="base64">Base64</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary">
+          <span>🔄</span>
+          <span data-i18n="convert">轉換</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">結果</h3>
+        <textarea id="outputText" class="text-input" rows="6" readonly></textarea>
+        <button id="copyBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span data-i18n="copy">複製結果</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./encoding-converter.js"></script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CMP-066 壓縮時間估算 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="估算檔案壓縮所需時間">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>CMP-066 <span data-i18n="cmp066_name">壓縮時間估算</span></h1>
+        <p data-i18n="cmp066_desc">估算檔案壓縮所需時間</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div id="uploadArea" class="upload-area">
+        <div class="icon">⏱️</div>
+        <h3 data-i18n="upload_title">拖放檔案到此處</h3>
+        <p data-i18n="upload_subtitle">或點擊選擇要估算的檔案</p>
+        <p class="upload-formats">支援任何類型的檔案</p>
+        <input type="file" id="fileInput" class="file-input" multiple>
+      </div>
+
+      <div id="fileInfo" class="file-info" style="display: none;">
+        <h3>檔案資訊</h3>
+        <p id="fileName">檔名: -</p>
+        <p id="fileSize">大小: -</p>
+        <p id="fileType">類型: -</p>
+      </div>
+
+      <div class="settings-panel">
+        <h3 data-i18n="settings">估算設定</h3>
+        <div class="setting-row">
+          <label>壓縮格式</label>
+          <select id="compressionFormat">
+            <option value="gzip">GZIP</option>
+            <option value="deflate">DEFLATE</option>
+            <option value="zip">ZIP</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>壓縮等級</label>
+          <select id="compressionLevel">
+            <option value="1">1 - 最快</option>
+            <option value="5">5 - 平衡</option>
+            <option value="6" selected>6 - 標準</option>
+            <option value="9">9 - 最佳壓縮</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>樣本大小</label>
+          <select id="sampleSize">
+            <option value="64">64 KB</option>
+            <option value="256" selected>256 KB</option>
+            <option value="1024">1 MB</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="progressContainer" class="progress-container">
+        <div class="progress-bar">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <p id="progressText" class="progress-text">準備中...</p>
+      </div>
+
+      <div id="estimationResults" class="settings-panel" style="display: none;">
+        <h3>⏱️ 時間估算結果</h3>
+        <div class="setting-row">
+          <label>預估壓縮時間</label>
+          <span id="estimatedTime">-</span>
+        </div>
+        <div class="setting-row">
+          <label>壓縮速度</label>
+          <span id="compressionSpeed">-</span>
+        </div>
+        <div class="setting-row">
+          <label>預估壓縮比</label>
+          <span id="estimatedRatio">-</span>
+        </div>
+        <div class="setting-row">
+          <label>預估輸出大小</label>
+          <span id="estimatedSize">-</span>
+        </div>
+      </div>
+
+      <div id="benchmarkResults" class="settings-panel" style="display: none;">
+        <h3>📊 各等級效能比較</h3>
+        <div id="benchmarkTable"></div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="estimateBtn" class="btn btn-primary" disabled>
+          <span>⏱️</span>
+          <span>開始估算</span>
+        </button>
+        <button id="resetBtn" class="btn btn-secondary" style="display: none;">
+          <span>🗑️</span>
+          <span data-i18n="reset">重置</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./compression-time-estimate.js"></script>
+</body>
+</html>

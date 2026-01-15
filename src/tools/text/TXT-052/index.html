@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TXT-052 Unicode 區塊瀏覽 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="瀏覽 Unicode 各區塊的字元，探索不同語言和符號">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>TXT-052 <span data-i18n="txt052_name">Unicode 區塊瀏覽</span></h1>
+        <p data-i18n="txt052_desc">瀏覽 Unicode 各區塊的字元，探索不同語言和符號</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="input-section">
+        <h3 data-i18n="select_block">選擇區塊</h3>
+        <select id="blockSelect" class="select-input">
+          <option value="">-- 選擇 Unicode 區塊 --</option>
+        </select>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 id="blockName">區塊名稱</h3>
+        <p id="blockRange" class="block-range"></p>
+        <div id="charGrid" class="char-grid"></div>
+      </div>
+
+      <div id="charDetail" class="char-detail" style="display: none;">
+        <h4 data-i18n="selected_char">選取的字元</h4>
+        <div class="detail-content">
+          <span id="selectedChar" class="large-char"></span>
+          <div class="detail-info">
+            <p><strong>碼點:</strong> <span id="detailCodepoint"></span></p>
+            <p><strong>十進制:</strong> <span id="detailDecimal"></span></p>
+          </div>
+          <button id="copyCharBtn" class="btn btn-secondary">
+            <span>📋</span>
+            <span data-i18n="copy">複製</span>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./unicode-browser.js"></script>
+</body>
+</html>
