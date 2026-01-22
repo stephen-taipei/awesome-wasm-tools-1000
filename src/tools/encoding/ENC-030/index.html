@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ENC-030 Atbash 密碼 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="使用 Atbash 密碼加密/解密文字">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn"><span>←</span><span data-i18n="back">返回</span></a>
+      <div class="tool-title">
+        <h1>ENC-030 <span data-i18n="enc030_name">Atbash 密碼</span></h1>
+        <p data-i18n="enc030_desc">使用 Atbash 密碼加密/解密文字 (A↔Z, B↔Y...)</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+      <div class="info-box"><p>Atbash 是一種簡單的替換密碼，將字母表反轉：A→Z, B→Y, C→X... 加密和解密使用相同操作。</p></div>
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="6" placeholder="輸入要轉換的文字..."></textarea>
+      </div>
+      <div class="action-buttons">
+        <button id="convertBtn" class="btn btn-primary"><span>🔄</span><span>轉換</span></button>
+        <button id="clearBtn" class="btn btn-secondary"><span>🗑️</span><span data-i18n="clear">清除</span></button>
+      </div>
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">結果</h3>
+        <textarea id="outputText" class="text-input" rows="6" readonly></textarea>
+        <div class="result-actions">
+          <button id="copyBtn" class="btn btn-secondary"><span>📋</span><span data-i18n="copy">複製</span></button>
+        </div>
+      </div>
+    </main>
+    <footer class="footer"><p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p></footer>
+  </div>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./cipher.js"></script>
+</body>
+</html>

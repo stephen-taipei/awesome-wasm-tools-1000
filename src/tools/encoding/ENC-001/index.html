@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ENC-001 Base64 編碼 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="將文字或檔案編碼為 Base64 格式">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn">
+        <span>←</span>
+        <span data-i18n="back">返回</span>
+      </a>
+      <div class="tool-title">
+        <h1>ENC-001 <span data-i18n="enc001_name">Base64 編碼</span></h1>
+        <p data-i18n="enc001_desc">將文字或檔案編碼為 Base64 格式</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+
+      <div class="options-section">
+        <h3 data-i18n="encoding_options">編碼選項</h3>
+        <div class="option-group">
+          <label class="radio-label">
+            <input type="radio" name="inputType" value="text" checked>
+            <span data-i18n="text_input">文字輸入</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="inputType" value="file">
+            <span data-i18n="file_input">檔案上傳</span>
+          </label>
+        </div>
+        <div class="option-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="urlSafe">
+            <span data-i18n="url_safe">URL 安全模式</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="input-section" id="textInputSection">
+        <h3 data-i18n="input_text">輸入文字</h3>
+        <textarea id="inputText" class="text-input" rows="6" placeholder="在此輸入要編碼的文字..."></textarea>
+      </div>
+
+      <div class="input-section" id="fileInputSection" style="display: none;">
+        <h3 data-i18n="upload_file">上傳檔案</h3>
+        <div class="file-drop-zone" id="dropZone">
+          <input type="file" id="fileInput" hidden>
+          <p data-i18n="drop_file">拖放檔案到此處或點擊選擇</p>
+          <p id="fileName" class="file-name"></p>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="encodeBtn" class="btn btn-primary">
+          <span>🔐</span>
+          <span data-i18n="encode">編碼</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span data-i18n="clear">清除</span>
+        </button>
+      </div>
+
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">編碼結果</h3>
+        <textarea id="outputText" class="text-input" rows="6" readonly></textarea>
+        <div class="result-actions">
+          <button id="copyBtn" class="btn btn-secondary">
+            <span>📋</span>
+            <span data-i18n="copy">複製</span>
+          </button>
+          <button id="downloadBtn" class="btn btn-secondary">
+            <span>💾</span>
+            <span data-i18n="download">下載</span>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./encoder.js"></script>
+</body>
+</html>
