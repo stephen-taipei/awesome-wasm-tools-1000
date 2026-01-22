@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRY-070 Poly1305 MAC - Awesome WASM Tools 1000</title>
+  <meta name="description" content="Poly1305 訊息驗證碼">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn"><span>←</span><span data-i18n="back">返回</span></a>
+      <div class="tool-title">
+        <h1>CRY-070 Poly1305 MAC</h1>
+        <p>Poly1305 訊息驗證碼</p>
+      </div>
+    </header>
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+      <div id="dropZone" class="drop-zone">
+        <div class="drop-zone-content">
+          <span class="drop-icon">📁</span>
+          <p>拖放檔案到此處</p>
+        </div>
+        <input type="file" id="fileInput" hidden>
+      </div>
+      <div class="action-buttons">
+        <button id="processBtn" class="btn btn-primary" disabled><span>⚡</span><span>處理</span></button>
+        <button id="clearBtn" class="btn btn-secondary"><span>🗑️</span><span>清除</span></button>
+      </div>
+      <div id="resultArea" class="result-area" style="display: none;">
+        <div id="resultContent"></div>
+        <button id="downloadBtn" class="btn btn-secondary"><span>💾</span><span>下載</span></button>
+      </div>
+    </main>
+    <footer class="footer"><p data-i18n="footer_privacy">所有檔案處理均在本地完成</p></footer>
+  </div>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./tool.js"></script>
+</body>
+</html>

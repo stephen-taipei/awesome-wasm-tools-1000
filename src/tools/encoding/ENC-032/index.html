@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ENC-032 QR Code 產生器 - Awesome WASM Tools 1000</title>
+  <meta name="description" content="產生 QR Code 圖片">
+  <link rel="stylesheet" href="/src/styles/global.css">
+</head>
+<body>
+  <div class="tool-page">
+    <header class="tool-header">
+      <a href="/index.html" class="back-btn"><span>←</span><span data-i18n="back">返回</span></a>
+      <div class="tool-title">
+        <h1>ENC-032 <span data-i18n="enc032_name">QR Code 產生器</span></h1>
+        <p data-i18n="enc032_desc">產生 QR Code 圖片</p>
+      </div>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+    <main class="tool-content">
+      <div id="statusMessage" class="status-message"></div>
+      <div class="options-section">
+        <label>尺寸: <select id="size"><option value="128">128x128</option><option value="256" selected>256x256</option><option value="512">512x512</option></select></label>
+      </div>
+      <div class="input-section">
+        <h3 data-i18n="input_text">輸入內容</h3>
+        <textarea id="inputText" class="text-input" rows="4" placeholder="輸入要編碼的文字或網址..."></textarea>
+      </div>
+      <div class="action-buttons">
+        <button id="generateBtn" class="btn btn-primary"><span>🔳</span><span>產生</span></button>
+        <button id="clearBtn" class="btn btn-secondary"><span>🗑️</span><span data-i18n="clear">清除</span></button>
+      </div>
+      <div id="resultArea" class="result-area" style="display: none;">
+        <h3 data-i18n="result">QR Code</h3>
+        <canvas id="qrCanvas"></canvas>
+        <div class="result-actions">
+          <button id="downloadBtn" class="btn btn-secondary"><span>💾</span><span>下載</span></button>
+        </div>
+      </div>
+    </main>
+    <footer class="footer"><p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p></footer>
+  </div>
+  <script type="module" src="/src/i18n/i18n.js"></script>
+  <script type="module" src="./generator.js"></script>
+</body>
+</html>
