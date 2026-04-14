@@ -13,6 +13,14 @@ const translations = {
     cat_calc: '數據計算',
     coming_soon: '即將推出...',
     footer_privacy: '所有檔案處理均在本地完成，不會上傳到伺服器',
+    faq_title: '常見問題',
+    faq_intro: '幫助搜尋引擎、AI 與使用者快速理解這個 WebAssembly 工具站的定位與使用方式。',
+    faq_q1: 'Awesome WASM Tools 1000 是什麼？',
+    faq_a1: '這是一個以 WebAssembly 驅動的前端工具平台，提供圖片、音訊、壓縮、PDF、加密與文本處理工具，主打高效能與離線可用。',
+    faq_q2: '這些工具需要後端或上傳檔案嗎？',
+    faq_a2: '多數工具都以前端本地處理為主，不需要後端 API。這有助於保留資料隱私並減少等待時間。',
+    faq_q3: '這個平台適合哪些工作流程？',
+    faq_a3: '如果你需要高效能圖片處理、音訊轉換、壓縮轉檔、PDF 處理、編碼與文本分析工具，這個平台很適合當作瀏覽器內的工具集合。',
 
     // IMG-001 specific
     img001_name: 'PNG 轉 JPG',
@@ -133,6 +141,14 @@ const translations = {
     cat_calc: 'Data Calculation',
     coming_soon: 'Coming soon...',
     footer_privacy: 'All file processing is done locally, nothing is uploaded to server',
+    faq_title: 'Frequently Asked Questions',
+    faq_intro: 'Quick answers that help users, search engines, and AI crawlers understand what this WebAssembly tools site offers.',
+    faq_q1: 'What is Awesome WASM Tools 1000?',
+    faq_a1: 'It is a browser-based collection of WebAssembly tools for images, audio, compression, PDFs, encryption, and text workflows, designed for high performance and offline use.',
+    faq_q2: 'Do these tools require a backend or file uploads?',
+    faq_a2: 'Most tools run locally in the browser and do not require a backend API. That keeps the workflow faster and more private.',
+    faq_q3: 'What kinds of workflows fit this platform?',
+    faq_a3: 'The platform works well for high-performance image processing, audio conversion, compression, PDF handling, encoding, and text analysis inside the browser.',
 
     // IMG-001 specific
     img001_name: 'PNG to JPG',

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://stephen-taipei.github.io/awesome-wasm-tools-1000/sitemap.xml
+Sitemap: https://stephen-taipei.github.io/awesome-wasm-tools-1000/news-sitemap.xml
+Llms-txt: https://stephen-taipei.github.io/awesome-wasm-tools-1000/llms.txt
+

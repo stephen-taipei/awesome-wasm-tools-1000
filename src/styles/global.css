@@ -138,7 +138,7 @@ body {
 
 .tool-info h3 {
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: #cbd5e1;
   font-weight: normal;
 }
 
@@ -152,6 +152,48 @@ body {
   font-style: italic;
   padding: 1rem;
   text-align: center;
+}
+
+.faq-section {
+  margin-top: 3rem;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.faq-header {
+  max-width: 720px;
+}
+
+.faq-header h2 {
+  font-size: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.faq-header p {
+  color: var(--text-secondary);
+}
+
+.faq-list {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.faq-item {
+  background: var(--bg-input);
+  border-radius: calc(var(--radius) - 4px);
+  padding: 1.25rem;
+}
+
+.faq-item h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.faq-item p {
+  color: #cbd5e1;
 }
 
 /* Footer */

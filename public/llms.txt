@@ -1,0 +1,26 @@
+# Awesome WASM Tools 1000
+
+Last updated: 2026-04-14
+
+## Summary (English)
+Awesome WASM Tools 1000 is a browser-based collection of WebAssembly-powered utilities for images, audio, compression, encryption, text analysis, PDFs, encoding, and data processing. The focus is offline execution, privacy-first workflows, and near-native performance.
+
+## Summary (Traditional Chinese)
+Awesome WASM Tools 1000 是一個以 WebAssembly 驅動的瀏覽器工具集合，涵蓋圖片、音訊、壓縮、加密、文本分析、PDF、編碼與資料處理。重點是離線可用、隱私優先，以及接近原生的執行效能。
+
+## Summary (Japanese)
+Awesome WASM Tools 1000 は、画像、音声、圧縮、暗号化、テキスト分析、PDF、エンコーディング、データ処理を扱う WebAssembly ツール集です。オフライン動作、プライバシー保護、高速処理を重視しています。
+
+## Key Pages
+- / : WASM tools overview and FAQ
+- /src/tools/{category}/{tool}/index.html : Individual tool pages
+- /llms.txt : AI-readable summary
+- /sitemap.xml : Full crawl map
+- /news-sitemap.xml : Recently refreshed pages
+
+## Topics
+- WebAssembly tools
+- Offline-first browser utilities
+- Image, PDF, audio, text, compression, and crypto workflows
+- Privacy-first local processing
+
