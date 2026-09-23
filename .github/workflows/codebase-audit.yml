@@ -1,0 +1,55 @@
+name: Codebase audit
+on:
+  push:
+    branches: [audit/codebase-2026-09-24]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: audit-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Source inventory
+        run: |
+          mkdir -p audit-results
+          git ls-files > audit-results/files.txt
+          git archive --format=tar.gz --output=audit-results/source.tar.gz HEAD
+          python3 - <<'PY'
+          from pathlib import Path
+          import json, re
+          tools = Path('src/tools')
+          data = {'tool_pages': len(list(tools.rglob('index.html'))), 'categories': {}, 'wasm_files': [str(p) for p in Path('.').rglob('*.wasm')], 'agent_instructions': [str(p) for p in Path('.').rglob('AGENTS.md')]}
+          for category in tools.iterdir():
+              if category.is_dir():
+                  data['categories'][category.name] = len(list(category.rglob('index.html')))
+          Path('audit-results/inventory.json').write_text(json.dumps(data, indent=2))
+          print(json.dumps(data, indent=2))
+          PY
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Baseline build
+        run: npm run build
+      - name: Build inventory
+        if: always()
+        run: |
+          find dist -type f -name '*.html' | sort > audit-results/built-pages.txt || true
+          npm audit --json > audit-results/dependencies.json || true
+      - name: Preserve audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: codebase-audit-evidence
+          path: audit-results/
+          retention-days: 7
