@@ -1,3 +1,5 @@
+import '../styles/tool-safety.css';
+
 /** Progressive enhancement; does not read files or collect user content. */
 function enhance() {
   const main = document.querySelector('main');

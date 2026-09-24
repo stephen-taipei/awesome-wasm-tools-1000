@@ -1,3 +1,5 @@
+import { siteCopy } from './site-copy.js';
+
 // Awesome WASM Tools 1000 - Internationalization (i18n) System
 
 const translations = {
@@ -258,6 +260,8 @@ const translations = {
     invalid_format_gif: 'Please select a GIF format image',
   }
 };
+
+for (const [language, copy] of Object.entries(siteCopy)) Object.assign(translations[language], copy);
 
 let currentLanguage = 'zh-TW';
 try { if (localStorage.getItem('wasm-tools-lang') === 'en') currentLanguage = 'en'; } catch {}

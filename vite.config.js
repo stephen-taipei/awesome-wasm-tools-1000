@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import path from 'node:path';
+import { repairHomepageCopy } from './scripts/homepage.mjs';
 import { root, getTools, writeCatalog, relativeLinks, unavailablePage, classicScripts } from './scripts/catalog.mjs';
 export default defineConfig(() => {
   const tools = getTools(), byPath = new Map(tools.map(tool => [tool.path,tool]));
@@ -17,6 +18,7 @@ export default defineConfig(() => {
         handler(html,context) {
           const route=path.relative(root,context.filename).split(path.sep).join('/');
           const tool=byPath.get(route);
+          if(route==='index.html')html=repairHomepageCopy(html,tools.length);
           if(tool?.status==='blocked')html=unavailablePage(tool);
           else if(tool)html=html.replace('</body>','<script type="module" src="/src/utils/tool-shell.js"></script></body>');
           return relativeLinks(html,route);

@@ -21,7 +21,7 @@ npm ci
 npm run dev
 ```
 
-The development server binds to localhost. New tools belong in `src/tools/<category>/<ID>/index.html`; production inputs and directory entries are discovered automatically. Existing URLs are preserved, including CAL IDs present in different categories.
+The development server binds to localhost. New tools belong in `src/tools/<category>/<ID>/index.html`; production inputs and the supplementary static catalog are discovered automatically. The original category homepage retains its existing selection and ordering. Existing URLs are preserved, including CAL IDs present in different categories.
 
 ## Verification and production
 
@@ -48,14 +48,24 @@ Relative navigation supports subdirectory deployments. No backend, credentials o
 
 ## Architecture
 
-- `scripts/catalog.mjs`: discovery, availability checks, static directory, portable links and classic-script inventory.
-- `src/catalog/`: responsive directory, search, category/status filters and language UI.
+- `index.html` and `src/styles/global.css`: original category-home template and design, preserved from the pre-audit baseline.
+- `scripts/homepage.mjs` and `src/i18n/site-copy.js`: factual copy corrections without changing the original layout, elements or card ordering.
+- `scripts/catalog.mjs`: discovery, availability checks, supplementary static directory, portable links and classic-script inventory.
+- `src/styles/tool-safety.css`: availability/accessibility styles loaded only by individual tool pages.
 - `src/utils/`: image state/resource ownership, arithmetic parser, spreadsheet evaluator and shared availability/accessibility helpers.
 - `scripts/validate-dist.mjs`: checks all emitted HTML routes/assets, blocked-page safety and sitemap alignment.
 - `tests/`: source-syntax, parser, inventory, browser and conversion regressions.
 - `public/tools.json` and `public/catalog/`: generated; do not hand-edit.
 
-The static directory supports navigation without JavaScript. Legacy tool interfaces and translations vary; the language switch does not imply full translation of every page.
+Both the original homepage and the supplementary static directory support navigation without JavaScript. Legacy tool interfaces and translations vary; the language switch does not imply full translation of every page.
+
+## Design scope
+
+**Preserve category homepages.** Layout/design changes may target individual tools under `src/tools/<category>/<ID>/`, not the category landing page. Keep the original header, category groups, card order, colors, spacing and language controls. The audit's replacement hero/sidebar/search UI has been withdrawn.
+
+`index.html` is the original visual template. Vite corrects its outdated factual copy and metadata in both development and production without changing its body structure. The same factual copy is applied by i18n. Serve the built `dist` output, not the raw template. `tests/homepage.test.mjs` checks the original template/CSS blob identities, unchanged DOM structure and truthful static output. Do not update those design guards to permit a redesign without explicit approval.
+
+[Homepage restoration and verification scope](docs/HOMEPAGE-RESTORATION-2026-09-24.md)
 
 ## Contributing
 

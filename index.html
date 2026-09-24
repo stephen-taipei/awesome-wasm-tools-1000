@@ -1,32 +1,1329 @@
-<!doctype html>
-<html lang="zh-TW"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="探索瀏覽器工具目錄：圖片、音訊、文字、PDF 與計算。依分類搜尋，查看功能驗證狀態與外部資源提示。">
-<meta name="color-scheme" content="dark"><title>Awesome WASM Tools 1000 — 瀏覽器工具實驗室</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%239bf6cf'/%3E%3Cpath d='m8 12 5 16 7-12 7 12 5-16' fill='none' stroke='%23101c21' stroke-width='4'/%3E%3C/svg%3E">
-<link rel="alternate" type="text/plain" href="./llms.txt" title="LLMs.txt"><link rel="stylesheet" href="./src/catalog/catalog.css"><script type="module" src="./src/catalog/main.js"></script>
-</head><body>
-<a class="skip-link" href="#tools">跳至工具目錄 / Skip to tools</a>
-<div class="app-shell"><header class="masthead">
-<a href="./index.html" class="brand" aria-label="Awesome WASM Tools home"><span class="brand-mark" aria-hidden="true">W</span><span>WASM <b>TOOLS</b><small>AWESOME COLLECTION / 1000</small></span></a>
-<nav aria-label="主要導覽"><a href="./catalog/index.html" data-copy="full">完整目錄</a><a href="https://github.com/stephen-taipei/awesome-wasm-tools-1000">GitHub ↗</a><button id="language" type="button" aria-label="Switch language">EN</button></nav>
-</header><main>
-<section class="hero" aria-labelledby="hero-title">
-<div class="eyebrow"><span class="signal" aria-hidden="true"></span><span data-copy="eyebrow">BROWSER TOOL LAB / 開放原始碼</span></div>
-<h1 id="hero-title" data-copy="headline">少一點切換，<br>多一點完成。</h1>
-<p class="hero-description" data-copy="description">圖片、音訊、文字與計算，在瀏覽器裡探索。以真實工具名稱搜尋，清楚知道每個功能的驗證狀態。</p>
-<div class="stats" aria-label="目錄統計"><div><strong id="total-count">—</strong><span data-copy="pages">工具頁面</span></div><div><strong id="category-count">9</strong><span data-copy="categories">主題分類</span></div><div><strong id="blocked-count">—</strong><span data-copy="unavailable">暫停使用</span></div></div>
-<aside class="trust-note"><span aria-hidden="true">ⓘ</span><p data-copy="trust">頁面存在不代表功能已驗證。部分工具需要下載外部套件；請保留原始檔，不要以未驗證的加密工具保護敏感資料。</p></aside>
-</section>
-<section class="workspace" id="tools" tabindex="-1" aria-labelledby="workspace-title">
-<aside class="sidebar"><h2 id="workspace-title" data-copy="browse">探索工具</h2><div id="categories" class="category-list" role="group" aria-label="工具分類"></div><p class="sidebar-note" data-copy="sidebar">每個主題，同一套清楚的入口。原有工具網址保持不變。</p></aside>
-<div class="results-panel"><form id="search-form" role="search"><label class="search-label" for="search" data-copy="searchLabel">搜尋工具名稱、編號或功能</label><div class="search-box"><span aria-hidden="true">⌕</span><input id="search" type="search" autocomplete="off" placeholder="PNG、PDF、SHA、CAL-001…"><button type="button" id="clear" data-copy="clear">清除</button></div></form>
-<div class="results-toolbar"><p id="result-count" role="status" aria-live="polite">載入目錄中…</p><label><span class="sr-only" data-copy="statusLabel">驗證狀態</span><select id="status"><option value="all" data-copy="allStatus">所有狀態</option><option value="unverified" data-copy="unverified">待功能驗證</option><option value="blocked" data-copy="unavailable">暫停使用</option></select></label></div>
-<div id="results" class="tool-grid" aria-busy="true"></div>
-<div id="empty" class="empty" hidden><h3 data-copy="empty">找不到符合的工具</h3><p data-copy="emptyHint">試試其他關鍵字，或清除分類與搜尋條件。</p><button id="reset-filters" type="button" data-copy="reset">重設篩選</button></div>
-<div id="error" class="empty" hidden><h3 data-copy="error">目錄載入失敗</h3><button id="retry" type="button" data-copy="retry">重新載入</button><a href="./catalog/index.html" data-copy="full">完整目錄</a></div>
-<button type="button" id="load-more" class="load-more" hidden data-copy="more">顯示更多工具</button>
-</div></section>
-<noscript><p>互動搜尋需要 JavaScript。<a href="./catalog/index.html">開啟不需 JavaScript 的完整工具目錄</a>。</p></noscript>
-<section class="faq" aria-labelledby="faq-title"><h2 id="faq-title" data-copy="faq">使用前，先知道這些</h2><details><summary data-copy="faq1">所有工具都使用 WebAssembly 嗎？</summary><p data-copy="answer1">不是。此集合包含 JavaScript、瀏覽器原生 API 與 WebAssembly 實作。品牌名稱不代表每個工具都使用 WASM。</p></details><details><summary data-copy="faq2">可以完全離線使用嗎？</summary><p data-copy="answer2">不保證。部分工具會從 CDN 載入套件；本站尚未提供完整離線快取。不要將本地運算等同於完全離線。</p></details><details><summary data-copy="faq3">「待功能驗證」與「暫停使用」有什麼差別？</summary><p data-copy="answer3">待驗證代表尚未逐項確認輸出正確性；暫停使用代表已發現未完成實作或資源缺漏，已停用輸入與下載。請以備份檔案測試可開啟的工具。</p></details></section>
-</main><footer><span>AWESOME WASM TOOLS 1000</span><p data-copy="footer">開放探索，誠實標示。工具驗證是一項持續的工程。</p><a href="./catalog/index.html" data-copy="full">完整目錄</a></footer></div></body></html>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Awesome WASM Tools 1000</title>
+  <meta name="description" content="1176+ WebAssembly-powered frontend tools - No backend, fully offline">
+  <meta property="og:title" content="Awesome WASM Tools 1000">
+  <meta property="og:description" content="1176+ WebAssembly-powered frontend tools for image, audio, PDF, compression, and data workflows.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://stephen-taipei.github.io/awesome-wasm-tools-1000/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Awesome WASM Tools 1000">
+  <meta name="twitter:description" content="1176+ WebAssembly-powered frontend tools for image, audio, PDF, compression, and data workflows.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b1220'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-size='16' fill='white' font-family='Arial,sans-serif'%3EW%3C/text%3E%3C/svg%3E">
+  <link rel="canonical" href="https://stephen-taipei.github.io/awesome-wasm-tools-1000/">
+  <link rel="alternate" type="text/plain" title="LLMs.txt" href="/llms.txt">
+  <link rel="stylesheet" href="/src/styles/global.css">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "name": "Awesome WASM Tools 1000",
+          "url": "https://stephen-taipei.github.io/awesome-wasm-tools-1000/",
+          "description": "1176+ WebAssembly-powered frontend tools - No backend, fully offline",
+          "inLanguage": "zh-TW"
+        },
+        {
+          "@type": "CollectionPage",
+          "name": "Awesome WASM Tools 1000",
+          "url": "https://stephen-taipei.github.io/awesome-wasm-tools-1000/",
+          "description": "A browser-based collection of WebAssembly tools for images, audio, compression, encryption, text, and PDF workflows."
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Awesome WASM Tools 1000 是什麼？",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Awesome WASM Tools 1000 是一個以 WebAssembly 驅動的前端工具平台，提供圖片、音訊、壓縮、PDF、加密與文本處理工具，主打高效能與離線可用。"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "這些工具需要後端或上傳檔案嗎？",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "大多數工具都以本地瀏覽器執行為主，不需要依賴後端服務。檔案通常會留在使用者裝置內處理。"
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "這個平台適合哪些工作流程？",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "這個平台適合需要高效能圖片處理、音訊轉換、壓縮、PDF 處理、文字分析與編碼工具的前端工作流程。"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Awesome WASM Tools 1000</h1>
+      <p class="subtitle" data-i18n="subtitle">純前端 WebAssembly 工具平台 | 無後端、完全離線</p>
+      <div class="lang-switcher">
+        <button onclick="setLanguage('zh-TW')" class="lang-btn">繁中</button>
+        <button onclick="setLanguage('en')" class="lang-btn">EN</button>
+      </div>
+    </header>
+
+    <main class="tools-grid">
+
+      <section class="category">
+        <h2 data-i18n="cat_image">圖片處理 (331)</h2>
+        <div class="tool-list">
+          <a href="/src/tools/image/IMG-001/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-001</h3>
+              <p data-i18n="img001_name">工具 001</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-002/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-002</h3>
+              <p data-i18n="img002_name">工具 002</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-003/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-003</h3>
+              <p data-i18n="img003_name">工具 003</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-004/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-004</h3>
+              <p data-i18n="img004_name">工具 004</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-005/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-005</h3>
+              <p data-i18n="img005_name">工具 005</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-006/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-006</h3>
+              <p data-i18n="img006_name">工具 006</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-007/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-007</h3>
+              <p data-i18n="img007_name">工具 007</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-008/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-008</h3>
+              <p data-i18n="img008_name">工具 008</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-009/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-009</h3>
+              <p data-i18n="img009_name">工具 009</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-010/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-010</h3>
+              <p data-i18n="img010_name">工具 010</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-011/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-011</h3>
+              <p data-i18n="img011_name">工具 011</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-012/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-012</h3>
+              <p data-i18n="img012_name">工具 012</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-013/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-013</h3>
+              <p data-i18n="img013_name">工具 013</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-014/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-014</h3>
+              <p data-i18n="img014_name">工具 014</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-015/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-015</h3>
+              <p data-i18n="img015_name">工具 015</p>
+            </div>
+          </a>
+          <div class="tool-card more-indicator">
+            <div class="tool-icon">⋯</div>
+            <div class="tool-info">
+              <h3>...</h3>
+              <p>更多 311 個工具</p>
+            </div>
+          </div>
+          <a href="/src/tools/image/IMG-327/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-327</h3>
+              <p data-i18n="img327_name">工具 327</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-328/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-328</h3>
+              <p data-i18n="img328_name">工具 328</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-329/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-329</h3>
+              <p data-i18n="img329_name">工具 329</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-330/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-330</h3>
+              <p data-i18n="img330_name">工具 330</p>
+            </div>
+          </a>
+          <a href="/src/tools/image/IMG-331/index.html" class="tool-card">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-info">
+              <h3>IMG-331</h3>
+              <p data-i18n="img331_name">工具 331</p>
+            </div>
+          </a>
+        </div>
+      </section>
+      <section class="category">
+        <h2 data-i18n="cat_audio">音訊處理 (100)</h2>
+        <div class="tool-list">
+          <a href="/src/tools/audio/AUD-001/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-001</h3>
+              <p data-i18n="aud001_name">工具 001</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-002/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-002</h3>
+              <p data-i18n="aud002_name">工具 002</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-003/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-003</h3>
+              <p data-i18n="aud003_name">工具 003</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-004/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-004</h3>
+              <p data-i18n="aud004_name">工具 004</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-005/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-005</h3>
+              <p data-i18n="aud005_name">工具 005</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-006/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-006</h3>
+              <p data-i18n="aud006_name">工具 006</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-007/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-007</h3>
+              <p data-i18n="aud007_name">工具 007</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-008/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-008</h3>
+              <p data-i18n="aud008_name">工具 008</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-009/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-009</h3>
+              <p data-i18n="aud009_name">工具 009</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-010/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-010</h3>
+              <p data-i18n="aud010_name">工具 010</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-011/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-011</h3>
+              <p data-i18n="aud011_name">工具 011</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-012/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-012</h3>
+              <p data-i18n="aud012_name">工具 012</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-013/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-013</h3>
+              <p data-i18n="aud013_name">工具 013</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-014/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-014</h3>
+              <p data-i18n="aud014_name">工具 014</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-015/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-015</h3>
+              <p data-i18n="aud015_name">工具 015</p>
+            </div>
+          </a>
+          <div class="tool-card more-indicator">
+            <div class="tool-icon">⋯</div>
+            <div class="tool-info">
+              <h3>...</h3>
+              <p>更多 80 個工具</p>
+            </div>
+          </div>
+          <a href="/src/tools/audio/AUD-096/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-096</h3>
+              <p data-i18n="aud096_name">工具 096</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-097/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-097</h3>
+              <p data-i18n="aud097_name">工具 097</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-098/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-098</h3>
+              <p data-i18n="aud098_name">工具 098</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-099/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-099</h3>
+              <p data-i18n="aud099_name">工具 099</p>
+            </div>
+          </a>
+          <a href="/src/tools/audio/AUD-100/index.html" class="tool-card">
+            <div class="tool-icon">🎵</div>
+            <div class="tool-info">
+              <h3>AUD-100</h3>
+              <p data-i18n="aud100_name">工具 100</p>
+            </div>
+          </a>
+        </div>
+      </section>
+      <section class="category">
+        <h2 data-i18n="cat_compress">壓縮轉檔 (120)</h2>
+        <div class="tool-list">
+          <a href="/src/tools/compress/CMP-001/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-001</h3>
+              <p data-i18n="cmp001_name">工具 001</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-002/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-002</h3>
+              <p data-i18n="cmp002_name">工具 002</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-003/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-003</h3>
+              <p data-i18n="cmp003_name">工具 003</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-004/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-004</h3>
+              <p data-i18n="cmp004_name">工具 004</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-005/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-005</h3>
+              <p data-i18n="cmp005_name">工具 005</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-006/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-006</h3>
+              <p data-i18n="cmp006_name">工具 006</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-007/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-007</h3>
+              <p data-i18n="cmp007_name">工具 007</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-008/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-008</h3>
+              <p data-i18n="cmp008_name">工具 008</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-009/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-009</h3>
+              <p data-i18n="cmp009_name">工具 009</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-010/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-010</h3>
+              <p data-i18n="cmp010_name">工具 010</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-011/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-011</h3>
+              <p data-i18n="cmp011_name">工具 011</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-012/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-012</h3>
+              <p data-i18n="cmp012_name">工具 012</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-013/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-013</h3>
+              <p data-i18n="cmp013_name">工具 013</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-014/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-014</h3>
+              <p data-i18n="cmp014_name">工具 014</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-015/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-015</h3>
+              <p data-i18n="cmp015_name">工具 015</p>
+            </div>
+          </a>
+          <div class="tool-card more-indicator">
+            <div class="tool-icon">⋯</div>
+            <div class="tool-info">
+              <h3>...</h3>
+              <p>更多 100 個工具</p>
+            </div>
+          </div>
+          <a href="/src/tools/compress/CMP-116/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-116</h3>
+              <p data-i18n="cmp116_name">工具 116</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-117/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-117</h3>
+              <p data-i18n="cmp117_name">工具 117</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-118/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-118</h3>
+              <p data-i18n="cmp118_name">工具 118</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-119/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-119</h3>
+              <p data-i18n="cmp119_name">工具 119</p>
+            </div>
+          </a>
+          <a href="/src/tools/compress/CMP-120/index.html" class="tool-card">
+            <div class="tool-icon">📦</div>
+            <div class="tool-info">
+              <h3>CMP-120</h3>
+              <p data-i18n="cmp120_name">工具 120</p>
+            </div>
+          </a>
+        </div>
+      </section>
+      <section class="category">
+        <h2 data-i18n="cat_crypto">加密解密 (130)</h2>
+        <div class="tool-list">
+          <a href="/src/tools/crypto/CRY-001/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-001</h3>
+              <p data-i18n="cry001_name">工具 001</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-002/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-002</h3>
+              <p data-i18n="cry002_name">工具 002</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-003/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-003</h3>
+              <p data-i18n="cry003_name">工具 003</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-004/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-004</h3>
+              <p data-i18n="cry004_name">工具 004</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-005/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-005</h3>
+              <p data-i18n="cry005_name">工具 005</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-006/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-006</h3>
+              <p data-i18n="cry006_name">工具 006</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-007/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-007</h3>
+              <p data-i18n="cry007_name">工具 007</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-008/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-008</h3>
+              <p data-i18n="cry008_name">工具 008</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-009/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-009</h3>
+              <p data-i18n="cry009_name">工具 009</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-010/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-010</h3>
+              <p data-i18n="cry010_name">工具 010</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-011/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-011</h3>
+              <p data-i18n="cry011_name">工具 011</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-012/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-012</h3>
+              <p data-i18n="cry012_name">工具 012</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-013/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-013</h3>
+              <p data-i18n="cry013_name">工具 013</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-014/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-014</h3>
+              <p data-i18n="cry014_name">工具 014</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-015/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-015</h3>
+              <p data-i18n="cry015_name">工具 015</p>
+            </div>
+          </a>
+          <div class="tool-card more-indicator">
+            <div class="tool-icon">⋯</div>
+            <div class="tool-info">
+              <h3>...</h3>
+              <p>更多 110 個工具</p>
+            </div>
+          </div>
+          <a href="/src/tools/crypto/CRY-126/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-126</h3>
+              <p data-i18n="cry126_name">工具 126</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-127/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-127</h3>
+              <p data-i18n="cry127_name">工具 127</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-128/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-128</h3>
+              <p data-i18n="cry128_name">工具 128</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-129/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-129</h3>
+              <p data-i18n="cry129_name">工具 129</p>
+            </div>
+          </a>
+          <a href="/src/tools/crypto/CRY-130/index.html" class="tool-card">
+            <div class="tool-icon">🔐</div>
+            <div class="tool-info">
+              <h3>CRY-130</h3>
+              <p data-i18n="cry130_name">工具 130</p>
+            </div>
+          </a>
+        </div>
+      </section>
+      <section class="category">
+        <h2 data-i18n="cat_text">文本分析 (150)</h2>
+        <div class="tool-list">
+          <a href="/src/tools/text/TXT-001/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-001</h3>
+              <p data-i18n="txt001_name">工具 001</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-002/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-002</h3>
+              <p data-i18n="txt002_name">工具 002</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-003/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-003</h3>
+              <p data-i18n="txt003_name">工具 003</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-004/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-004</h3>
+              <p data-i18n="txt004_name">工具 004</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-005/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-005</h3>
+              <p data-i18n="txt005_name">工具 005</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-006/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-006</h3>
+              <p data-i18n="txt006_name">工具 006</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-007/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-007</h3>
+              <p data-i18n="txt007_name">工具 007</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-008/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-008</h3>
+              <p data-i18n="txt008_name">工具 008</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-009/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-009</h3>
+              <p data-i18n="txt009_name">工具 009</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-010/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-010</h3>
+              <p data-i18n="txt010_name">工具 010</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-011/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-011</h3>
+              <p data-i18n="txt011_name">工具 011</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-012/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-012</h3>
+              <p data-i18n="txt012_name">工具 012</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-013/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-013</h3>
+              <p data-i18n="txt013_name">工具 013</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-014/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-014</h3>
+              <p data-i18n="txt014_name">工具 014</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-015/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-015</h3>
+              <p data-i18n="txt015_name">工具 015</p>
+            </div>
+          </a>
+          <div class="tool-card more-indicator">
+            <div class="tool-icon">⋯</div>
+            <div class="tool-info">
+              <h3>...</h3>
+              <p>更多 130 個工具</p>
+            </div>
+          </div>
+          <a href="/src/tools/text/TXT-146/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-146</h3>
+              <p data-i18n="txt146_name">工具 146</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-147/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-147</h3>
+              <p data-i18n="txt147_name">工具 147</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-148/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-148</h3>
+              <p data-i18n="txt148_name">工具 148</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-149/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-149</h3>
+              <p data-i18n="txt149_name">工具 149</p>
+            </div>
+          </a>
+          <a href="/src/tools/text/TXT-150/index.html" class="tool-card">
+            <div class="tool-icon">📝</div>
+            <div class="tool-info">
+              <h3>TXT-150</h3>
+              <p data-i18n="txt150_name">工具 150</p>
+            </div>
+          </a>
+        </div>
+      </section>
+      <section class="category">
+        <h2 data-i18n="cat_pdf">PDF 工具 (120)</h2>
+        <div class="tool-list">
+          <a href="/src/tools/pdf/PDF-001/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-001</h3>
+              <p data-i18n="pdf001_name">工具 001</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-002/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-002</h3>
+              <p data-i18n="pdf002_name">工具 002</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-003/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-003</h3>
+              <p data-i18n="pdf003_name">工具 003</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-004/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-004</h3>
+              <p data-i18n="pdf004_name">工具 004</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-005/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-005</h3>
+              <p data-i18n="pdf005_name">工具 005</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-006/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-006</h3>
+              <p data-i18n="pdf006_name">工具 006</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-007/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-007</h3>
+              <p data-i18n="pdf007_name">工具 007</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-008/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-008</h3>
+              <p data-i18n="pdf008_name">工具 008</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-009/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-009</h3>
+              <p data-i18n="pdf009_name">工具 009</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-010/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-010</h3>
+              <p data-i18n="pdf010_name">工具 010</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-011/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-011</h3>
+              <p data-i18n="pdf011_name">工具 011</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-012/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-012</h3>
+              <p data-i18n="pdf012_name">工具 012</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-013/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-013</h3>
+              <p data-i18n="pdf013_name">工具 013</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-014/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-014</h3>
+              <p data-i18n="pdf014_name">工具 014</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-015/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-015</h3>
+              <p data-i18n="pdf015_name">工具 015</p>
+            </div>
+          </a>
+          <div class="tool-card more-indicator">
+            <div class="tool-icon">⋯</div>
+            <div class="tool-info">
+              <h3>...</h3>
+              <p>更多 100 個工具</p>
+            </div>
+          </div>
+          <a href="/src/tools/pdf/PDF-116/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-116</h3>
+              <p data-i18n="pdf116_name">工具 116</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-117/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-117</h3>
+              <p data-i18n="pdf117_name">工具 117</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-118/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-118</h3>
+              <p data-i18n="pdf118_name">工具 118</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-119/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-119</h3>
+              <p data-i18n="pdf119_name">工具 119</p>
+            </div>
+          </a>
+          <a href="/src/tools/pdf/PDF-120/index.html" class="tool-card">
+            <div class="tool-icon">📄</div>
+            <div class="tool-info">
+              <h3>PDF-120</h3>
+              <p data-i18n="pdf120_name">工具 120</p>
+            </div>
+          </a>
+        </div>
+      </section>
+      <section class="category">
+        <h2 data-i18n="cat_encoding">編碼工具 (100)</h2>
+        <div class="tool-list">
+          <a href="/src/tools/encoding/ENC-001/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-001</h3>
+              <p data-i18n="enc001_name">工具 001</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-002/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-002</h3>
+              <p data-i18n="enc002_name">工具 002</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-003/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-003</h3>
+              <p data-i18n="enc003_name">工具 003</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-004/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-004</h3>
+              <p data-i18n="enc004_name">工具 004</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-005/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-005</h3>
+              <p data-i18n="enc005_name">工具 005</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-006/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-006</h3>
+              <p data-i18n="enc006_name">工具 006</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-007/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-007</h3>
+              <p data-i18n="enc007_name">工具 007</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-008/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-008</h3>
+              <p data-i18n="enc008_name">工具 008</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-009/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-009</h3>
+              <p data-i18n="enc009_name">工具 009</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-010/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-010</h3>
+              <p data-i18n="enc010_name">工具 010</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-011/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-011</h3>
+              <p data-i18n="enc011_name">工具 011</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-012/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-012</h3>
+              <p data-i18n="enc012_name">工具 012</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-013/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-013</h3>
+              <p data-i18n="enc013_name">工具 013</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-014/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-014</h3>
+              <p data-i18n="enc014_name">工具 014</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-015/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-015</h3>
+              <p data-i18n="enc015_name">工具 015</p>
+            </div>
+          </a>
+          <div class="tool-card more-indicator">
+            <div class="tool-icon">⋯</div>
+            <div class="tool-info">
+              <h3>...</h3>
+              <p>更多 80 個工具</p>
+            </div>
+          </div>
+          <a href="/src/tools/encoding/ENC-096/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-096</h3>
+              <p data-i18n="enc096_name">工具 096</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-097/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-097</h3>
+              <p data-i18n="enc097_name">工具 097</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-098/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-098</h3>
+              <p data-i18n="enc098_name">工具 098</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-099/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-099</h3>
+              <p data-i18n="enc099_name">工具 099</p>
+            </div>
+          </a>
+          <a href="/src/tools/encoding/ENC-100/index.html" class="tool-card">
+            <div class="tool-icon">🔣</div>
+            <div class="tool-info">
+              <h3>ENC-100</h3>
+              <p data-i18n="enc100_name">工具 100</p>
+            </div>
+          </a>
+        </div>
+      </section>
+      <section class="category">
+        <h2 data-i18n="cat_calculator">數據計算 (125)</h2>
+        <div class="tool-list">
+          <a href="/src/tools/calculator/CAL-006/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-006</h3>
+              <p data-i18n="cal006_name">工具 006</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-007/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-007</h3>
+              <p data-i18n="cal007_name">工具 007</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-008/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-008</h3>
+              <p data-i18n="cal008_name">工具 008</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-009/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-009</h3>
+              <p data-i18n="cal009_name">工具 009</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-010/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-010</h3>
+              <p data-i18n="cal010_name">工具 010</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-011/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-011</h3>
+              <p data-i18n="cal011_name">工具 011</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-012/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-012</h3>
+              <p data-i18n="cal012_name">工具 012</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-013/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-013</h3>
+              <p data-i18n="cal013_name">工具 013</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-014/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-014</h3>
+              <p data-i18n="cal014_name">工具 014</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-015/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-015</h3>
+              <p data-i18n="cal015_name">工具 015</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-016/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-016</h3>
+              <p data-i18n="cal016_name">工具 016</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-017/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-017</h3>
+              <p data-i18n="cal017_name">工具 017</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-018/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-018</h3>
+              <p data-i18n="cal018_name">工具 018</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-019/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-019</h3>
+              <p data-i18n="cal019_name">工具 019</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-020/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-020</h3>
+              <p data-i18n="cal020_name">工具 020</p>
+            </div>
+          </a>
+          <div class="tool-card more-indicator">
+            <div class="tool-icon">⋯</div>
+            <div class="tool-info">
+              <h3>...</h3>
+              <p>更多 105 個工具</p>
+            </div>
+          </div>
+          <a href="/src/tools/calculator/CAL-126/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-126</h3>
+              <p data-i18n="cal126_name">工具 126</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-127/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-127</h3>
+              <p data-i18n="cal127_name">工具 127</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-128/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-128</h3>
+              <p data-i18n="cal128_name">工具 128</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-129/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-129</h3>
+              <p data-i18n="cal129_name">工具 129</p>
+            </div>
+          </a>
+          <a href="/src/tools/calculator/CAL-130/index.html" class="tool-card">
+            <div class="tool-icon">🔢</div>
+            <div class="tool-info">
+              <h3>CAL-130</h3>
+              <p data-i18n="cal130_name">工具 130</p>
+            </div>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <section class="faq-section">
+      <div class="faq-header">
+        <h2 data-i18n="faq_title">常見問題</h2>
+        <p data-i18n="faq_intro">幫助搜尋引擎、AI 與使用者快速理解這個 WebAssembly 工具站的定位與使用方式。</p>
+      </div>
+      <div class="faq-list">
+        <article class="faq-item">
+          <h3 data-i18n="faq_q1">Awesome WASM Tools 1000 是什麼？</h3>
+          <p data-i18n="faq_a1">這是一個以 WebAssembly 驅動的前端工具平台，提供圖片、音訊、壓縮、PDF、加密與文本處理工具，主打高效能與離線可用。</p>
+        </article>
+        <article class="faq-item">
+          <h3 data-i18n="faq_q2">這些工具需要後端或上傳檔案嗎？</h3>
+          <p data-i18n="faq_a2">多數工具都以前端本地處理為主，不需要後端 API。這有助於保留資料隱私並減少等待時間。</p>
+        </article>
+        <article class="faq-item">
+          <h3 data-i18n="faq_q3">這個平台適合哪些工作流程？</h3>
+          <p data-i18n="faq_a3">如果你需要高效能圖片處理、音訊轉換、壓縮轉檔、PDF 處理、編碼與文本分析工具，這個平台很適合當作瀏覽器內的工具集合。</p>
+        </article>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p data-i18n="footer_privacy">所有檔案處理均在本地完成，不會上傳到伺服器</p>
+      <p>✅ 已完成 <strong>1176</strong> 個工具，超過 1000 目標！</p>
+    </footer>
+  </div>
+
+  <script type="module" src="/src/i18n/i18n.js"></script>
+</body>
+</html>

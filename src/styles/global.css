@@ -551,6 +551,3 @@ body {
     justify-content: center;
   }
 }
-
-/* Shared accessibility and availability. */
-.skip-link{position:fixed;left:1rem;top:-8rem;z-index:9999;padding:1rem;background:#fff;color:#111}.skip-link:focus{top:1rem}.audit-notice,.audit-blocked{margin:1rem auto;padding:1.25rem;border:1px solid #697887;border-radius:12px;max-width:70rem;font:14px/1.8 system-ui}.audit-notice summary{cursor:pointer}.audit-blocked{margin:3rem auto}.audit-blocked h1{overflow-wrap:anywhere}:focus-visible{outline:3px solid #76dfcb;outline-offset:3px}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
