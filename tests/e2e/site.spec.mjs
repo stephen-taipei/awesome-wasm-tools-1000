@@ -7,7 +7,7 @@ for(const mount of ['/',prefix]){
  test(`original category homepage and child navigation at ${mount}`,async({page})=>{
   const errors=[];page.on('pageerror',error=>errors.push(error.message));await page.goto(mount);
   await expect(page.locator('.tools-grid > .category')).toHaveCount(8);
-  await expect(page.locator('.tool-card')).toHaveCount(160);
+  await expect(page.locator('a.tool-card')).toHaveCount(160);
   await expect(page.locator('.header h1')).toHaveText('Awesome WASM Tools 1000');
   await expect(page.locator('.lang-btn')).toHaveCount(2);
   await expect(page.locator('#search,.sidebar,.hero,.masthead')).toHaveCount(0);
@@ -16,7 +16,7 @@ for(const mount of ['/',prefix]){
   await expect(page.locator('input,button,textarea,script')).toHaveCount(0);
   await page.locator('.back-btn').click();
   await expect(page.locator('.tools-grid > .category')).toHaveCount(8);
-  await expect(page.locator('.tool-card')).toHaveCount(160);
+  await expect(page.locator('a.tool-card')).toHaveCount(160);
   await page.locator('a[href$="image/IMG-001/index.html"]').click();
   await expect(page.locator('#fileInput')).toBeAttached();
   expect(errors).toEqual([]);
@@ -59,10 +59,11 @@ test('all original category groups retain twenty links and their order',async({p
  const keys=['cat_image','cat_audio','cat_compress','cat_crypto','cat_text','cat_pdf','cat_encoding','cat_calculator'];
  for(const [index,key] of keys.entries()){
   await expect(categories.nth(index).locator('h2')).toHaveAttribute('data-i18n',key);
-  await expect(categories.nth(index).locator('.tool-card')).toHaveCount(20);
+  await expect(categories.nth(index).locator('a.tool-card')).toHaveCount(20);
+  await expect(categories.nth(index).locator('.tool-card.more-indicator')).toHaveCount(1);
  }
- await expect(page.locator('.tool-card h3').first()).toHaveText('IMG-001');
- await expect(page.locator('.tool-card h3').last()).toHaveText('CAL-130');
+ await expect(page.locator('a.tool-card h3').first()).toHaveText('IMG-001');
+ await expect(page.locator('a.tool-card h3').last()).toHaveText('CAL-130');
 });
 test('static catalog stays navigable without JavaScript',async({browser})=>{const context=await browser.newContext({javaScriptEnabled:false});const page=await context.newPage();await page.goto('http://127.0.0.1:4173'+prefix+'catalog/index.html');await expect(page.locator('li a')).toHaveCount(1186);await page.locator('li a').first().click();expect(page.url()).toContain('/src/tools/image/IMG-001/');await context.close();});
 test('homepage does not depend on catalog fetch or restore misleading offline claims',async({page})=>{
@@ -70,7 +71,7 @@ test('homepage does not depend on catalog fetch or restore misleading offline cl
  await page.route('**/tools.json',route=>{requests++;return route.fulfill({status:503,body:'Unavailable'});});
  await page.goto(prefix);
  await expect(page.locator('.lang-btn').first()).toHaveAttribute('aria-pressed','true');
- await expect(page.locator('.tool-card')).toHaveCount(160);
+ await expect(page.locator('a.tool-card')).toHaveCount(160);
  await expect(page.locator('.footer strong')).toHaveText('1186');
  await expect(page.locator('body')).not.toContainText('已完成 1176');
  expect(requests).toBe(0);
@@ -87,13 +88,13 @@ test('original category homepage is navigable without JavaScript at both mounts'
  for(const mount of ['/',prefix]){
   await page.goto('http://127.0.0.1:4173'+mount);
   await expect(page.locator('.tools-grid > .category')).toHaveCount(8);
-  await expect(page.locator('.tool-card')).toHaveCount(160);
+  await expect(page.locator('a.tool-card')).toHaveCount(160);
   await expect(page.locator('.footer strong')).toHaveText('1186');
   await expect(page.locator('.subtitle')).toContainText('部分功能使用外部套件');
   await page.locator('a[href$="image/IMG-008/index.html"]').click();
   await expect(page.locator('[data-tool-status=blocked]')).toBeVisible();
   await page.locator('.back-btn').click();
-  await expect(page.locator('.tool-card')).toHaveCount(160);
+  await expect(page.locator('a.tool-card')).toHaveCount(160);
  }
  await context.close();
 });

@@ -24,7 +24,8 @@ test('factual copy repairs preserve every body element, class and navigation att
   assert.deepEqual(bodyShape(repaired), bodyShape(original));
   const nodes=elements(parse(repaired));
   assert.equal(nodes.filter(n => attr(n, 'class')==='category').length, 8);
-  assert.equal(nodes.filter(n => attr(n, 'class')==='tool-card').length, 160);
+  assert.equal(nodes.filter(n => n.tagName==='a' && attr(n, 'class')==='tool-card').length, 160);
+  assert.equal(nodes.filter(n => attr(n, 'class')==='tool-card more-indicator').length, 8);
   assert.match(repaired, /<strong>1186<\/strong>/);
   assert.doesNotMatch(repaired, /1176|fully offline|已完成/);
   assert.doesNotMatch(repaired, /src\/catalog|tool-safety\.css/);
