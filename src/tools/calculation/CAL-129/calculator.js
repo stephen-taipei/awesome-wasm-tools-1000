@@ -1,3 +1,4 @@
+import { evaluateExpression } from '../../../utils/expression.js';
 
 const defaultKeyMap = {
     '0': '0', '1': '1', '2': '2', '3': '3', '4': '4',
@@ -16,13 +17,13 @@ let keyMap = loadKeyMap();
 let currentExpression = '';
 
 function loadKeyMap() {
-    const stored = localStorage.getItem('cal-129-keymap');
-    return stored ? JSON.parse(stored) : { ...defaultKeyMap };
+    try {
+        const parsed = JSON.parse(localStorage.getItem('cal-129-keymap') || 'null');
+        if (parsed && Object.keys(defaultKeyMap).every(k => typeof parsed[k] === 'string' && parsed[k].length <= 32)) return Object.fromEntries(Object.keys(defaultKeyMap).map(k => [k, parsed[k]]));
+    } catch { /* Storage can be blocked or malformed. */ }
+    return { ...defaultKeyMap };
 }
-
-function saveKeyMap() {
-    localStorage.setItem('cal-129-keymap', JSON.stringify(keyMap));
-}
+function saveKeyMap() { try { localStorage.setItem('cal-129-keymap', JSON.stringify(keyMap)); } catch {} }
 
 function init() {
     renderKeyMap();
@@ -34,7 +35,7 @@ function init() {
     });
 
     // Bind click events for buttons
-    document.querySelectorAll('.btn').forEach(btn => {
+    document.querySelectorAll('.btn[data-action]').forEach(btn => {
         btn.addEventListener('click', () => {
             const action = btn.dataset.action;
             executeAction(action);
@@ -98,7 +99,7 @@ function handleGlobalKey(e) {
     if (e.target.tagName === 'INPUT') return; // Don't trigger if typing in input
 
     // Find action matching the key
-    const action = Object.keys(keyMap).find(key => keyMap[key].toLowerCase() === e.key.toLowerCase());
+    const action = Object.keys(keyMap).find(key => keyMap[key].toLowerCase() === (e.key === ' ' ? 'Space' : e.key).toLowerCase());
     
     if (action) {
         e.preventDefault();
@@ -116,6 +117,8 @@ function flashButton(btn) {
 }
 
 function executeAction(action) {
+    if (!Object.hasOwn(defaultKeyMap, action)) return;
+    if (currentExpression === 'Error') currentExpression = '';
     const display = document.getElementById('display');
 
     if (action === 'clear') {
@@ -131,7 +134,7 @@ function executeAction(action) {
                 .replace(/[^-()\d/*+.]/g, ''); // Sanitize
 
             if (evalString) {
-                const result = new Function('return ' + evalString)();
+                const result = evaluateExpression(evalString);
                 currentExpression = String(result);
             }
         } catch (err) {

@@ -1,0 +1,50 @@
+name: Codebase audit
+on:
+  push:
+    branches: [main, dev, audit/codebase-2026-09-24]
+  pull_request:
+    branches: [main, dev]
+permissions:
+  contents: read
+concurrency:
+  group: codebase-audit-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Source, types, complete build and local routes
+        run: |
+          mkdir -p audit-results
+          npm run check > audit-results/check.log 2>&1
+          tail -25 audit-results/check.log
+      - name: Install test browser
+        run: npx playwright install --with-deps chromium
+      - name: Browser regression tests
+        run: npm run test:e2e
+      - name: Dependency audit
+        run: npm audit --json > audit-results/dependencies.json
+      - name: Record tested revision
+        if: always()
+        run: |
+          mkdir -p audit-results
+          git rev-parse HEAD > audit-results/commit.txt
+          git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: codebase-audit-verification
+          path: |
+            audit-results/
+            playwright-report/
+            test-results/
+          retention-days: 7

@@ -43,6 +43,7 @@ class WebPConverter extends ImageConverterBase {
     this.outputFormatSelect = document.getElementById('outputFormat');
     this.outputFormatSelect?.addEventListener('change', (e) => {
       this.outputType = e.target.value;
+      this.invalidateResult();
       this.updateDownloadText();
     });
   }
@@ -76,6 +77,8 @@ class WebPConverter extends ImageConverterBase {
       this.config.inputFormats = ['image/png', 'image/jpeg', 'image/jpg'];
       this.config.outputFormat = 'image/webp';
       this.config.outputExtension = 'webp';
+      this.config.fillBackground = null;
+      this.config.showQuality = true;
     } else {
       // WebP → PNG/JPG
       fileInput.accept = 'image/webp';
@@ -96,6 +99,7 @@ class WebPConverter extends ImageConverterBase {
 
   setCompression(type) {
     this.compression = type;
+    this.invalidateResult();
 
     document.getElementById('lossyBtn')?.classList.toggle('active', type === 'lossy');
     document.getElementById('losslessBtn')?.classList.toggle('active', type === 'lossless');
@@ -165,78 +169,10 @@ class WebPConverter extends ImageConverterBase {
   }
 
   async convertLossless() {
-    if (!this.originalFile) {
-      this.showStatus('error', window.t ? window.t('no_file') : '請先選擇圖片');
-      return;
-    }
-
-    const startTime = performance.now();
-
-    this.progressContainer?.classList.add('active');
-    if (this.progressFill) this.progressFill.style.width = '0%';
-    if (this.convertBtn) this.convertBtn.disabled = true;
-
-    try {
-      this.updateProgress(20, window.t ? window.t('converting') : '讀取圖片...');
-
-      const img = await this.loadImage(this.originalFile);
-      this.updateProgress(40, '處理中...');
-
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      this.updateProgress(60, '編碼中...');
-
-      // For lossless, use quality = 1.0
-      this.convertedBlob = await new Promise((resolve, reject) => {
-        canvas.toBlob(
-          (blob) => {
-            if (blob) resolve(blob);
-            else reject(new Error('Conversion failed'));
-          },
-          'image/webp',
-          1.0 // Max quality for lossless-like result
-        );
-      });
-
-      this.updateProgress(90, '完成中...');
-
-      const convertedUrl = URL.createObjectURL(this.convertedBlob);
-      if (this.convertedImage) this.convertedImage.src = convertedUrl;
-      if (this.convertedSize) this.convertedSize.textContent = this.formatFileSize(this.convertedBlob.size);
-
-      const endTime = performance.now();
-      const processingTime = ((endTime - startTime) / 1000).toFixed(2);
-      const sizeChange = ((this.convertedBlob.size / this.originalFile.size - 1) * 100).toFixed(1);
-
-      if (this.processTime) this.processTime.textContent = `${processingTime} 秒`;
-      if (this.compressionRatio) {
-        this.compressionRatio.textContent = sizeChange < 0
-          ? `${Math.abs(sizeChange)}% ${window.t ? window.t('reduction') : '減少'}`
-          : `${sizeChange}% 增加`;
-      }
-      if (this.performanceInfo) this.performanceInfo.style.display = 'block';
-
-      this.updateProgress(100, window.t ? window.t('convert_success') : '轉換完成！');
-
-      setTimeout(() => {
-        this.progressContainer?.classList.remove('active');
-        this.showStatus('success', window.t ? window.t('convert_success') : '轉換完成！');
-        if (this.downloadBtn) this.downloadBtn.style.display = 'inline-flex';
-        if (this.resetBtn) this.resetBtn.style.display = 'inline-flex';
-        if (this.convertBtn) this.convertBtn.disabled = false;
-      }, 500);
-
-    } catch (error) {
-      console.error('Conversion error:', error);
-      this.progressContainer?.classList.remove('active');
-      this.showStatus('error', window.t ? window.t('convert_error') : '轉換失敗，請重試');
-      if (this.convertBtn) this.convertBtn.disabled = false;
-    }
+    this.invalidateResult();
+    this.showStatus('error', 'Canvas does not guarantee lossless WebP. Use PNG or lossy WebP. / 此編碼器不保證 WebP 無損輸出。');
   }
+
 }
 
 // Initialize converter when DOM is ready

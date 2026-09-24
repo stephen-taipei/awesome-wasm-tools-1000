@@ -32,8 +32,8 @@ class SpecialChars {
           { char: '》', name: 'Right Double Angle Bracket' },
           { char: '"', name: 'Left Double Quotation' },
           { char: '"', name: 'Right Double Quotation' },
-          { char: ''', name: 'Left Single Quotation' },
-          { char: ''', name: 'Right Single Quotation' }
+          { char: '‘', name: 'Left Single Quotation' },
+          { char: '’', name: 'Right Single Quotation' }
         ]
       },
       currency: {

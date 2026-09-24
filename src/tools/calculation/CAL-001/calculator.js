@@ -1,3 +1,4 @@
+import { evaluateExpression } from '../../../utils/expression.js';
 let memory = 0;
 
 function appendNumber(num) {
@@ -76,42 +77,19 @@ function calculate() {
     }
 }
 
-function evalSafe(expr) {
-    // Replace visual operators with JS operators
-    let cleanExpr = expr
-        .replace(/\^/g, '**')
-        .replace(/PI/g, 'Math.PI')
-        .replace(/E/g, 'Math.E')
-        .replace(/sin\(/g, 'Math.sin(')
-        .replace(/cos\(/g, 'Math.cos(')
-        .replace(/tan\(/g, 'Math.tan(')
-        .replace(/asin\(/g, 'Math.asin(')
-        .replace(/acos\(/g, 'Math.acos(')
-        .replace(/atan\(/g, 'Math.atan(')
-        .replace(/log\(/g, 'Math.log10(')
-        .replace(/ln\(/g, 'Math.log(')
-        .replace(/sqrt\(/g, 'Math.sqrt(');
-
-    // Safety check: only allow numbers, math functions, operators
-    // This is a basic check, 'eval' is used for simplicity but in production we might want a parser.
-    // Given this is a local tool, we use Function constructor or eval.
-    // However, user input is local.
-
-    try {
-        return new Function('return ' + cleanExpr)();
-    } catch (e) {
-        throw new Error('Invalid Expression');
-    }
-}
+function evalSafe(expr) { return evaluateExpression(String(expr)); }
 
 function addToHistory(expr, result) {
     const history = document.getElementById('history');
     const item = document.createElement('div');
     item.className = 'history-item';
-    item.innerHTML = `<span>${expr}</span><span>= ${result}</span>`;
+    const label = document.createElement('span'); label.textContent = expr;
+    const value = document.createElement('span'); value.textContent = `= ${result}`;
+    item.append(label, value);
     item.onclick = () => {
         document.getElementById('display').value = expr;
     };
     history.insertBefore(item, history.firstChild);
+    while (history.children.length > 50) history.lastElementChild.remove();
 }
 window.appendFunc = appendFunc; window.appendOperator = appendOperator; window.appendNumber = appendNumber; window.clearDisplay = clearDisplay; window.deleteChar = deleteChar; window.memoryStore = memoryStore; window.memoryRecall = memoryRecall; window.memoryClear = memoryClear; window.calculate = calculate; window.appendConstant = appendConstant;
