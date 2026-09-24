@@ -1,13 +1,16 @@
 name: Codebase audit
 on:
   push:
-    branches: [audit/codebase-2026-09-24]
+    branches: [main, dev, audit/codebase-2026-09-24]
+  pull_request:
+    branches: [main, dev]
 permissions:
-  contents: write
-  actions: read
+  contents: read
+concurrency:
+  group: codebase-audit-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   audit:
-    if: github.ref == 'refs/heads/audit/codebase-2026-09-24'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -17,51 +20,25 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Restore exact resolved lockfile (one-time migration)
-        if: hashFiles('scripts/audit-migrate.py') != ''
-        uses: actions/download-artifact@v4
-        with:
-          name: codebase-audit-toolchain
-          run-id: 35934789561
-          github-token: ${{ github.token }}
-          path: ${{ runner.temp }}/audit-toolchain
-      - name: Apply reviewed migration
-        if: hashFiles('scripts/audit-migrate.py') != ''
-        run: |
-          cp "$RUNNER_TEMP/audit-toolchain/package.json" package.json
-          cp "$RUNNER_TEMP/audit-toolchain/package-lock.json" package-lock.json
-          python3 scripts/audit-migrate.py
+          cache: npm
       - run: npm ci
       - name: Source, types, complete build and local routes
         run: |
           mkdir -p audit-results
           npm run check > audit-results/check.log 2>&1
           tail -25 audit-results/check.log
-      - name: Commit completed source migration to audit branch
-        if: hashFiles('scripts/audit-migrate.py') != ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          git rm scripts/audit-migrate.py
-          git add -A
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'fix: apply audited fail-closed implementations and patched lockfile'
-          AUTH=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
-          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $AUTH" push origin HEAD:audit/codebase-2026-09-24
       - name: Install test browser
         run: npx playwright install --with-deps chromium
       - name: Browser regression tests
         run: npm run test:e2e
       - name: Dependency audit
         run: npm audit --json > audit-results/dependencies.json
-      - name: Preserve evidence and exact committed source
+      - name: Record tested revision
         if: always()
         run: |
           mkdir -p audit-results
           git rev-parse HEAD > audit-results/commit.txt
-          git archive --format=tar.gz --output=audit-results/source.tar.gz HEAD
-          git diff > audit-results/uncommitted.patch
+          git diff --exit-code
       - uses: actions/upload-artifact@v4
         if: always()
         with:
