@@ -2,7 +2,7 @@
 
 const translations = {
   'zh-TW': {
-    subtitle: '純前端 WebAssembly 工具平台 | 無後端、完全離線',
+    subtitle: '瀏覽器工具集合 | 部分功能使用外部套件，請保留原始檔',
     cat_image: '圖片處理',
     cat_audio: '音訊處理',
     cat_compress: '壓縮轉檔',
@@ -94,8 +94,8 @@ const translations = {
     upload_formats_avif_out: '支援格式：AVIF',
     avif_quality_info: 'AVIF 在較低品質設定下仍能保持良好畫質，建議使用 60-80%',
     avif_out_info: '轉換為通用格式以獲得更好的相容性',
-    avif_not_supported: '您的瀏覽器不支援 AVIF 編碼，請使用 Chrome 85+ 或 Firefox 93+',
-    avif_encode_not_supported: '您的瀏覽器不支援 AVIF 編碼，請使用 Chrome 85+ 或 Firefox 93+',
+    avif_not_supported: 'AVIF encoder unavailable; decoding support does not imply encoding support. / 瀏覽器未提供 AVIF 編碼器。',
+    avif_encode_not_supported: 'AVIF encoder unavailable; decoding support does not imply encoding support. / 瀏覽器未提供 AVIF 編碼器。',
     download_avif: '下載 AVIF',
 
     // IMG-006 specific
@@ -222,8 +222,8 @@ const translations = {
     upload_formats_avif_out: 'Supported format: AVIF',
     avif_quality_info: 'AVIF maintains good quality at lower settings, recommended 60-80%',
     avif_out_info: 'Convert to universal format for better compatibility',
-    avif_not_supported: 'Your browser does not support AVIF encoding, please use Chrome 85+ or Firefox 93+',
-    avif_encode_not_supported: 'Your browser does not support AVIF encoding, please use Chrome 85+ or Firefox 93+',
+    avif_not_supported: 'AVIF encoder unavailable; decoding support does not imply encoding support. / 瀏覽器未提供 AVIF 編碼器。',
+    avif_encode_not_supported: 'AVIF encoder unavailable; decoding support does not imply encoding support. / 瀏覽器未提供 AVIF 編碼器。',
     download_avif: 'Download AVIF',
 
     // IMG-006 specific
@@ -259,54 +259,23 @@ const translations = {
   }
 };
 
-// Get current language from localStorage or default to zh-TW
-function getCurrentLanguage() {
-  return localStorage.getItem('wasm-tools-lang') || 'zh-TW';
-}
-
-// Set language
+let currentLanguage = 'zh-TW';
+try { if (localStorage.getItem('wasm-tools-lang') === 'en') currentLanguage = 'en'; } catch {}
+function getCurrentLanguage() { return currentLanguage; }
 function setLanguage(lang) {
-  localStorage.setItem('wasm-tools-lang', lang);
+  if (!Object.hasOwn(translations, lang)) return;
+  currentLanguage = lang;
+  try { localStorage.setItem('wasm-tools-lang', lang); } catch {}
   applyTranslations();
 }
-
-// Apply translations to all elements with data-i18n attribute
 function applyTranslations() {
-  const lang = getCurrentLanguage();
-  const t = translations[lang] || translations['zh-TW'];
-
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (t[key]) {
-      el.textContent = t[key];
-    }
-  });
-
-  // Update placeholders
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-    const key = el.getAttribute('data-i18n-placeholder');
-    if (t[key]) {
-      el.placeholder = t[key];
-    }
-  });
+  const values = translations[currentLanguage];
+  document.documentElement.lang = currentLanguage;
+  document.querySelectorAll('[data-i18n]').forEach(el => { const value = values[el.getAttribute('data-i18n')]; if (value) el.textContent = value; });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { const value = values[el.getAttribute('data-i18n-placeholder')]; if (value) el.placeholder = value; });
+  document.querySelectorAll('.lang-btn').forEach(el => { const active = (el.getAttribute('onclick') || '').includes("'" + currentLanguage + "'"); el.setAttribute('aria-pressed', String(active)); });
 }
-
-// Get translation by key
-function t(key) {
-  const lang = getCurrentLanguage();
-  const trans = translations[lang] || translations['zh-TW'];
-  return trans[key] || key;
-}
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-  applyTranslations();
-});
-
-// Export for use in other modules
-window.setLanguage = setLanguage;
-window.t = t;
-window.getCurrentLanguage = getCurrentLanguage;
-window.applyTranslations = applyTranslations;
-
+function t(key) { return translations[currentLanguage][key] || translations['zh-TW'][key] || key; }
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyTranslations, { once: true }); else applyTranslations();
+Object.assign(window, { setLanguage, t, getCurrentLanguage, applyTranslations });
 export { setLanguage, t, getCurrentLanguage, applyTranslations, translations };

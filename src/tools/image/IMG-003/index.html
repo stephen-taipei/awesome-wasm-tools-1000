@@ -120,7 +120,7 @@
           <label data-i18n="compression_type">壓縮模式</label>
           <div class="compression-toggle">
             <button id="lossyBtn" class="toggle-btn active" onclick="setCompression('lossy')" data-i18n="lossy">有損壓縮</button>
-            <button id="losslessBtn" class="toggle-btn" onclick="setCompression('lossless')" data-i18n="lossless">無損壓縮</button>
+            <button id="losslessBtn" class="toggle-btn" disabled title="Canvas does not guarantee lossless WebP encoding" onclick="setCompression('lossless')" data-i18n="lossless">無損壓縮</button>
           </div>
         </div>
 

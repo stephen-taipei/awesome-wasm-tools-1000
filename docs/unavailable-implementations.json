@@ -1,0 +1,1124 @@
+[
+  {
+    "path": "src/tools/crypto/CRY-094/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-079/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-117/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-111/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-069/tool.js",
+    "evidence": [
+      "this.resultContent.innerHTML = '<p>處理完成（模擬）</p>';"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-097/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-122/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-110/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-075/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-102/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-109/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-085/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-120/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-123/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-124/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-098/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-101/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-073/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-086/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-092/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-103/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-105/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-129/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-121/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-108/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-088/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-089/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-126/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-070/tool.js",
+    "evidence": [
+      "this.resultContent.innerHTML = '<p>處理完成（模擬）</p>';"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-083/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-093/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-128/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-064/qr-otp.js",
+    "evidence": [
+      "// Note: This is a placeholder - real QR codes require proper encoding"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-096/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-071/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-106/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-113/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-090/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-100/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-080/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-072/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-115/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-076/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-104/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-095/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-082/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-084/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-116/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-119/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-091/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-114/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-099/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-081/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-087/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-107/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-112/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-074/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-130/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-125/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-118/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-077/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-078/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/crypto/CRY-127/tool.js",
+    "evidence": [
+      "// Placeholder - actual crypto would use Web Crypto API or WASM"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-100/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-081/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-106/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-070/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-089/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-088/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-073/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-078/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-118/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-095/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-109/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-079/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-107/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-090/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-102/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-061/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-075/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-065/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-108/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-114/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-103/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-096/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-067/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-084/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-098/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-068/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-063/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-074/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-113/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-082/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-112/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-093/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-069/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-072/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-076/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-104/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-116/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-071/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-062/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-115/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-066/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-080/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-091/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-083/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-077/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-064/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-094/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-085/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-110/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-092/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-120/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-117/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-119/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-087/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-111/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-105/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-086/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-097/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-099/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/pdf/PDF-101/tool.js",
+    "evidence": [
+      "// 模擬處理 - 實際實作需要 PDF 處理庫"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-070/tool.js",
+    "evidence": [
+      "this.resultContent.innerHTML = '<p>處理完成（模擬）</p>';"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-083/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-114/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-026/lz4.js",
+    "evidence": [
+      "// Use deflate compression as simulation"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-102/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-112/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-113/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-101/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-028/snappy.js",
+    "evidence": [
+      "// Use deflate compression as simulation"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-097/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-022/zstd.js",
+    "evidence": [
+      "// Use deflate compression as simulation"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-110/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-024/brotli.js",
+    "evidence": [
+      "// Use deflate compression as simulation (real Brotli requires WASM library)"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-018/bzip2.js",
+    "evidence": [
+      "// Use deflate compression as BZIP2 simulation"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-089/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-088/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-005/compress7z.js",
+    "evidence": [
+      "// Compress using pako (simulating LZMA-like compression)"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-084/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-105/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-108/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-095/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-076/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-085/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-116/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-086/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-111/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-071/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-117/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-107/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-077/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-100/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-109/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-118/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-072/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-092/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-087/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-093/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-094/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-073/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-081/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-120/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-106/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-078/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-074/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-103/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-096/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-115/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-091/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-075/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-104/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-080/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-119/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-079/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-090/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-099/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-082/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-020/xz.js",
+    "evidence": [
+      "// Use deflate compression as LZMA simulation"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-003/encrypt.js",
+    "evidence": [
+      "// ZipCrypto simulation using simple encryption"
+    ]
+  },
+  {
+    "path": "src/tools/compress/CMP-098/tool.js",
+    "evidence": [
+      "// Placeholder - actual compression would use WASM"
+    ]
+  },
+  {
+    "path": "src/tools/audio/AUD-005/converter.js",
+    "evidence": [
+      "// Simulate M4A/AAC encoding (outputs WAV as placeholder)"
+    ]
+  },
+  {
+    "path": "src/tools/audio/AUD-068/tool.js",
+    "evidence": [
+      "this.resultContent.innerHTML = '<p>處理完成（模擬）</p>';"
+    ]
+  },
+  {
+    "path": "src/tools/audio/AUD-069/speed-adjuster.js",
+    "evidence": [
+      "// Simple MP3 encoding simulation - in production, use lamejs"
+    ]
+  },
+  {
+    "path": "src/tools/audio/AUD-006/converter.js",
+    "evidence": [
+      "// Simulate Opus encoding (outputs WAV as placeholder)"
+    ]
+  },
+  {
+    "path": "src/tools/audio/AUD-004/converter.js",
+    "evidence": [
+      "// Simulate OGG encoding (in production, use a proper Vorbis encoder like libvorbis.js)"
+    ]
+  }
+]

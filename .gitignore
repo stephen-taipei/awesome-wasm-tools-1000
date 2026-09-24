@@ -64,3 +64,9 @@ proxy.conf.json
 AGENTS.md
 MIGRATION.md
 ARCHITECTURE.md
+
+/public/tools.json
+/public/catalog/
+/audit-results/
+/playwright-report/
+/test-results/

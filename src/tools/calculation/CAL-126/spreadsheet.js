@@ -1,3 +1,4 @@
+import { createSheetEvaluator, csvCell } from '../../../utils/spreadsheet.js';
 
 const ROWS = 20;
 const COLS = 10; // A-J
@@ -88,6 +89,7 @@ function moveSelection(row, col, isUp) {
 }
 
 function evaluateSheet() {
+    const evaluator = createSheetEvaluator(sheetData);
     // Naive re-evaluation of all cells
     // In a real app, use a dependency graph.
     
@@ -100,7 +102,7 @@ function evaluateSheet() {
 
             if (raw && raw.startsWith('=')) {
                 try {
-                    const res = evaluateFormula(raw.substring(1));
+                    const res = evaluator.cell(id);
                     input.value = res;
                 } catch (e) {
                     input.value = '#ERROR';
@@ -112,65 +114,6 @@ function evaluateSheet() {
     }
 }
 
-function evaluateFormula(formula) {
-    // Supports basic math and cell refs (e.g. A1 + B2)
-    // And SUM(A1:A3), AVG(A1:A3)
-    
-    let parsed = formula.toUpperCase();
-
-    // Handle Ranges like SUM(A1:A3)
-    parsed = parsed.replace(/(SUM|AVG|MAX|MIN)\((\[A-Z\][0-9]+):(\[A-Z\][0-9]+)\)/g, (match, func, start, end) => {
-        const values = getRangeValues(start, end);
-        if (func === 'SUM') return values.reduce((a, b) => a + b, 0);
-        if (func === 'AVG') return values.reduce((a, b) => a + b, 0) / values.length;
-        if (func === 'MAX') return Math.max(...values);
-        if (func === 'MIN') return Math.min(...values);
-        return 0;
-    });
-
-    // Handle individual cell refs (A1, B2...)
-    // Replace cell IDs with their evaluated numeric values
-    parsed = parsed.replace(/[A-Z][0-9]+/g, (match) => {
-        const val = getCellValue(match);
-        return val;
-    });
-
-    // Safe eval
-    // Only allow digits, operators, parens, and decimal points
-    if (/[^0-9+\-*/().\s]/.test(parsed)) {
-         return '#ERR';
-    }
-
-    return new Function('return ' + parsed)();
-}
-
-function getCellValue(id) {
-    let val = sheetData[id];
-    if (!val) return 0;
-    if (val.startsWith('=')) {
-        // prevent infinite recursion in a real app, but here we just return 0 or simple recursion
-        // For simplicity, we won't support recursive formulas in this basic version
-        return 0; 
-    }
-    return parseFloat(val) || 0;
-}
-
-function getRangeValues(start, end) {
-    const startCol = start.charCodeAt(0);
-    const startRow = parseInt(start.substring(1));
-    const endCol = end.charCodeAt(0);
-    const endRow = parseInt(end.substring(1));
-
-    const values = [];
-    for (let c = startCol; c <= endCol; c++) {
-        for (let r = startRow; r <= endRow; r++) {
-            const id = String.fromCharCode(c) + r;
-            values.push(getCellValue(id));
-        }
-    }
-    return values;
-}
-
 function exportCSV() {
     let csv = '';
     for (let r = 1; r <= ROWS; r++) {
@@ -178,7 +121,7 @@ function exportCSV() {
         for (let c = 0; c < COLS; c++) {
             const id = String.fromCharCode(65 + c) + r;
             const val = document.getElementById(id).value;
-            row.push(val);
+            row.push(csvCell(val));
         }
         csv += row.join(',') + '\n';
     }
@@ -188,7 +131,8 @@ function exportCSV() {
     const a = document.createElement('a');
     a.href = url;
     a.download = 'sheet.csv';
-    a.click();
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function resetSheet() {
@@ -197,3 +141,5 @@ function resetSheet() {
 }
 
 window.addEventListener('DOMContentLoaded', init);
+
+Object.assign(window, { exportCSV, resetSheet });

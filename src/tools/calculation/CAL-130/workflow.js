@@ -57,19 +57,19 @@ function renderWorkflow() {
         
         let inputHtml = '';
         if (step.paramName !== 'None') {
-            inputHtml = "`
+            inputHtml = `
                 <label>${step.paramName}: </label>
                 <input type=\"number\" value=\"${step.param}\" onchange=\"updateStepParam(${index}, this.value)\" style=\"width: 60px;">
-            `";
+            `;
         }
 
-        div.innerHTML = "`
+        div.innerHTML = `
             <div class=\"step-content\">
                 <strong>${index + 1}. ${step.name}</strong>
                 ${inputHtml}
             </div>
             <span class=\"remove-step\" onclick=\"removeStep(${index})">❌</span>
-        `";
+        `;
         container.appendChild(div);
     });
 }

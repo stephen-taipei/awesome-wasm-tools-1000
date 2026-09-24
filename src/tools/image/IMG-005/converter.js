@@ -58,7 +58,7 @@ class AvifConverter extends ImageConverterBase {
     if (!this.avifSupported) {
       this.showStatus('warning',
         window.t ? window.t('avif_not_supported') :
-        '您的瀏覽器不支援 AVIF 編碼，請使用 Chrome 85+ 或 Firefox 93+'
+        '您的瀏覽器不支援 AVIF 編碼，圖片解碼支援不代表瀏覽器提供 AVIF 編碼器'
       );
     }
 
@@ -67,25 +67,7 @@ class AvifConverter extends ImageConverterBase {
   }
 
   updateBrowserBadges() {
-    const ua = navigator.userAgent;
-    const isChrome = ua.includes('Chrome');
-    const isFirefox = ua.includes('Firefox');
-    const isSafari = ua.includes('Safari') && !isChrome;
-    const isEdge = ua.includes('Edg');
-
-    // Highlight current browser
-    if (isChrome) {
-      document.getElementById('chromeSupport')?.classList.add('supported');
-    }
-    if (isFirefox) {
-      document.getElementById('firefoxSupport')?.classList.add('supported');
-    }
-    if (isSafari) {
-      document.getElementById('safariSupport')?.classList.toggle('supported', this.avifSupported);
-    }
-    if (isEdge) {
-      document.getElementById('edgeSupport')?.classList.add('supported');
-    }
+    for (const id of ['chromeSupport','firefoxSupport','safariSupport','edgeSupport']) document.getElementById(id)?.classList.remove('supported');
   }
 
   initAvifControls() {
@@ -94,6 +76,7 @@ class AvifConverter extends ImageConverterBase {
     this.outputFormatSelect = document.getElementById('outputFormat');
     this.outputFormatSelect?.addEventListener('change', (e) => {
       this.outputType = e.target.value;
+      this.invalidateResult();
       this.updateQualityVisibility();
       this.updateDownloadText();
     });
@@ -190,7 +173,7 @@ class AvifConverter extends ImageConverterBase {
     if (this.direction === 'to-avif' && !this.avifSupported) {
       this.showStatus('error',
         window.t ? window.t('avif_encode_not_supported') :
-        '您的瀏覽器不支援 AVIF 編碼，請使用 Chrome 85+ 或 Firefox 93+'
+        '您的瀏覽器不支援 AVIF 編碼，圖片解碼支援不代表瀏覽器提供 AVIF 編碼器'
       );
       return;
     }
