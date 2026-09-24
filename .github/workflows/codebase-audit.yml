@@ -3,11 +3,13 @@ on:
   push:
     branches: [audit/codebase-2026-09-24]
 permissions:
-  contents: read
+  contents: write
+  actions: read
 jobs:
   audit:
+    if: github.ref == 'refs/heads/audit/codebase-2026-09-24'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -15,21 +17,57 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
-      - name: Resolve patched toolchain (audit bootstrap only)
-        run: |
-          npm install --save-dev 'vite@^7.3.5' 'parse5@^7.3.0' '@playwright/test@^1.56.1'
-          npm update
-          mkdir -p audit-results
-          cp package.json package-lock.json audit-results/
-          npm audit --json > audit-results/dependencies.json || true
-          tar -czf audit-results/toolchain.tar.gz node_modules
-      - name: Validate upgraded baseline
-        run: npm run build
-      - name: Preserve resolved toolchain
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Restore exact resolved lockfile (one-time migration)
+        if: hashFiles('scripts/audit-migrate.py') != ''
+        uses: actions/download-artifact@v4
         with:
           name: codebase-audit-toolchain
-          path: audit-results/
-          retention-days: 3
+          run-id: 35934789561
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/audit-toolchain
+      - name: Apply reviewed migration
+        if: hashFiles('scripts/audit-migrate.py') != ''
+        run: |
+          cp "$RUNNER_TEMP/audit-toolchain/package.json" package.json
+          cp "$RUNNER_TEMP/audit-toolchain/package-lock.json" package-lock.json
+          python3 scripts/audit-migrate.py
+      - run: npm ci
+      - name: Source, types, complete build and local routes
+        run: |
+          mkdir -p audit-results
+          npm run check > audit-results/check.log 2>&1
+          tail -25 audit-results/check.log
+      - name: Commit completed source migration to audit branch
+        if: hashFiles('scripts/audit-migrate.py') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git rm scripts/audit-migrate.py
+          git add -A
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'fix: apply audited fail-closed implementations and patched lockfile'
+          AUTH=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $AUTH" push origin HEAD:audit/codebase-2026-09-24
+      - name: Install test browser
+        run: npx playwright install --with-deps chromium
+      - name: Browser regression tests
+        run: npm run test:e2e
+      - name: Dependency audit
+        run: npm audit --json > audit-results/dependencies.json
+      - name: Preserve evidence and exact committed source
+        if: always()
+        run: |
+          mkdir -p audit-results
+          git rev-parse HEAD > audit-results/commit.txt
+          git archive --format=tar.gz --output=audit-results/source.tar.gz HEAD
+          git diff > audit-results/uncommitted.patch
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: codebase-audit-verification
+          path: |
+            audit-results/
+            playwright-report/
+            test-results/
+          retention-days: 7

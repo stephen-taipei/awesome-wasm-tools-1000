@@ -1,26 +1,26 @@
 # Awesome WASM Tools 1000
 
-Last updated: 2026-04-14
+Browser utility collection, not certification of 1000 working WASM programs.
+Implementations use JavaScript, browser APIs and some WebAssembly. Tool pages have
+not all undergone functional verification. A successful build does not prove output correctness.
 
-## Summary (English)
-Awesome WASM Tools 1000 is a browser-based collection of WebAssembly-powered utilities for images, audio, compression, encryption, text analysis, PDFs, encoding, and data processing. The focus is offline execution, privacy-first workflows, and near-native performance.
+## Availability and safety
+- tools.json is the generated inventory; keys include category and tool ID.
+- unverified means output correctness has not been established for every operation.
+- blocked means a known incomplete implementation or required asset prevents use.
+- Blocked pages accept no files and produce no downloads.
+- Some tools load external CDN packages. Full offline operation is not guaranteed.
+- Never recommend unverified encryption tools for protecting sensitive data.
+- Retain original files and test with copies.
 
-## Summary (Traditional Chinese)
-Awesome WASM Tools 1000 是一個以 WebAssembly 驅動的瀏覽器工具集合，涵蓋圖片、音訊、壓縮、加密、文本分析、PDF、編碼與資料處理。重點是離線可用、隱私優先，以及接近原生的執行效能。
+## Pages (relative to the deployment root)
+- ./index.html — searchable directory and FAQ
+- ./catalog/index.html — complete static directory; no JavaScript required
+- ./tools.json — machine-readable status and routes
+- ./sitemap.xml — published non-blocked pages
+- ./news-sitemap.xml — ordinary sitemap compatibility alias, not a news feed
 
-## Summary (Japanese)
-Awesome WASM Tools 1000 は、画像、音声、圧縮、暗号化、テキスト分析、PDF、エンコーディング、データ処理を扱う WebAssembly ツール集です。オフライン動作、プライバシー保護、高速処理を重視しています。
-
-## Key Pages
-- / : WASM tools overview and FAQ
-- /src/tools/{category}/{tool}/index.html : Individual tool pages
-- /llms.txt : AI-readable summary
-- /sitemap.xml : Full crawl map
-- /news-sitemap.xml : Recently refreshed pages
-
-## Topics
-- WebAssembly tools
-- Offline-first browser utilities
-- Image, PDF, audio, text, compression, and crypto workflows
-- Privacy-first local processing
-
+## 繁體中文
+瀏覽器工具集合，包含 JavaScript、原生 API 與部分 WASM 實作。
+頁面存在不代表功能已驗證；已知未完成或缺少資源的工具已停用。
+部分工具依賴外部套件，不保證完全離線。請保留原始檔案。

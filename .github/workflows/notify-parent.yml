@@ -1,10 +1,9 @@
 name: Notify Parent Repo
-
 on:
   push:
     branches: [main, dev]
   workflow_dispatch:
-
+permissions: {}
 jobs:
   notify:
     runs-on: ubuntu-latest
@@ -17,14 +16,14 @@ jobs:
           event-type: submodule-updated
           client-payload: |
             {
-              "submodule": "${{ github.repository }}",
-              "ref": "${{ github.ref }}",
-              "sha": "${{ github.sha }}",
-              "message": "${{ github.event.head_commit.message }}"
+              "submodule": ${{ toJSON(github.repository) }},
+              "ref": ${{ toJSON(github.ref) }},
+              "sha": ${{ toJSON(github.sha) }},
+              "message": ${{ toJSON(github.event.head_commit.message || '') }}
             }
-
       - name: Log notification
-        run: |
-          echo "Notified stephen.taipei about update in ${{ github.repository }}"
-          echo "Commit: ${{ github.sha }}"
-          echo "Branch: ${{ github.ref }}"
+        env:
+          REPOSITORY: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+          REF: ${{ github.ref }}
+        run: printf 'Notified parent about %s at %s (%s)\n' "$REPOSITORY" "$COMMIT_SHA" "$REF"
